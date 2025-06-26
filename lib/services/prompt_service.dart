@@ -1,22 +1,14 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 class PromptService {
   static const String _activePromptFile = 'active_prompt.txt';
 
   static Future<String> get _promptDir async {
-    final userDir = await StorageService.getUserDiaryDir();
-    if (userDir != null) {
-      final promptDir = Directory('$userDir/prompt');
-      if (!await promptDir.exists()) {
-        await promptDir.create(recursive: true);
-      }
-      return promptDir.path;
-    }
     final dir = await getApplicationDocumentsDirectory();
-    final promptDir = Directory('${dir.path}/config/prompt');
+    final promptDir = Directory(p.join(dir.path, 'config', 'prompt'));
     if (!await promptDir.exists()) {
       await promptDir.create(recursive: true);
     }

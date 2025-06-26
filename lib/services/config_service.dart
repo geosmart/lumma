@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/model_config.dart';
+import '../services/storage_service.dart';
 
 class ConfigService {
   static const String _fileName = 'model_configs.json';
@@ -20,7 +23,9 @@ class ConfigService {
 
   static Future<void> saveModelConfigs(List<ModelConfig> configs, {BuildContext? context}) async {
     try {
-      final file = await _projectModelConfigFile;
+      final file = context == null
+          ? await _projectModelConfigFile
+          : await getProjectModelConfigFileWithContext(context);
       await file.writeAsString(ModelConfig.listToJson(configs));
     } catch (e) {
       if (context != null) {
@@ -32,7 +37,7 @@ class ConfigService {
     }
   }
 
-  static Future<void> ensureDefaultConfig() async {
+  static Future<void> ensureDefaultConfig({BuildContext? context}) async {
     final configs = await loadModelConfigs();
     if (configs.isEmpty) {
       ModelConfig defaultConfig = ModelConfig(
@@ -42,10 +47,10 @@ class ConfigService {
         model: dotenv.env['MODEL_NAME'] ?? 'deepseek/deepseek-chat-v3-0324:free',
         isActive: true,
       );
-      final dir = await getProjectConfigDir();
+      final dir = await getProjectConfigDir(context: context);
       final file = File(p.join(dir, 'model_default.json'));
       await file.writeAsString(jsonEncode(defaultConfig.toJson()));
-      await saveModelConfigs([defaultConfig]);
+      await saveModelConfigs([defaultConfig], context: context);
     }
   }
 
@@ -79,17 +84,24 @@ class ConfigService {
     }
   }
 
-  // 统一获取项目根目录下 config 目录
-  static Future<String> getProjectConfigDir() async {
-    final dir = Directory(p.join(Directory.current.path, 'config'));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
+  // 统一获取应用私有目录下 config 目录
+  static Future<String> getProjectConfigDir({BuildContext? context}) async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final configDir = Directory(p.join(appDocDir.path, 'config'));
+    if (!await configDir.exists()) {
+      await configDir.create(recursive: true);
     }
-    return dir.path;
+    return configDir.path;
   }
 
   static Future<File> get _projectModelConfigFile async {
     final dir = await getProjectConfigDir();
+    return File(p.join(dir, _fileName));
+  }
+
+  // 支持 context 的配置文件获取（用于弹窗提示）
+  static Future<File> getProjectModelConfigFileWithContext(BuildContext context) async {
+    final dir = await getProjectConfigDir(context: context);
     return File(p.join(dir, _fileName));
   }
 }

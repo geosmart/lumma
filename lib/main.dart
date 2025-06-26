@@ -38,26 +38,9 @@ void main() async {
   } else {
     print('[lumma][警告] 未加载到任何 .env 文件，强制使用正式配置');
   }
-  await ConfigService.ensureDefaultConfig();
-  print('[lumma] ensureDefaultConfig 完成');
-  // 检查并弹窗选择存储目录
-  String? diaryDir = await StorageService.getUserDiaryDir();
-  print('[lumma] 当前存储目录: $diaryDir');
-  if (diaryDir == null) {
-    diaryDir = await _pickDiaryDir();
-    print('[lumma] 用户选择目录: $diaryDir');
-    if (diaryDir != null) {
-      await StorageService.setUserDiaryDir(diaryDir);
-      print('[lumma] 存储目录已保存');
-    }
-  }
+  // 不做任何文件/目录操作，直接进入主页
   print('[lumma] runApp...');
   runApp(const MyApp());
-}
-
-Future<String?> _pickDiaryDir() async {
-  final result = await FilePicker.platform.getDirectoryPath(dialogTitle: '请选择日记存储目录');
-  return result;
 }
 
 class MyApp extends StatelessWidget {

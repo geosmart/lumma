@@ -1,19 +1,9 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'storage_service.dart';
 import 'package:flutter/material.dart';
 
 class MarkdownService {
   static Future<String> getDiaryDir() async {
-    final userDir = await StorageService.getUserDiaryDir();
-    if (userDir != null) {
-      final diaryDir = Directory('$userDir/diary');
-      if (!await diaryDir.exists()) {
-        await diaryDir.create(recursive: true);
-      }
-      return diaryDir.path;
-    }
-    // 兜底：无用户目录则用应用私有目录
     final dir = await getApplicationDocumentsDirectory();
     final diaryDir = Directory('${dir.path}/data/diary');
     if (!await diaryDir.exists()) {

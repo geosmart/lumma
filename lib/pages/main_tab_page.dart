@@ -5,6 +5,8 @@ import 'settings_page.dart';
 import '../widgets/diary_file_manager.dart';
 import '../services/diary_mode_config_service.dart';
 import '../services/diary_qa_title_service.dart';
+import '../services/storage_service.dart';
+import 'package:file_picker/file_picker.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -14,6 +16,12 @@ class MainTabPage extends StatefulWidget {
 }
 
 class _MainTabPageState extends State<MainTabPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 不再检查或引导目录，直接加载
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -26,6 +34,7 @@ class _MainTabPageState extends State<MainTabPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 直接渲染主界面，无需等待 _ready
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lumma日记'),
