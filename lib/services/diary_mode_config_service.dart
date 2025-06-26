@@ -17,19 +17,19 @@ class DiaryModeConfigService {
     return File(p.join(path, _fileName));
   }
 
-  static Future<int> loadDiaryMode() async {
+  static Future<String> loadDiaryMode() async {
     final file = await _configFile;
     if (await file.exists()) {
       final content = await file.readAsString();
       if (content.isNotEmpty) {
         final map = jsonDecode(content);
-        return map['mode'] ?? 0;
+        return map['mode'] ?? 'qa';
       }
     }
-    return 0; // 默认固定问答
+    return 'qa'; // 默认固定问答
   }
 
-  static Future<void> saveDiaryMode(int mode) async {
+  static Future<void> saveDiaryMode(String mode) async {
     final file = await _configFile;
     await file.writeAsString(jsonEncode({'mode': mode}));
   }

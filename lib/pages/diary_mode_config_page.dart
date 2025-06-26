@@ -9,8 +9,8 @@ class DiaryModeConfigPage extends StatefulWidget {
 }
 
 class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
-  // 0: 固定问答，1: AI问答
-  int _mode = 0;
+  // 'qa': 固定问答，'chat': AI问答
+  String _mode = 'qa';
   bool _loading = true;
 
   @override
@@ -22,12 +22,12 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
   Future<void> _loadMode() async {
     final mode = await DiaryModeConfigService.loadDiaryMode();
     setState(() {
-      _mode = mode;
+      _mode = mode.toString();
       _loading = false;
     });
   }
 
-  Future<void> _setMode(int mode) async {
+  Future<void> _setMode(String mode) async {
     setState(() {
       _mode = mode;
     });
@@ -50,24 +50,24 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: ListTile(
             leading: Icon(
-              _mode == 0 ? Icons.check_circle : Icons.circle_outlined,
-              color: _mode == 0 ? Colors.green : null,
+              _mode == 'qa' ? Icons.check_circle : Icons.circle_outlined,
+              color: _mode == 'qa' ? Colors.green : null,
             ),
             title: const Text('固定问答（结构化引导）'),
             subtitle: const Text('逐条回答预设问题，适合新手或需要结构化梳理时'),
-            onTap: () => _setMode(0),
+            onTap: () => _setMode('qa'),
           ),
         ),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: ListTile(
             leading: Icon(
-              _mode == 1 ? Icons.check_circle : Icons.circle_outlined,
-              color: _mode == 1 ? Colors.green : null,
+              _mode == 'chat' ? Icons.check_circle : Icons.circle_outlined,
+              color: _mode == 'chat' ? Colors.green : null,
             ),
             title: const Text('AI问答（自由对话）'),
             subtitle: const Text('与AI自由对话，适合有经验用户或灵活记录'),
-            onTap: () => _setMode(1),
+            onTap: () => _setMode('chat'),
           ),
         ),
       ],

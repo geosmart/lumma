@@ -3,6 +3,8 @@ import 'diary_qa_page.dart';
 import 'diary_chat_page.dart';
 import 'settings_page.dart';
 import '../widgets/diary_file_manager.dart';
+import '../services/diary_mode_config_service.dart';
+import '../services/diary_qa_title_service.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -12,6 +14,16 @@ class MainTabPage extends StatefulWidget {
 }
 
 class _MainTabPageState extends State<MainTabPage> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 监听设置页返回后刷新
+    ModalRoute.of(context)?.addScopedWillPopCallback(() async {
+      setState(() {});
+      return true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,41 +40,43 @@ class _MainTabPageState extends State<MainTabPage> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const DiaryQaPage()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[50],
-                      foregroundColor: Colors.blue,
+          // 只显示一个主按钮，根据模式进入对应页面
+          FutureBuilder<String>(
+            future: DiaryModeConfigService.loadDiaryMode(),
+            builder: (context, snapshot) {
+              final mode = snapshot.data ?? 'qa';
+              return FutureBuilder<String>(
+                future: getDiaryQaTitle(),
+                builder: (context, titleSnap) {
+                  final btnTitle = titleSnap.data ?? '';
+                  final btnColor = mode == 'qa' ? Colors.blue[50] : Colors.green[50];
+                  final btnFg = mode == 'qa' ? Colors.blue : Colors.green;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => mode == 'qa' ? const DiaryQaPage() : const DiaryChatPage(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: btnColor,
+                              foregroundColor: btnFg,
+                            ),
+                            child: Text(btnTitle),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Text('本地问答日记'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const DiaryChatPage()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[50],
-                      foregroundColor: Colors.green,
-                    ),
-                    child: const Text('AI问答日记'),
-                  ),
-                ),
-              ],
-            ),
+                  );
+                },
+              );
+            },
           ),
           const Divider(height: 1),
           Expanded(
