@@ -21,7 +21,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     super.initState();
     _initDefaultPrompt();
     _loadPrompts();
-    _loadActivePrompts();
+    _loadActivePrompt();
   }
 
   Future<void> _initDefaultPrompt() async {
@@ -40,10 +40,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     }
   }
 
-  Future<void> _loadActivePrompts() async {
-    final map = await PromptService.getAllActivePromptFileNames();
+  Future<void> _loadActivePrompt() async {
+    // 获取当前激活 prompt 文件名
+    final file = await PromptService.getActivePromptFile(_activeCategory);
     setState(() {
-      _activePrompt = map;
+      _activePrompt = {_activeCategory: file?.path};
     });
   }
 
@@ -81,6 +82,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     final ctrl = TextEditingController(text: content);
     final nameCtrl = TextEditingController(text: file?.path.split('/').last.replaceAll('.md', '') ?? '');
     String selectedCategory = meta['type'] ?? _activeCategory;
+    bool isActive = meta['active'] == true || meta['active'] == 'true';
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -108,6 +110,19 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
               decoration: const InputDecoration(labelText: '分类'),
             ),
             const SizedBox(height: 8),
+            Row(
+              children: [
+                Checkbox(
+                  value: isActive,
+                  onChanged: isSystem
+                      ? null
+                      : (v) {
+                          isActive = v ?? false;
+                        },
+                ),
+                const Text('设为激活'),
+              ],
+            ),
             TextField(
               controller: ctrl,
               maxLines: 12,
@@ -130,7 +145,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                   type: selectedCategory,
                   oldFileName: file?.path.split('/').last,
                 );
+                if (isActive) {
+                  await PromptService.setActivePrompt(selectedCategory, '$name.md');
+                }
                 await _loadPrompts();
+                await _loadActivePrompt();
                 // ignore: use_build_context_synchronously
                 Navigator.of(ctx).pop();
               },
@@ -149,6 +168,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     }
     await PromptService.deletePrompt(name);
     await _loadPrompts();
+    await _loadActivePrompt();
   }
 
   @override
@@ -214,8 +234,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                   color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
                                 ),
                                 onPressed: () async {
-                                  await PromptService.setActivePrompt(_activeCategory, file.path);
-                                  await _loadActivePrompts();
+                                  // 需要传文件名，不是全路径
+                                  final fileName = file.path.split('/').last;
+                                  await PromptService.setActivePrompt(_activeCategory, fileName);
+                                  await _loadActivePrompt();
+                                  setState(() {}); // 强制刷新UI
                                 },
                                 tooltip: '设为激活',
                               ),

@@ -17,10 +17,10 @@ class AiService {
     }
     for (final h in history) {
       if (h['q'] != null && h['q']!.isNotEmpty) {
-        messages.add({'role': 'assistant', 'content': h['q']!});
+        messages.add({'role': 'user', 'content': h['q']!});
       }
       if (h['a'] != null && h['a']!.isNotEmpty) {
-        messages.add({'role': 'user', 'content': h['a']!});
+        messages.add({'role': 'assistant', 'content': h['a']!});
       }
     }
     if (userInput != null && userInput.isNotEmpty) {
@@ -153,17 +153,25 @@ class AiService {
     final activeConfigs = await ConfigService.loadModelConfigs();
     final active = activeConfigs.firstWhere((e) => e.isActive, orElse: () => activeConfigs.first);
     final url = Uri.parse('${active.baseUrl}/chat/completions');
+    List<Map<String, String>> messages;
+    // 只要 injectSystemPrompt==true，就强制注入 system prompt
     final systemPrompt = await PromptService.getActivePromptContent('qa');
-    final messages = <Map<String, String>>[];
-    if (injectSystemPrompt && systemPrompt != null && systemPrompt.trim().isNotEmpty && history.isEmpty) {
+    print('[AI-DEBUG] 当前系统提示词: ${systemPrompt ?? "<null>"}');
+    messages = <Map<String, String>>[];
+    if (injectSystemPrompt && systemPrompt != null && systemPrompt.trim().isNotEmpty) {
       messages.add({'role': 'system', 'content': systemPrompt.trim()});
     }
-    for (final h in history) {
-      if (h['q'] != null && h['q']!.isNotEmpty) {
-        messages.add({'role': 'user', 'content': h['q']!});
-      }
-      if (h['a'] != null && h['a']!.isNotEmpty) {
-        messages.add({'role': 'assistant', 'content': h['a']!});
+    // 兼容 q/a 结构和 role/content 结构
+    if (history.isNotEmpty && history.first.containsKey('role') && history.first.containsKey('content')) {
+      messages.addAll(history);
+    } else {
+      for (final h in history) {
+        if (h['q'] != null && h['q']!.isNotEmpty) {
+          messages.add({'role': 'user', 'content': h['q']!});
+        }
+        if (h['a'] != null && h['a']!.isNotEmpty) {
+          messages.add({'role': 'assistant', 'content': h['a']!});
+        }
       }
     }
     if (userInput.isNotEmpty) {
@@ -178,6 +186,8 @@ class AiService {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ${active.apiKey}',
     };
+    // 日志打印
+    print('[AI-DEBUG] 请求参数: ${jsonEncode(body)}');
     return {
       'url': url.toString(),
       'headers': headers,

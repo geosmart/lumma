@@ -25,24 +25,15 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   String _askStreaming = '';
   final ScrollController _scrollController = ScrollController();
   String? _lastRequestJson;
-  String? _qaPromptContent;
 
   @override
   void initState() {
     super.initState();
-    _loadQaPrompt();
     _ctrl.text = '现在开始我们的对话';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_history.isEmpty) {
         _sendAnswer();
       }
-    });
-  }
-
-  Future<void> _loadQaPrompt() async {
-    final content = await PromptService.getActivePromptContent('qa');
-    setState(() {
-      _qaPromptContent = content;
     });
   }
 
@@ -65,11 +56,11 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       history: historyWindow,
       userInput: userInput,
       stream: true,
-      injectSystemPrompt: _history.isEmpty,
+      injectSystemPrompt: true,
     );
     final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
     setState(() {
-      _lastRequestJson = '```json\n$prettyJson\n```';
+      _lastRequestJson = '```bash\n$prettyJson\n```';
     });
     await AiService.askStream(
       history: historyWindow,
@@ -95,11 +86,11 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             history: ChatHistoryService.getRecent(_history),
             userInput: '',
             stream: true,
-            injectSystemPrompt: _history.isEmpty,
+            injectSystemPrompt: true,
           );
           final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
           setState(() {
-            _lastRequestJson = '```json\n$prettyJson\n```';
+            _lastRequestJson = '```bash\n$prettyJson\n```';
           });
           _scrollToBottom();
         }

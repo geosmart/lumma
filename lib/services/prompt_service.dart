@@ -9,13 +9,6 @@ class PromptService {
     'qa', 'correction', 'summary', 'markdown'
   ];
 
-  static const Map<String, String> _activePromptFiles = {
-    'qa': 'active_qa.txt',
-    'correction': 'active_correction.txt',
-    'summary': 'active_summary.txt',
-    'markdown': 'active_markdown.txt',
-  };
-
   static Future<String> get _promptDir async {
     final dir = await getApplicationDocumentsDirectory();
     final promptDir = Directory(p.join(dir.path, 'config', 'prompt'));
@@ -121,59 +114,38 @@ class PromptService {
     return content.replaceFirst(reg, '').trimLeft();
   }
 
-  /// 获取指定类型的激活 prompt 文件名
-  static Future<String?> getActivePromptFileName(String type) async {
-    final dir = await _promptDir;
-    final file = File('$dir/${_activePromptFiles[type] ?? 'active_qa.txt'}');
-    if (await file.exists()) {
-      return await file.readAsString();
+  /// 获取指定类型的激活 prompt 文件（frontmatter active=true）
+  static Future<File?> getActivePromptFile(String type) async {
+    final prompts = await listPrompts(type: type);
+    for (final f in prompts) {
+      final fm = await getPromptFrontmatter(File(f.path));
+      if (fm['active'] == true || fm['active'] == 'true') return File(f.path);
     }
     return null;
-  }
-
-  /// 设置指定类型的激活 prompt
-  static Future<void> setActivePrompt(String type, String fileName, {BuildContext? context}) async {
-    try {
-      final dir = await _promptDir;
-      final file = File('$dir/${_activePromptFiles[type] ?? 'active_qa.txt'}');
-      await file.writeAsString(fileName);
-    } catch (e) {
-      if (context != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存激活提示词失败: \n${e.toString()}')),
-        );
-      }
-      rethrow;
-    }
   }
 
   /// 获取指定类型的激活 prompt 内容
   static Future<String?> getActivePromptContent(String type) async {
+    final file = await getActivePromptFile(type);
+    if (file == null) return null;
+    final content = await file.readAsString();
+    return _stripFrontmatter(content);
+  }
+
+  /// 设置指定类型的激活 prompt（将所有同类active=false，目标active=true）
+  static Future<void> setActivePrompt(String type, String fileName, {BuildContext? context}) async {
     final dir = await _promptDir;
-    final name = await getActivePromptFileName(type);
-    if (name == null) return null;
-    final file = File('$dir/$name');
-    if (await file.exists()) {
-      return await file.readAsString();
+    final prompts = await listPrompts(type: type);
+    for (final f in prompts) {
+      final file = File(f.path);
+      final fm = await getPromptFrontmatter(file);
+      final content = await file.readAsString();
+      final body = _stripFrontmatter(content);
+      final isTarget = p.basename(f.path) == fileName;
+      final newFm = Map<String, dynamic>.from(fm);
+      newFm['active'] = isTarget;
+      final fmStr = _frontmatterToString(newFm);
+      await file.writeAsString('$fmStr\n$body');
     }
-    return null;
-  }
-
-  /// 获取所有类型的激活 prompt 文件名
-  static Future<Map<String, String?>> getAllActivePromptFileNames() async {
-    final result = <String, String?>{};
-    for (final type in promptTypes) {
-      result[type] = await getActivePromptFileName(type);
-    }
-    return result;
-  }
-
-  /// 获取所有类型的激活 prompt 内容
-  static Future<Map<String, String?>> getAllActivePromptContents() async {
-    final result = <String, String?>{};
-    for (final type in promptTypes) {
-      result[type] = await getActivePromptContent(type);
-    }
-    return result;
   }
 }
