@@ -264,23 +264,12 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                               ),
                           ],
                         ),
-                        onTap: () {
-                          if (widget.onFileSelected != null) {
-                            widget.onFileSelected!(f);
-                          } else {
-                            _editFile(f);
-                          }
-                        },
+                        onTap: () => _editFile(f), // 直接进入编辑详情
                         trailing: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 80),
+                          constraints: const BoxConstraints(maxWidth: 40), // 只保留删除按钮
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                tooltip: '编辑',
-                                onPressed: () => _editFile(f),
-                              ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),
                                 tooltip: '删除',
