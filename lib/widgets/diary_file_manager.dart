@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/markdown_service.dart';
+import '../services/diary_frontmatter_util.dart';
 
 /// 日记文件管理组件，集成列表、增删改查、编辑、选择等全部逻辑
 class DiaryFileManager extends StatefulWidget {
@@ -29,8 +30,21 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     setState(() => _loading = true);
     try {
       final files = await MarkdownService.listDiaryFiles();
+      // 按 frontmatter 的 created 字段降序排序
+      final filesWithCreated = await Future.wait(files.map((f) async {
+        final dt = await getDiaryCreatedTime(f);
+        return {'file': f, 'created': dt};
+      }));
+      filesWithCreated.sort((a, b) {
+        final adt = a['created'] as DateTime?;
+        final bdt = b['created'] as DateTime?;
+        if (adt == null && bdt == null) return 0;
+        if (adt == null) return 1;
+        if (bdt == null) return -1;
+        return bdt.compareTo(adt); // 降序
+      });
       setState(() {
-        _files = files;
+        _files = filesWithCreated.map((e) => e['file'] as String).toList();
         _loading = false;
       });
     } catch (e) {
@@ -55,6 +69,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     if (await f.exists()) {
       _editCtrl.text = await f.readAsString();
     }
+    final nameCtrl = TextEditingController(text: file);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -65,13 +80,22 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: _editCtrl,
-                maxLines: 12,
-                decoration: InputDecoration(
-                  labelText: file,
-                  border: const OutlineInputBorder(),
-                ),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(labelText: '文件名'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _editCtrl,
+                    maxLines: 12,
+                    decoration: InputDecoration(
+                      labelText: file,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
@@ -86,13 +110,19 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                           ? null
                           : () async {
                               setState(() => _saving = true);
+                              final newName = nameCtrl.text.trim();
                               final diaryDir = await MarkdownService.getDiaryDir();
-                              final f = File('$diaryDir/$file');
-                              await f.writeAsString(_editCtrl.text);
+                              final oldFile = File('$diaryDir/$file');
+                              final newFile = File('$diaryDir/$newName');
+                              await oldFile.writeAsString(_editCtrl.text);
+                              if (newName != file && newName.isNotEmpty) {
+                                await oldFile.rename(newFile.path);
+                              }
                               setState(() => _saving = false);
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('保存成功')));
                                 Navigator.of(ctx).pop();
+                                await _loadFiles();
                               }
                             },
                     ),
@@ -184,7 +214,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
       children: [
         Row(
           children: [
-            const Text('日记文件', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('日记列表', style: TextStyle(fontWeight: FontWeight.bold)),
             const Spacer(),
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -202,36 +232,68 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           const Center(child: CircularProgressIndicator()),
         if (!_loading)
           Expanded(
-            child: ListView.builder(
-              itemCount: _files.length,
-              itemBuilder: (ctx, i) {
-                final f = _files[i];
-                return ListTile(
-                  title: Text(f),
-                  onTap: () {
-                    if (widget.onFileSelected != null) {
-                      widget.onFileSelected!(f);
-                    } else {
-                      _editFile(f);
-                    }
-                  },
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        tooltip: '编辑',
-                        onPressed: () => _editFile(f),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        tooltip: '删除',
-                        onPressed: () => _deleteFile(f),
-                      ),
-                    ],
-                  ),
-                );
-              },
+            child: Scrollbar(
+              thumbVisibility: true,
+              child: ListView.builder(
+                primary: true, // 关键修复：让 ListView 绑定 PrimaryScrollController，避免移动端报错
+                itemCount: _files.length,
+                itemBuilder: (ctx, i) {
+                  final f = _files[i];
+                  return FutureBuilder<DateTime?>(
+                    future: getDiaryCreatedTime(f),
+                    builder: (context, snapshot) {
+                      final dt = snapshot.data;
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              f,
+                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            if (dt != null)
+                              Text(
+                                '${dt.month}月${dt.day}日  ${dt.hour.toString().padLeft(2, '0')}时${dt.minute.toString().padLeft(2, '0')}分',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                          ],
+                        ),
+                        onTap: () {
+                          if (widget.onFileSelected != null) {
+                            widget.onFileSelected!(f);
+                          } else {
+                            _editFile(f);
+                          }
+                        },
+                        trailing: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 80),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                tooltip: '编辑',
+                                onPressed: () => _editFile(f),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                tooltip: '删除',
+                                onPressed: () => _deleteFile(f),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
       ],

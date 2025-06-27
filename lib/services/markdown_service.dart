@@ -24,7 +24,7 @@ class MarkdownService {
         // 默认用未命名+时间戳
         final now = DateTime.now();
         final nowStr = now.toIso8601String().substring(0,19).replaceAll('T', 'T');
-        file = File('$diaryDir/未命名日记_${nowStr.replaceAll(RegExp(r"[\-:T]"), "")}.md');
+        file = File('$diaryDir/${nowStr.replaceAll(RegExp(r"[\-:T]"), "")}.md');
       }
       final now = DateTime.now();
       final newContent = FrontmatterService.upsert(content, updated: now);

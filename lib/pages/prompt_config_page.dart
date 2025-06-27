@@ -22,6 +22,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     _initDefaultPrompt();
     _loadPrompts();
     _loadActivePrompt();
+    _printPromptDir();
   }
 
   Future<void> _initDefaultPrompt() async {
@@ -30,7 +31,14 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     if (!files.any((f) => f.path.split('/').last == defaultName)) {
       final dir = await PromptService.getPromptDir();
       final f = File('$dir/$defaultName');
-      await f.writeAsString('''你是一个专业、灵活的“AI 日记伙伴”。你的核心任务是倾听我用自然语言（通常是语音输入）自由地讲述今天发生的事情和感受，并智能地将这些零散的信息整理成一份结构化的日记。
+      final now = DateTime.now().toIso8601String();
+      await f.writeAsString('''---
+type: qa
+created: $now
+updated: $now
+active: true
+---
+你是一个专业、灵活的“AI 日记伙伴”。你的核心任务是倾听我用自然语言（通常是语音输入）自由地讲述今天发生的事情和感受，并智能地将这些零散的信息整理成一份结构化的日记。
 
 #### 核心能力
 1. 自动纠错：你能自动识别并修正我语音输入时产生的错别字、同音字和语法错误，理解口语化的表达。
@@ -171,6 +179,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     await _loadActivePrompt();
   }
 
+  Future<void> _printPromptDir() async {
+    final dir = await PromptService.getPromptDir();
+    print('[PromptConfigPage] 当前日记prompt存储目录: $dir');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -179,19 +192,23 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              for (final entry in _categoryNames.entries)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ChoiceChip(
-                    label: Text(entry.value),
-                    selected: _activeCategory == entry.key,
-                    onSelected: (v) {
-                      setState(() {
-                        _activeCategory = entry.key;
-                      });
-                    },
-                  ),
+              Expanded(
+                child: Wrap(
+                  spacing: 8,
+                  children: [
+                    for (final entry in _categoryNames.entries)
+                      ChoiceChip(
+                        label: Text(entry.value),
+                        selected: _activeCategory == entry.key,
+                        onSelected: (v) {
+                          setState(() {
+                            _activeCategory = entry.key;
+                          });
+                        },
+                      ),
+                  ],
                 ),
+              ),
             ],
           ),
         ),
@@ -208,44 +225,51 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                     itemBuilder: (ctx, i) {
                       final file = filtered[i];
                       final name = file.path.split('/').last;
-                      return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        child: ListTile(
-                          leading: const Icon(Icons.chat_bubble_outline),
-                          title: Text(name),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => _showPrompt(file),
-                                tooltip: '编辑',
+                      return FutureBuilder<Map<String, dynamic>>(
+                        future: PromptService.getPromptFrontmatter(File(file.path)),
+                        builder: (context, snapshot) {
+                          final meta = snapshot.data ?? {};
+                          String title = name;
+                          // 只显示文件名，不再格式化为日期
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: ListTile(
+                              leading: const Icon(Icons.chat_bubble_outline),
+                              title: Text(title),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => _showPrompt(file),
+                                    tooltip: '编辑',
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _deletePrompt(file),
+                                    tooltip: '删除',
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      _activePrompt[_activeCategory] == file.path
+                                          ? Icons.check_circle
+                                          : Icons.circle_outlined,
+                                      color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
+                                    ),
+                                    onPressed: () async {
+                                      final fileName = file.path.split('/').last;
+                                      await PromptService.setActivePrompt(_activeCategory, fileName);
+                                      await _loadActivePrompt();
+                                      setState(() {});
+                                    },
+                                    tooltip: '设为激活',
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _deletePrompt(file),
-                                tooltip: '删除',
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  _activePrompt[_activeCategory] == file.path
-                                      ? Icons.check_circle
-                                      : Icons.circle_outlined,
-                                  color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
-                                ),
-                                onPressed: () async {
-                                  // 需要传文件名，不是全路径
-                                  final fileName = file.path.split('/').last;
-                                  await PromptService.setActivePrompt(_activeCategory, fileName);
-                                  await _loadActivePrompt();
-                                  setState(() {}); // 强制刷新UI
-                                },
-                                tooltip: '设为激活',
-                              ),
-                            ],
-                          ),
-                          onTap: () => _showPrompt(file),
-                        ),
+                              onTap: () => _showPrompt(file),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
