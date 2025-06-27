@@ -149,10 +149,24 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
       ),
     );
     if (fileName != null && fileName.isNotEmpty) {
-      await MarkdownService.createDiaryFile(fileName);
-      await _loadFiles();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('新建成功')));
+      try {
+        await MarkdownService.createDiaryFile(fileName);
+        final diaryDir = await MarkdownService.getDiaryDir();
+        final file = File('$diaryDir/$fileName');
+        if (await file.exists()) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('新建成功')));
+          }
+          await _loadFiles();
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('新建失败，文件未创建')));
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('新建失败: \n${e.toString()}')));
+        }
       }
     }
   }
@@ -172,6 +186,11 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           children: [
             const Text('日记文件', style: TextStyle(fontWeight: FontWeight.bold)),
             const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: '刷新列表',
+              onPressed: _loadFiles,
+            ),
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: '新建日记',

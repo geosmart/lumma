@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
+import 'frontmatter_service.dart';
 
 class MarkdownService {
   static Future<String> getDiaryDir() async {
@@ -12,12 +13,22 @@ class MarkdownService {
     return diaryDir.path;
   }
 
-  static Future<File> saveDiaryMarkdown(String content, {BuildContext? context}) async {
+  /// 保存日记内容，自动更新 frontmatter 的 updated 字段
+  static Future<File> saveDiaryMarkdown(String content, {BuildContext? context, String? fileName}) async {
     try {
       final diaryDir = await getDiaryDir();
+      File file;
+      if (fileName != null && fileName.isNotEmpty) {
+        file = File('$diaryDir/$fileName');
+      } else {
+        // 默认用未命名+时间戳
+        final now = DateTime.now();
+        final nowStr = now.toIso8601String().substring(0,19).replaceAll('T', 'T');
+        file = File('$diaryDir/未命名日记_${nowStr.replaceAll(RegExp(r"[\-:T]"), "")}.md');
+      }
       final now = DateTime.now();
-      final file = File('$diaryDir/diary_${now.toIso8601String().replaceAll(':', '').replaceAll('.', '').replaceAll('-', '').substring(0,15)}.md');
-      await file.writeAsString(content);
+      final newContent = FrontmatterService.upsert(content, updated: now);
+      await file.writeAsString(newContent);
       return file;
     } catch (e) {
       if (context != null) {
@@ -38,14 +49,14 @@ class MarkdownService {
     return await file.readAsString();
   }
 
-  /// 获取所有日记文件名（不含路径）
+  /// 获取所有日记文件名（不含路径），按创建时间desc排列（文件名自带时间戳）
   static Future<List<String>> listDiaryFiles() async {
     final diaryDir = await getDiaryDir();
     final files = Directory(diaryDir)
         .listSync()
         .where((f) => f.path.endsWith('.md'))
         .toList();
-    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    files.sort((a, b) => b.uri.pathSegments.last.compareTo(a.uri.pathSegments.last));
     return files.map((f) => f.uri.pathSegments.last).toList();
   }
 
@@ -58,12 +69,22 @@ class MarkdownService {
     }
   }
 
-  /// 新建空日记文件
+  /// 新建空日记文件，写入 frontmatter（created/updated）
   static Future<void> createDiaryFile(String fileName) async {
     final diaryDir = await getDiaryDir();
     final file = File('$diaryDir/$fileName');
     if (!await file.exists()) {
-      await file.writeAsString('');
+      final now = DateTime.now();
+      final frontmatter = FrontmatterService.generate(created: now, updated: now) + '\n';
+      await file.writeAsString(frontmatter);
+    } else {
+      // 如果文件已存在但内容为空或无frontmatter，也补充frontmatter
+      final content = await file.readAsString();
+      if (!content.trim().startsWith('---')) {
+        final now = DateTime.now();
+        final frontmatter = FrontmatterService.generate(created: now, updated: now) + '\n';
+        await file.writeAsString(frontmatter + content);
+      }
     }
   }
 }

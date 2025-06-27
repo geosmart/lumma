@@ -95,7 +95,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       await MarkdownService.saveDiaryMarkdown(content.toString());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true); // 保存后返回并通知刷新
       }
     } catch (e) {
       if (mounted) {
@@ -297,8 +297,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   }
 
   void _onSubmit() {
-    final answer = _ctrl.text.trim();
-    if (answer.isEmpty) return;
+    final answer = _ctrl.text.trim().isEmpty ? '无' : _ctrl.text.trim();
     setState(() {
       _answers.add(answer);
       _ctrl.clear();
@@ -360,7 +359,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       await MarkdownService.saveDiaryMarkdown(content.toString());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true); // 保存后返回并通知刷新
       }
     } catch (e) {
       if (mounted) {

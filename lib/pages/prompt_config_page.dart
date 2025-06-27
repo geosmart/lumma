@@ -11,13 +11,17 @@ class PromptConfigPage extends StatefulWidget {
 
 class _PromptConfigPageState extends State<PromptConfigPage> {
   List<FileSystemEntity> _prompts = [];
+  List<FileSystemEntity> _allPrompts = [];
   bool _loading = true;
+  String _activeCategory = 'qa';
+  Map<String, String?> _activePrompt = {};
 
   @override
   void initState() {
     super.initState();
     _initDefaultPrompt();
     _loadPrompts();
+    _loadActivePrompts();
   }
 
   Future<void> _initDefaultPrompt() async {
@@ -36,19 +40,47 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     }
   }
 
+  Future<void> _loadActivePrompts() async {
+    final map = await PromptService.getAllActivePromptFileNames();
+    setState(() {
+      _activePrompt = map;
+    });
+  }
+
   Future<void> _loadPrompts() async {
     final files = await PromptService.listPrompts();
+    _allPrompts = files;
     setState(() {
       _prompts = files;
       _loading = false;
     });
   }
 
+  Future<List<FileSystemEntity>> _filteredPrompts() async {
+    List<FileSystemEntity> result = [];
+    for (final f in _allPrompts) {
+      final meta = await PromptService.getPromptFrontmatter(File(f.path));
+      if ((meta['type'] ?? 'qa') == _activeCategory) {
+        result.add(f);
+      }
+    }
+    return result;
+  }
+
+  final Map<String, String> _categoryNames = {
+    'qa': '日记问答',
+    'correction': '纠错',
+    'summary': '总结',
+    'markdown': 'markdown格式化',
+  };
+
   void _showPrompt(FileSystemEntity? file) async {
     final isSystem = file?.path.split('/').last == '问答AI日记助手.md';
     final content = file == null ? '' : await File(file.path).readAsString();
+    final meta = file == null ? {} : await PromptService.getPromptFrontmatter(File(file.path));
     final ctrl = TextEditingController(text: content);
     final nameCtrl = TextEditingController(text: file?.path.split('/').last.replaceAll('.md', '') ?? '');
+    String selectedCategory = meta['type'] ?? _activeCategory;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -60,6 +92,20 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: '角色名称/文件名'),
               enabled: !isSystem,
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              items: _categoryNames.entries
+                  .map((e) => DropdownMenuItem<String>(
+                        value: e.key,
+                        child: Text(e.value),
+                      ))
+                  .toList(),
+              onChanged: isSystem ? null : (v) {
+                if (v != null) selectedCategory = v;
+              },
+              decoration: const InputDecoration(labelText: '分类'),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -78,7 +124,12 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                 final userDir = await PromptService.getPromptDir();
                 final name = nameCtrl.text.trim().isEmpty ? 'prompt_${DateTime.now().millisecondsSinceEpoch}' : nameCtrl.text.trim();
                 final f = File('$userDir/$name.md');
-                await f.writeAsString(ctrl.text);
+                await PromptService.savePrompt(
+                  fileName: '$name.md',
+                  content: ctrl.text,
+                  type: selectedCategory,
+                  oldFileName: file?.path.split('/').last,
+                );
                 await _loadPrompts();
                 // ignore: use_build_context_synchronously
                 Navigator.of(ctx).pop();
@@ -96,56 +147,101 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('系统提示词不可删除')));
       return;
     }
-    await File(file.path).delete();
+    await PromptService.deletePrompt(name);
     await _loadPrompts();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
       children: [
-        ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _prompts.length,
-          itemBuilder: (ctx, i) {
-            final file = _prompts[i];
-            final name = file.path.split('/').last;
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: ListTile(
-                leading: const Icon(Icons.chat_bubble_outline),
-                title: Text(name),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _showPrompt(file),
-                      tooltip: '编辑',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _deletePrompt(file),
-                      tooltip: '删除',
-                    ),
-                  ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              for (final entry in _categoryNames.entries)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ChoiceChip(
+                    label: Text(entry.value),
+                    selected: _activeCategory == entry.key,
+                    onSelected: (v) {
+                      setState(() {
+                        _activeCategory = entry.key;
+                      });
+                    },
+                  ),
                 ),
-                onTap: () => _showPrompt(file),
-              ),
-            );
-          },
+            ],
+          ),
         ),
-        Positioned(
-          bottom: 24,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: FloatingActionButton(
-              heroTag: 'add-prompt',
-              onPressed: () => _showPrompt(null),
-              child: const Icon(Icons.add, size: 28),
-              tooltip: '添加提示词',
-            ),
+        Expanded(
+          child: FutureBuilder<List<FileSystemEntity>>(
+            future: _filteredPrompts(),
+            builder: (context, snapshot) {
+              final filtered = snapshot.data ?? [];
+              return Stack(
+                children: [
+                  ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filtered.length,
+                    itemBuilder: (ctx, i) {
+                      final file = filtered[i];
+                      final name = file.path.split('/').last;
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: ListTile(
+                          leading: const Icon(Icons.chat_bubble_outline),
+                          title: Text(name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _showPrompt(file),
+                                tooltip: '编辑',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _deletePrompt(file),
+                                tooltip: '删除',
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  _activePrompt[_activeCategory] == file.path
+                                      ? Icons.check_circle
+                                      : Icons.circle_outlined,
+                                  color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
+                                ),
+                                onPressed: () async {
+                                  await PromptService.setActivePrompt(_activeCategory, file.path);
+                                  await _loadActivePrompts();
+                                },
+                                tooltip: '设为激活',
+                              ),
+                            ],
+                          ),
+                          onTap: () => _showPrompt(file),
+                        ),
+                      );
+                    },
+                  ),
+                  Positioned(
+                    bottom: 24,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: FloatingActionButton(
+                        heroTag: 'add-prompt',
+                        onPressed: () => _showPrompt(null),
+                        child: const Icon(Icons.add, size: 28),
+                        tooltip: '添加提示词',
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],

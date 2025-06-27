@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'dart:io';
 import '../services/markdown_service.dart';
 import '../widgets/enhanced_markdown.dart';
 import '../services/ai_service.dart';
 import '../services/chat_history_service.dart';
 import 'diary_file_list_page.dart';
 import '../services/diary_qa_title_service.dart';
+import '../services/prompt_service.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -23,15 +25,24 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   String _askStreaming = '';
   final ScrollController _scrollController = ScrollController();
   String? _lastRequestJson;
+  String? _qaPromptContent;
 
   @override
   void initState() {
     super.initState();
+    _loadQaPrompt();
     _ctrl.text = '现在开始我们的对话';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_history.isEmpty) {
         _sendAnswer();
       }
+    });
+  }
+
+  Future<void> _loadQaPrompt() async {
+    final content = await PromptService.getActivePromptContent('qa');
+    setState(() {
+      _qaPromptContent = content;
     });
   }
 
@@ -335,6 +346,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                   await MarkdownService.saveDiaryMarkdown(content);
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
+                                    Navigator.of(context).pop(true); // 保存后返回并通知刷新
                                   }
                                 } catch (e) {
                                   if (mounted) {
@@ -402,7 +414,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 minLines: 1,
                                 maxLines: 4,
                                 onSubmitted: (_) => _sendAnswer(),
-                                enabled: !_asking && _summary == null,
+                                enabled: _summary == null,
                               ),
                             ),
                           ),

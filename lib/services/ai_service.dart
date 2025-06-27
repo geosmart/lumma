@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'config_service.dart';
 import 'prompt_service.dart';
@@ -36,7 +37,7 @@ class AiService {
     final configs = await ConfigService.loadModelConfigs();
     final active = configs.firstWhere((e) => e.isActive, orElse: () => configs.first);
     final url = Uri.parse('${active.baseUrl}/chat/completions');
-    final systemPrompt = await PromptService.getActivePromptContent();
+    final systemPrompt = await PromptService.getActivePromptContent('qa');
     final messages = await buildMessages(history: history, systemPrompt: systemPrompt, userInput: userInput);
     final body = jsonEncode({
       'model': active.model,
@@ -67,7 +68,7 @@ class AiService {
     final configs = await ConfigService.loadModelConfigs();
     final active = configs.firstWhere((e) => e.isActive, orElse: () => configs.first);
     final url = Uri.parse('${active.baseUrl}/chat/completions');
-    final systemPrompt = await PromptService.getActivePromptContent();
+    final systemPrompt = await PromptService.getActivePromptContent('qa');
     final messages = await buildMessages(history: history, systemPrompt: systemPrompt, userInput: userInput);
     final body = jsonEncode({
       'model': active.model,
@@ -124,7 +125,7 @@ class AiService {
     required void Function(String) onDone,
     required void Function(Object error)? onError,
   }) async {
-    final systemPrompt = await PromptService.getActivePromptContent();
+    final systemPrompt = await PromptService.getActivePromptContent('qa');
     final messages = <Map<String, String>>[];
     if (systemPrompt != null && systemPrompt.trim().isNotEmpty) {
       messages.add({'role': 'system', 'content': systemPrompt.trim()});
@@ -152,7 +153,7 @@ class AiService {
     final activeConfigs = await ConfigService.loadModelConfigs();
     final active = activeConfigs.firstWhere((e) => e.isActive, orElse: () => activeConfigs.first);
     final url = Uri.parse('${active.baseUrl}/chat/completions');
-    final systemPrompt = await PromptService.getActivePromptContent();
+    final systemPrompt = await PromptService.getActivePromptContent('qa');
     final messages = <Map<String, String>>[];
     if (injectSystemPrompt && systemPrompt != null && systemPrompt.trim().isNotEmpty && history.isEmpty) {
       messages.add({'role': 'system', 'content': systemPrompt.trim()});
