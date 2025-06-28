@@ -24,7 +24,7 @@ class ConfigService {
     if (configs.isEmpty) {
       throw Exception('No model configurations found.');
     }
-    return configs.firstWhere((c) => c.isActive, orElse: () => configs.first);
+    return configs.firstWhere((c) => c.active, orElse: () => configs.first);
   }
 
   static Future<void> saveModelConfigs(List<ModelConfig> configs, {BuildContext? context}) async {
@@ -51,7 +51,7 @@ class ConfigService {
         baseUrl: dotenv.env['MODEL_BASE_URL'] ?? 'https://openrouter.ai/api/v1',
         apiKey: dotenv.env['MODEL_API_KEY'] ?? '替换为你的apikey',
         model: dotenv.env['MODEL_NAME'] ?? 'deepseek/deepseek-chat-v3-0324:free',
-        isActive: true,
+        active: true,
       );
       final dir = await getProjectConfigDir(context: context);
       final file = File(p.join(dir, 'model_default.json'));

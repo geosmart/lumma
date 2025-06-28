@@ -139,15 +139,15 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
       await AiService.askStream(
         messages: messages,
-        onDelta: (buffer) {
+        onDelta: (data) {
           if (mounted) {
-            _aiResultController.text = buffer;
+            _aiResultController.text = data['content'] ?? '';
           }
         },
         onDone: (finalResult) {
           if (mounted) {
             setState(() {
-              _aiResult = finalResult;
+              _aiResult = finalResult['content'] ?? '';
               _isProcessing = false;
             });
           }

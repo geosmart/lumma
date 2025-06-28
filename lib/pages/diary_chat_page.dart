@@ -22,6 +22,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   bool _asking = false;
   bool _askInterrupted = false;
   String _askStreaming = '';
+  String _askStreamingReasoning = '';
   final ScrollController _scrollController = ScrollController();
   String? _lastRequestJson;
 
@@ -40,6 +41,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     setState(() {
       _askInterrupted = true;
       _asking = false;
+      _askStreamingReasoning = '';
     });
   }
 
@@ -48,6 +50,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       _asking = true;
       _askInterrupted = false;
       _askStreaming = '';
+      _askStreamingReasoning = '';
     });
     final userInput = _history.isNotEmpty ? _history.last['q'] ?? '' : _ctrl.text.trim();
     final historyWindow = ChatHistoryService.getRecent(_history);
@@ -69,22 +72,32 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     });
     await AiService.askStream(
       messages: messages,
-      onDelta: (content) {
+      onDelta: (data) {
         if (!_askInterrupted) {
           setState(() {
             if (_history.isNotEmpty) {
-              _history = ChatHistoryService.updateAnswer(_history, _history.length - 1, content);
+              _history = ChatHistoryService.updateAnswer(_history, _history.length - 1, data['content'] ?? '');
             }
-            _askStreaming = content;
+            _askStreaming = data['content'] ?? '';
+            if (data['reasoning'] != null) {
+              _askStreamingReasoning = data['reasoning']!;
+              if (_history.isNotEmpty) {
+                _history[_history.length - 1]['reasoning'] = data['reasoning']!;
+              }
+            }
           });
           _scrollToBottom();
         }
       },
-      onDone: (content) async {
+      onDone: (data) async {
         if (!_askInterrupted) {
           setState(() {
             _asking = false;
             _askStreaming = '';
+            _askStreamingReasoning = '';
+            if (data['reasoning'] != null && _history.isNotEmpty) {
+              _history[_history.length - 1]['reasoning'] = data['reasoning']!;
+            }
           });
 
           final systemPrompt = await PromptService.getActivePromptContent('qa');
@@ -238,15 +251,25 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
-                                        child: Container(
-                                          margin: const EdgeInsets.only(bottom: 12),
-                                          padding: const EdgeInsets.all(14),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue[50],
-                                            borderRadius: BorderRadius.circular(16),
-                                            border: Border.all(color: Colors.blue[100]!),
-                                          ),
-                                          child: EnhancedMarkdown(data: h['a'] ?? ''),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
+                                              _ReasoningCollapse(
+                                                content: h['reasoning']!,
+                                                initiallyExpanded: false, // 历史消息默认收缩
+                                              ),
+                                            Container(
+                                              margin: const EdgeInsets.only(bottom: 12),
+                                              padding: const EdgeInsets.all(14),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue[50],
+                                                borderRadius: BorderRadius.circular(16),
+                                                border: Border.all(color: Colors.blue[100]!),
+                                              ),
+                                              child: EnhancedMarkdown(data: h['a'] ?? ''),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       const SizedBox(width: 32),
@@ -265,15 +288,27 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Container(
-                                    margin: const EdgeInsets.only(bottom: 4),
-                                    padding: const EdgeInsets.all(14),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: Colors.grey[200]!),
-                                    ),
-                                    child: EnhancedMarkdown(data: _askStreaming.isEmpty ? 'AI 正在思考...' : _askStreaming),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // 显示流式reasoning，默认展开
+                                      if (_askStreamingReasoning.isNotEmpty)
+                                        _ReasoningCollapse(
+                                          content: _askStreamingReasoning,
+                                          initiallyExpanded: true,
+                                          hasMainContent: _askStreaming.isNotEmpty,
+                                        ),
+                                      Container(
+                                        margin: const EdgeInsets.only(bottom: 4),
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: Colors.grey[200]!),
+                                        ),
+                                        child: EnhancedMarkdown(data: _askStreaming.isEmpty ? 'AI 正在思考...' : _askStreaming),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 32),
@@ -484,6 +519,91 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
           ),
         );
       },
+    );
+  }
+}
+
+// Reasoning折叠显示组件
+class _ReasoningCollapse extends StatefulWidget {
+  final String content;
+  final bool initiallyExpanded;
+  final bool hasMainContent; // 是否有主要内容
+
+  const _ReasoningCollapse({
+    required this.content,
+    this.initiallyExpanded = false,
+    this.hasMainContent = false,
+  });
+
+  @override
+  State<_ReasoningCollapse> createState() => _ReasoningCollapseState();
+}
+
+class _ReasoningCollapseState extends State<_ReasoningCollapse> {
+  late bool _expanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _expanded = widget.initiallyExpanded;
+  }
+
+  @override
+  void didUpdateWidget(_ReasoningCollapse oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 当有主要内容输出时，自动收缩reasoning
+    if (widget.hasMainContent && _expanded && widget.initiallyExpanded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _expanded = false);
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Row(
+              children: [
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  size: 18,
+                  color: Colors.grey,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '模型思考过程',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_expanded)
+            Container(
+              margin: const EdgeInsets.only(top: 2, bottom: 4),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                widget.content,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

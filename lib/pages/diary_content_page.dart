@@ -130,19 +130,44 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                                       ],
                                     ),
                                   ),
-                                ..._frontmatter!.entries.map((e) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 2),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 72,
-                                        child: Text('${e.key}:', style: TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                                ..._frontmatter!.entries.map((e) {
+                                  if (e.key == 'reasoning_context' || e.key == 'reasoning') {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 2),
+                                      child: ExpansionTile(
+                                        tilePadding: EdgeInsets.zero,
+                                        title: Text(
+                                          e.key == 'reasoning_context' ? '推理过程' : 'Reasoning',
+                                          style: const TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.bold),
+                                        ),
+                                        children: [
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                                            child: Text(
+                                              e.value,
+                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Expanded(child: Text(e.value, style: TextStyle(fontSize: 13, color: Colors.grey))),
-                                    ],
-                                  ),
-                                )),
+                                    );
+                                  } else {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 2),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 72,
+                                            child: Text('${e.key}:', style: TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                                          ),
+                                          Expanded(child: Text(e.value, style: TextStyle(fontSize: 13, color: Colors.grey))),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                }),
                               ],
                             ),
                           const SizedBox(height: 8),

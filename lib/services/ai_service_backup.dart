@@ -70,7 +70,6 @@ class AiService {
 
       final client = http.Client();
       final fullResponse = StringBuffer();
-      final fullReasoning = StringBuffer(); // 用于累加reasoning内容
       String buffer = '';
       String? reasoning;
 
@@ -90,71 +89,35 @@ class AiService {
                 break;
               }
 
-              final jsonString = buffer.substring(dataIndex + dataPrefix.length, jsonEndIndex).trim();              if (jsonString.startsWith('[DONE]')) {
+              final jsonString = buffer.substring(dataIndex + dataPrefix.length, jsonEndIndex).trim();
+
+              if (jsonString.startsWith('[DONE]')) {
                 print('[AI-STREAM] Stream finished with [DONE]');
               } else if (jsonString.isNotEmpty) {
+                print('[AI-STREAM] Raw chunk: $jsonString');
                 try {
                   final data = jsonDecode(jsonString);
+                  print('[AI-STREAM] Parsed data: $data');
 
                   if (data['choices'] != null && data['choices'].isNotEmpty) {
-                    final choice = data['choices'][0];
-                    print('[AI-STREAM] Choice data: $choice');
-
-                    final delta = choice['delta'];
-                    final message = choice['message'];
+                    final delta = data['choices'][0]['delta'];
+                    final message = data['choices'][0]['message'];
                     String? content;
 
                     if (delta != null && delta['content'] != null) {
                       content = delta['content'] as String;
                       fullResponse.write(content);
                       print('[AI-STREAM] Delta content: $content');
-                    }                    // 检查reasoning字段（可能在delta或message中）
-                    if (delta != null) {
-                      print('[AI-STREAM] Delta keys: ${delta.keys.toList()}');
-                      if (delta['reasoning'] != null) {
-                        final deltaReasoning = delta['reasoning'] as String;
-                        fullReasoning.write(deltaReasoning); // 累加reasoning内容
-                        reasoning = fullReasoning.toString();
-                        print('[AI-STREAM] Delta reasoning: $deltaReasoning');
-                        print('[AI-STREAM] Full reasoning so far: $reasoning');
-                      }
-                      // 检查其他可能的reasoning字段名
-                      if (delta['thoughts'] != null) {
-                        final deltaThoughts = delta['thoughts'] as String;
-                        fullReasoning.write(deltaThoughts);
-                        reasoning = fullReasoning.toString();
-                        print('[AI-STREAM] Delta thoughts: $deltaThoughts');
-                        print('[AI-STREAM] Full reasoning so far: $reasoning');
-                      }
-                      if (delta['thinking'] != null) {
-                        final deltaThinking = delta['thinking'] as String;
-                        fullReasoning.write(deltaThinking);
-                        reasoning = fullReasoning.toString();
-                        print('[AI-STREAM] Delta thinking: $deltaThinking');
-                        print('[AI-STREAM] Full reasoning so far: $reasoning');
-                      }
-                    }
-                    if (message != null) {
-                      print('[AI-STREAM] Message keys: ${message.keys.toList()}');
-                      if (message['reasoning'] != null) {
-                        reasoning = message['reasoning'] as String;
-                        print('[AI-STREAM] Message reasoning: $reasoning');
-                      }
-                      // 检查其他可能的reasoning字段名
-                      if (message['thoughts'] != null) {
-                        reasoning = message['thoughts'] as String;
-                        print('[AI-STREAM] Message thoughts: $reasoning');
-                      }
-                      if (message['thinking'] != null) {
-                        reasoning = message['thinking'] as String;
-                        print('[AI-STREAM] Message thinking: $reasoning');
-                      }
                     }
 
-                    // 也检查choice级别的reasoning字段
-                    if (choice['reasoning'] != null) {
-                      reasoning = choice['reasoning'] as String;
-                      print('[AI-STREAM] Choice reasoning: $reasoning');
+                    // 检查reasoning字段（可能在delta或message中）
+                    if (delta != null && delta['reasoning'] != null) {
+                      reasoning = delta['reasoning'] as String;
+                      print('[AI-STREAM] Delta reasoning: $reasoning');
+                    }
+                    if (message != null && message['reasoning'] != null) {
+                      reasoning = message['reasoning'] as String;
+                      print('[AI-STREAM] Message reasoning: $reasoning');
                     }
 
                     if (content != null || reasoning != null) {
@@ -175,12 +138,10 @@ class AiService {
             }
           },
           onDone: () {
-            // 确保使用完整的reasoning内容
-            final finalReasoning = fullReasoning.toString().isNotEmpty ? fullReasoning.toString() : reasoning;
-            print('[AI-STREAM] Final Output: content=${fullResponse.toString()}, reasoning=$finalReasoning');
+            print('[AI-STREAM] Final Output: content=${fullResponse.toString()}, reasoning=$reasoning');
             final finalData = {
               'content': fullResponse.toString(),
-              if (finalReasoning != null && finalReasoning.isNotEmpty) 'reasoning': finalReasoning,
+              if (reasoning != null) 'reasoning': reasoning!,
             };
             print('[AI-STREAM] Calling onDone with: $finalData');
             onDone(finalData);

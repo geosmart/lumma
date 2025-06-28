@@ -5,14 +5,14 @@ class ModelConfig {
   String baseUrl;
   String apiKey;
   String model;
-  bool isActive;
+  bool active;
 
   ModelConfig({
     required this.provider,
     required this.baseUrl,
     required this.apiKey,
     required this.model,
-    this.isActive = false,
+    this.active = false,
   });
 
   factory ModelConfig.fromJson(Map<String, dynamic> json) => ModelConfig(
@@ -20,7 +20,7 @@ class ModelConfig {
         baseUrl: json['baseUrl'],
         apiKey: json['apiKey'],
         model: json['model'],
-        isActive: json['isActive'] ?? false,
+        active: json['active'] ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -28,7 +28,7 @@ class ModelConfig {
         'baseUrl': baseUrl,
         'apiKey': apiKey,
         'model': model,
-        'isActive': isActive,
+        'active': active,
       };
 
   static List<ModelConfig> listFromJson(String source) {

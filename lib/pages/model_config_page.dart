@@ -85,7 +85,7 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
         baseUrl: _configs[i].baseUrl,
         apiKey: _configs[i].apiKey,
         model: _configs[i].model,
-        isActive: i == index,
+        active: i == index,
       );
     }
     print('[model_config_page] 设置激活 configs: ' + _configs.map((c) => c.toJson().toString()).join(','));
@@ -116,7 +116,7 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
     final name = (c.model.isNotEmpty ? c.model : c.provider);
     final hash = name.codeUnits.fold(0, (a, b) => a + b);
     final icon = icons[hash % icons.length];
-    return Icon(icon, color: c.isActive ? Colors.green : Colors.blueGrey, size: 26);
+    return Icon(icon, color: c.active ? Colors.green : Colors.blueGrey, size: 26);
   }
 
   @override
@@ -142,7 +142,17 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
                                   child: ListTile(
                                     dense: true,
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                                    leading: _buildModelIcon(c),
+                                    leading: IconButton(
+                                      icon: Icon(
+                                        c.active ? Icons.check_circle : Icons.circle_outlined,
+                                        color: c.active ? Colors.green : Colors.grey,
+                                        size: 22,
+                                      ),
+                                      onPressed: () => _setActive(i),
+                                      tooltip: '设为激活',
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
                                     title: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -169,20 +179,25 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
                                             _showEditDialog(config: copy);
                                           },
                                           tooltip: '复制',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.edit, size: 20),
                                           onPressed: () => _showEditDialog(config: c, index: i),
                                           tooltip: '编辑',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete, size: 20),
                                           onPressed: () => _deleteConfig(i),
                                           tooltip: '删除',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                         ),
                                       ],
                                     ),
-                                    onTap: () => _setActive(i),
                                   ),
                                 ),
                               );

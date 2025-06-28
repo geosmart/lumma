@@ -44,7 +44,7 @@ class _ModelEditPageState extends State<ModelEditPage> {
       baseUrl: _baseUrlCtrl.text,
       apiKey: _apiKeyCtrl.text,
       model: _modelCtrl.text,
-      isActive: widget.config?.isActive ?? false,
+      active: widget.config?.active ?? false,
     );
     Navigator.of(context).pop(newConfig);
   }
