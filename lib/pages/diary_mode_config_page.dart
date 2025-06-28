@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/diary_mode_config_service.dart';
+import '../services/theme_service.dart';
 import '../config/settings_ui_config.dart';
 
 class DiaryModeConfigPage extends StatefulWidget {
@@ -38,39 +39,151 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      );
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(4),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.backgroundGradient,
         ),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: ListTile(
-            leading: Icon(
-              _mode == 'qa' ? Icons.check_circle : Icons.circle_outlined,
-              color: _mode == 'qa' ? Colors.green : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 页面标题
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.auto_stories,
+                  color: context.primaryTextColor,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '日记模式',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+              ],
             ),
-            title: const Text('固定问答'),
-            subtitle: const Text('逐条回答预设问题，生成结构化日记'),
-            onTap: () => _setMode('qa'),
           ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: ListTile(
-            leading: Icon(
-              _mode == 'chat' ? Icons.check_circle : Icons.circle_outlined,
-              color: _mode == 'chat' ? Colors.green : null,
+          const Padding(
+            padding: EdgeInsets.all(4),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: context.borderColor,
+                width: 1,
+              ),
             ),
-            title: const Text('AI问答'),
-            subtitle: const Text('按问答提示词与AI对话，生成自定义日记'),
-            onTap: () => _setMode('chat'),
+            child: ListTile(
+              leading: Icon(
+                _mode == 'qa' ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == 'qa' ? Colors.green : context.secondaryTextColor,
+                size: 22,
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '日记模式',
+                    style: TextStyle(
+                      fontSize: SettingsUiConfig.subtitleFontSize,
+                      color: context.secondaryTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '固定问答',
+                    style: TextStyle(
+                      fontSize: SettingsUiConfig.titleFontSize,
+                      color: context.primaryTextColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+              subtitle: Text(
+                '逐条回答预设问题，生成结构化日记',
+                style: TextStyle(
+                  color: context.secondaryTextColor,
+                  fontSize: SettingsUiConfig.subtitleFontSize,
+                ),
+              ),
+              onTap: () => _setMode('qa'),
+            ),
           ),
-        ),
-      ],
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: context.borderColor,
+                width: 1,
+              ),
+            ),
+            child: ListTile(
+              leading: Icon(
+                _mode == 'chat' ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == 'chat' ? Colors.green : context.secondaryTextColor,
+                size: 22,
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '日记模式',
+                    style: TextStyle(
+                      fontSize: SettingsUiConfig.subtitleFontSize,
+                      color: context.secondaryTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    'AI问答',
+                    style: TextStyle(
+                      fontSize: SettingsUiConfig.titleFontSize,
+                      color: context.primaryTextColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+              subtitle: Text(
+                '按问答提示词与AI对话，生成自定义日记',
+                style: TextStyle(
+                  color: context.secondaryTextColor,
+                  fontSize: SettingsUiConfig.subtitleFontSize,
+                ),
+              ),
+              onTap: () => _setMode('chat'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

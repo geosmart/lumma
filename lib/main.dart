@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'pages/main_tab_page.dart';
+import 'services/theme_service.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 初始化主题服务
+  await ThemeService.instance.init();
+
   print('[lumma] App init...');
   // 优雅加载环境变量，优先 .env.local，找不到则只加载 .env.release
   bool loaded = false;
@@ -43,16 +48,19 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'lumma',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MainTabPage(),
+    return ListenableBuilder(
+      listenable: ThemeService.instance,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'Lumma',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeService.instance.themeMode,
+          home: const MainTabPage(),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/model_config.dart';
 import '../services/config_service.dart';
+import '../services/theme_service.dart';
 import 'model_edit_page.dart';
 import '../config/settings_ui_config.dart';
 
@@ -93,133 +94,181 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
     setState(() {});
   }
 
-  Widget _buildModelIcon(ModelConfig c) {
-    // 预设一组有趣的icon
-    const icons = [
-      Icons.android,
-      Icons.memory,
-      Icons.bolt,
-      Icons.auto_awesome,
-      Icons.rocket_launch,
-      Icons.catching_pokemon,
-      Icons.lightbulb,
-      Icons.science,
-      Icons.emoji_objects,
-      Icons.language,
-      Icons.star,
-      Icons.emoji_emotions,
-      Icons.extension,
-      Icons.sports_esports,
-      Icons.pets,
-    ];
-    // 用模型名hash到icon
-    final name = (c.model.isNotEmpty ? c.model : c.provider);
-    final hash = name.codeUnits.fold(0, (a, b) => a + b);
-    final icon = icons[hash % icons.length];
-    return Icon(icon, color: c.active ? Colors.green : Colors.blueGrey, size: 26);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return _loading
-        ? const Center(child: CircularProgressIndicator())
-        : Stack(
-            children: [
-              Column(
-                children: [
-                  Expanded(
-                    child: _configs.isEmpty
-                        ? const Center(child: Text('暂无模型'))
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: _configs.length,
-                            itemBuilder: (ctx, i) {
-                              final c = _configs[i];
-                              return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
-                                  child: ListTile(
-                                    dense: true,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                                    leading: IconButton(
-                                      icon: Icon(
-                                        c.active ? Icons.check_circle : Icons.circle_outlined,
-                                        color: c.active ? Colors.green : Colors.grey,
-                                        size: 22,
-                                      ),
-                                      onPressed: () => _setActive(i),
-                                      tooltip: '设为激活',
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                    ),
-                                    title: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          c.provider,
-                                          style: TextStyle(fontSize: SettingsUiConfig.subtitleFontSize, color: Colors.blueGrey, fontWeight: FontWeight.bold),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Text(
-                                          c.model,
-                                          style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, color: Colors.black87),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.copy, size: 20),
-                                          onPressed: () {
-                                            final copy = ModelConfig.fromJson(c.toJson());
-                                            _showEditDialog(config: copy);
-                                          },
-                                          tooltip: '复制',
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, size: 20),
-                                          onPressed: () => _showEditDialog(config: c, index: i),
-                                          tooltip: '编辑',
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, size: 20),
-                                          onPressed: () => _deleteConfig(i),
-                                          tooltip: '删除',
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-              Positioned(
-                bottom: 24,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: FloatingActionButton(
-                    heroTag: 'add-model',
-                    onPressed: () => _showEditDialog(),
-                    child: const Icon(Icons.add, size: 28),
-                    tooltip: '添加模型',
-                  ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.backgroundGradient,
+        ),
+      ),
+      child: _loading
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
                 ),
               ),
-            ],
-          );
+            )
+          : Stack(
+              children: [
+                Column(
+                  children: [
+                    // 页面标题
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.memory,
+                            color: context.primaryTextColor,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '模型管理',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: context.primaryTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: _configs.isEmpty
+                          ? Center(
+                              child: Text(
+                                '暂无模型',
+                                style: TextStyle(
+                                  color: context.secondaryTextColor,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _configs.length,
+                              itemBuilder: (ctx, i) {
+                                final c = _configs[i];
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: context.cardBackgroundColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: context.borderColor,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+                                    child: ListTile(
+                                      dense: true,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                      leading: IconButton(
+                                        icon: Icon(
+                                          c.active ? Icons.check_circle : Icons.circle_outlined,
+                                          color: c.active ? Colors.green : context.secondaryTextColor,
+                                          size: 22,
+                                        ),
+                                        onPressed: () => _setActive(i),
+                                        tooltip: '设为激活',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                      title: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            c.provider,
+                                            style: TextStyle(
+                                              fontSize: SettingsUiConfig.subtitleFontSize,
+                                              color: context.secondaryTextColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            c.model,
+                                            style: TextStyle(
+                                              fontSize: SettingsUiConfig.titleFontSize,
+                                              color: context.primaryTextColor,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.copy,
+                                              size: 20,
+                                              color: context.secondaryTextColor,
+                                            ),
+                                            onPressed: () {
+                                              final copy = ModelConfig.fromJson(c.toJson());
+                                              _showEditDialog(config: copy);
+                                            },
+                                            tooltip: '复制',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.edit,
+                                              size: 20,
+                                              color: context.secondaryTextColor,
+                                            ),
+                                            onPressed: () => _showEditDialog(config: c, index: i),
+                                            tooltip: '编辑',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              size: 20,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () => _deleteConfig(i),
+                                            tooltip: '删除',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+                Positioned(
+                  bottom: 24,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: FloatingActionButton(
+                      heroTag: 'add-model',
+                      onPressed: () => _showEditDialog(),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      child: const Icon(Icons.add, size: 28),
+                      tooltip: '添加模型',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
   }
 }

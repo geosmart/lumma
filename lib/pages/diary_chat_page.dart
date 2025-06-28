@@ -7,6 +7,7 @@ import '../services/chat_history_service.dart';
 import 'diary_file_list_page.dart';
 import '../services/diary_qa_title_service.dart';
 import '../services/prompt_service.dart';
+import '../services/config_service.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -25,15 +26,76 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   String _askStreamingReasoning = '';
   final ScrollController _scrollController = ScrollController();
   String? _lastRequestJson;
+  String _currentModelName = ''; // 当前使用的模型名称
 
   @override
   void initState() {
     super.initState();
     _ctrl.text = '现在开始我们的对话';
+    _loadCurrentModelName(); // 加载当前模型名称
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_history.isEmpty) {
         _sendAnswer();
       }
+    });
+  }
+
+  // 加载当前模型名称
+  void _loadCurrentModelName() async {
+    try {
+      final config = await ConfigService.loadActiveModelConfig();
+      setState(() {
+        _currentModelName = config.model;
+      });
+    } catch (e) {
+      setState(() {
+        _currentModelName = '未知模型';
+      });
+    }
+  }
+
+  // 显示模型名称的tooltip
+  void _showModelTooltip(BuildContext context, Offset position) {
+    final overlay = Overlay.of(context);
+    OverlayEntry? overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: position.dx - 100,
+        top: position.dy - 60,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black87,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              _currentModelName.isEmpty ? '加载中...' : _currentModelName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // 2秒后自动隐藏
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry?.remove();
     });
   }
 
@@ -245,9 +307,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      CircleAvatar(
-                                        backgroundColor: Colors.blueGrey[50],
-                                        child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                      GestureDetector(
+                                        onTapDown: (details) {
+                                          _showModelTooltip(context, details.globalPosition);
+                                        },
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.blueGrey[50],
+                                          child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                        ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
@@ -282,9 +349,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                             return Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: Colors.blueGrey[50],
-                                  child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                GestureDetector(
+                                  onTapDown: (details) {
+                                    _showModelTooltip(context, details.globalPosition);
+                                  },
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.blueGrey[50],
+                                    child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -381,7 +453,35 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               icon: const Icon(Icons.save, color: Colors.blue),
                               tooltip: '保存当前对话为日记',
                               onPressed: () async {
-                                final content = _history.map((h) => 'Q: ${h['q'] ?? ''}\nA: ${h['a'] ?? ''}').join('\n\n');
+                                // 构建结构化的日记内容
+                                final buffer = StringBuffer();
+
+                                // 添加summary部分（可以后续扩展为AI生成的摘要）
+                                buffer.writeln('#${DateTime.now().toString().split(' ')[0]}');
+                                buffer.writeln();
+
+                                // 添加每轮对话
+                                for (int i = 0; i < _history.length; i++) {
+                                  final h = _history[i];
+                                  if (h['q']?.isNotEmpty == true || h['a']?.isNotEmpty == true) {
+                                    buffer.writeln('## Round${i + 1}');
+                                    buffer.writeln();
+
+                                    if (h['q']?.isNotEmpty == true) {
+                                      buffer.writeln('### Q');
+                                      buffer.writeln(h['q']!);
+                                      buffer.writeln();
+                                    }
+
+                                    if (h['a']?.isNotEmpty == true) {
+                                      buffer.writeln('### A');
+                                      buffer.writeln(h['a']!);
+                                      buffer.writeln();
+                                    }
+                                  }
+                                }
+
+                                final content = buffer.toString();
                                 try {
                                   // 覆盖当天的日记文件
                                   await MarkdownService.overwriteDailyDiary(content);

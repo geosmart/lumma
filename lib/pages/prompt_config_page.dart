@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/prompt_service.dart';
+import '../services/theme_service.dart';
 import 'prompt_edit_page.dart';
 import '../config/settings_ui_config.dart';
 
@@ -139,131 +140,215 @@ active: true
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final entry in _categoryNames.entries)
-                      ChoiceChip(
-                        label: Text(entry.value),
-                        selected: _activeCategory == entry.key,
-                        onSelected: (v) {
-                          setState(() {
-                            _activeCategory = entry.key;
-                          });
-                          _loadActivePrompt();
-                        },
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.backgroundGradient,
         ),
-        Expanded(
-          child: FutureBuilder<List<FileSystemEntity>>(
-            future: _filteredPrompts(),
-            builder: (context, snapshot) {
-              final filtered = snapshot.data ?? [];
-              return Stack(
-                children: [
-                  ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filtered.length,
-                    itemBuilder: (ctx, i) {
-                      final file = filtered[i];
-                      final name = file.path.split('/').last;
-                      return FutureBuilder<Map<String, dynamic>>(
-                        future: PromptService.getPromptFrontmatter(File(file.path)),
-                        builder: (context, snapshot) {
-                          String title = name;
-                          // 只显示文件名，不再格式化为日期
-                          return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), // 与日记模式一致
-                            child: ListTile(
-                              dense: false, // 日记模式未用dense
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // 与日记模式一致
-                              leading: IconButton(
-                                icon: Icon(
-                                  _activePrompt[_activeCategory] == file.path
-                                      ? Icons.check_circle
-                                      : Icons.circle_outlined,
-                                  color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
-                                  size: 28, // 与日记模式按钮大小一致
-                                ),
-                                onPressed: () async {
-                                  final fileName = file.path.split('/').last;
-                                  print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
-                                  try {
-                                    await PromptService.setActivePrompt(_activeCategory, fileName);
-                                    print('[PromptConfigPage] 设置激活提示词成功');
-                                    await _loadActivePrompt();
-                                    setState(() {});
-                                  } catch (e) {
-                                    print('[PromptConfigPage] 设置激活提示词失败: $e');
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('设置激活失败: $e')),
-                                      );
-                                    }
-                                  }
-                                },
-                                tooltip: '设为激活',
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
-                              title: Text(title, style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, fontWeight: SettingsUiConfig.titleFontWeight)), // 与日记模式一致
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, size: 22), // 稍大
-                                    onPressed: () => _showPrompt(file),
-                                    tooltip: '编辑',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, size: 22),
-                                    onPressed: () => _deletePrompt(file),
-                                    tooltip: '删除',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                ],
-                              ),
-                              onTap: () => _showPrompt(file),
-                            ),
-                          );
-                        },
-                      );
-                    },
+      ),
+      child: Column(
+        children: [
+          // 页面标题
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.chat,
+                  color: context.primaryTextColor,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '提示词管理',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: context.primaryTextColor,
                   ),
-                  Positioned(
-                    bottom: 24,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: FloatingActionButton(
-                        heroTag: 'add-prompt',
-                        onPressed: () => _showPrompt(null),
-                        child: const Icon(Icons.add, size: 28),
-                        tooltip: '添加提示词',
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final entry in _categoryNames.entries)
+                        ChoiceChip(
+                          label: Text(entry.value),
+                          selected: _activeCategory == entry.key,
+                          onSelected: (v) {
+                            setState(() {
+                              _activeCategory = entry.key;
+                            });
+                            _loadActivePrompt();
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<FileSystemEntity>>(
+              future: _filteredPrompts(),
+              builder: (context, snapshot) {
+                final filtered = snapshot.data ?? [];
+                return Stack(
+                  children: [
+                    ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filtered.length,
+                      itemBuilder: (ctx, i) {
+                        final file = filtered[i];
+                        final name = file.path.split('/').last;
+                        return FutureBuilder<Map<String, dynamic>>(
+                          future: PromptService.getPromptFrontmatter(File(file.path)),
+                          builder: (context, snapshot) {
+                            String title = name;
+                            // 显示文件名，与模型管理页样式一致
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: context.cardBackgroundColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: context.borderColor,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+                                child: ListTile(
+                                  dense: true,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                  leading: IconButton(
+                                    icon: Icon(
+                                      _activePrompt[_activeCategory] == file.path
+                                          ? Icons.check_circle
+                                          : Icons.circle_outlined,
+                                      color: _activePrompt[_activeCategory] == file.path ? Colors.green : context.secondaryTextColor,
+                                      size: 22,
+                                    ),
+                                    onPressed: () async {
+                                      final fileName = file.path.split('/').last;
+                                      print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
+                                      try {
+                                        await PromptService.setActivePrompt(_activeCategory, fileName);
+                                        print('[PromptConfigPage] 设置激活提示词成功');
+                                        await _loadActivePrompt();
+                                        setState(() {});
+                                      } catch (e) {
+                                        print('[PromptConfigPage] 设置激活提示词失败: $e');
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('设置激活失败: $e')),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    tooltip: '设为激活',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                  title: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _categoryNames[_activeCategory] ?? '提示词',
+                                        style: TextStyle(
+                                          fontSize: SettingsUiConfig.subtitleFontSize,
+                                          color: context.secondaryTextColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        title,
+                                        style: TextStyle(
+                                          fontSize: SettingsUiConfig.titleFontSize,
+                                          color: context.primaryTextColor,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.copy,
+                                          size: 20,
+                                          color: context.secondaryTextColor,
+                                        ),
+                                        onPressed: () => _showPrompt(file),
+                                        tooltip: '复制',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.edit,
+                                          size: 20,
+                                          color: context.secondaryTextColor,
+                                        ),
+                                        onPressed: () => _showPrompt(file),
+                                        tooltip: '编辑',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          size: 20,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () => _deletePrompt(file),
+                                        tooltip: '删除',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    Positioned(
+                      bottom: 24,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: FloatingActionButton(
+                          heroTag: 'add-prompt',
+                          onPressed: () => _showPrompt(null),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          child: const Icon(Icons.add, size: 28),
+                          tooltip: '添加提示词',
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
