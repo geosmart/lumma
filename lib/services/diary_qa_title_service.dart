@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import '../services/diary_mode_config_service.dart';
 
 Future<String> getDiaryQaTitle() async {

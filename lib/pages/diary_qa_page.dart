@@ -39,51 +39,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     super.dispose();
   }
 
-  void _next() async {
-    final answer = _ctrl.text.trim().isEmpty ? '无' : _ctrl.text.trim();
-    setState(() {
-      _answers.add(answer);
-      _ctrl.clear();
-      _current++;
-    });
-    _scrollToBottom();
-    if (_current == _questions.length) {
-      setState(() {
-        _summaryLoading = true;
-        _streamingSummary = '';
-        _summaryInterrupted = false;
-      });
-      await AiService.summaryWithPromptStream(
-        questions: _questions,
-        answers: _answers,
-        onDelta: (content) {
-          if (!_summaryInterrupted) {
-            setState(() {
-              _streamingSummary = content;
-            });
-          }
-        },
-        onDone: (content) {
-          if (!_summaryInterrupted) {
-            setState(() {
-              _summary = content;
-              _summaryLoading = false;
-              _streamingSummary = '';
-            });
-          }
-        },
-        onError: (err) {
-          if (!_summaryInterrupted) {
-            setState(() {
-              _summaryLoading = false;
-              _streamingSummary = 'AI接口错误: $err';
-            });
-          }
-        },
-      );
-    }
-  }
-
   Future<void> _saveDiary() async {
     final content = StringBuffer();
     for (int i = 0; i < _questions.length; i++) {
@@ -104,13 +59,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
         );
       }
     }
-  }
-
-  void _interruptSummary() {
-    setState(() {
-      _summaryInterrupted = true;
-      _summaryLoading = false;
-    });
   }
 
   void _scrollToBottom() {

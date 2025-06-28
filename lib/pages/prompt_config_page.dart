@@ -10,9 +10,7 @@ class PromptConfigPage extends StatefulWidget {
 }
 
 class _PromptConfigPageState extends State<PromptConfigPage> {
-  List<FileSystemEntity> _prompts = [];
   List<FileSystemEntity> _allPrompts = [];
-  bool _loading = true;
   String _activeCategory = 'qa';
   Map<String, String?> _activePrompt = {};
 
@@ -60,8 +58,7 @@ active: true
     final files = await PromptService.listPrompts();
     _allPrompts = files;
     setState(() {
-      _prompts = files;
-      _loading = false;
+      // 数据已加载完成
     });
   }
 
@@ -144,9 +141,7 @@ active: true
           if (!isSystem)
             ElevatedButton(
               onPressed: () async {
-                final userDir = await PromptService.getPromptDir();
                 final name = nameCtrl.text.trim().isEmpty ? 'prompt_${DateTime.now().millisecondsSinceEpoch}' : nameCtrl.text.trim();
-                final f = File('$userDir/$name.md');
                 await PromptService.savePrompt(
                   fileName: '$name.md',
                   content: ctrl.text,
@@ -228,7 +223,6 @@ active: true
                       return FutureBuilder<Map<String, dynamic>>(
                         future: PromptService.getPromptFrontmatter(File(file.path)),
                         builder: (context, snapshot) {
-                          final meta = snapshot.data ?? {};
                           String title = name;
                           // 只显示文件名，不再格式化为日期
                           return Card(

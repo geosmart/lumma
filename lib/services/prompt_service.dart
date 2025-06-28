@@ -134,7 +134,6 @@ class PromptService {
 
   /// 设置指定类型的激活 prompt（将所有同类active=false，目标active=true）
   static Future<void> setActivePrompt(String type, String fileName, {BuildContext? context}) async {
-    final dir = await _promptDir;
     final prompts = await listPrompts(type: type);
     for (final f in prompts) {
       final file = File(f.path);

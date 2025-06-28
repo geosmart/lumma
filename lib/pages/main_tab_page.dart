@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
-import 'diary_qa_page.dart';
 import 'diary_chat_page.dart';
 import 'settings_page.dart';
-import '../widgets/diary_file_manager.dart';
-import '../services/diary_mode_config_service.dart';
-import '../services/diary_qa_title_service.dart';
-import '../services/storage_service.dart';
-import 'package:file_picker/file_picker.dart';
 import 'diary_file_list_page.dart';
 
 class MainTabPage extends StatefulWidget {

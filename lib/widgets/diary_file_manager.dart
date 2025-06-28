@@ -16,7 +16,6 @@ class DiaryFileManager extends StatefulWidget {
 class _DiaryFileManagerState extends State<DiaryFileManager> {
   List<String> _files = [];
   bool _loading = false;
-  String? _editingFile;
   final TextEditingController _editCtrl = TextEditingController();
   bool _saving = false;
 
@@ -60,7 +59,6 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
 
   Future<void> _editFile(String file) async {
     setState(() {
-      _editingFile = file;
       _editCtrl.text = '';
       _saving = false;
     });
@@ -135,7 +133,6 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
       ),
     ).whenComplete(() {
       setState(() {
-        _editingFile = null;
         _editCtrl.clear();
       });
     });

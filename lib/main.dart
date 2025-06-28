@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'services/storage_service.dart';
 import 'pages/main_tab_page.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'services/config_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
