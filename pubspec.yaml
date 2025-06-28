@@ -51,7 +51,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/icon.jpg
-    - .env.local
     - .env.release
 
 flutter_icons:

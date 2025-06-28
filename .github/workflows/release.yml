@@ -2,102 +2,302 @@ name: Release Build
 
 on:
   push:
-    bra    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.32.5'
-        channel: 'stable'
-        cache: true
-      - main
-      - master
     tags:
-      - 'v*.*.*'
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: 'Tag name for release (e.g., v1.0.0)'
-        required: true
-        default: 'v1.0.0'
-      force_release:
-        description: 'Force create release even from branch'
-        required: false
-        default: false
-        type: boolean
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: lumma
 
 jobs:
-  release:
-    name: Create Release Build
-    runs-on: ubuntu-latest
-
+  releaseAndroid:
+    name: Release Android
+    runs-on: ubuntu-22.04
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Java 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.32.5'
-        channel: 'stable'
-        cache: true
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.5'
+          channel: 'stable'
+          cache: true
 
-    - name: Verify Flutter Installation
-      run: |
-        flutter config --no-analytics
-        flutter doctor -v
-        flutter --version
+      - name: Verify Flutter Installation
+        run: |
+          flutter config --no-analytics
+          flutter doctor -v
+          flutter --version
 
-    - name: Install Dependencies
-      run: flutter pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
-    - name: Run Tests
-      run: flutter test
-      continue-on-error: true
-
-    - name: Create Environment File
-      run: |
-        cat > .env.release << EOF
-        MODEL_PROVIDER=openrouter
-        MODEL_BASE_URL=https://openrouter.ai/api/v1
-        MODEL_API_KEY=sk-or-v1
-        MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
-        USE_LOCAL_CONFIG=false
-        EOF    - name: Extract Version Info
-      id: version
-      run: |
-        # 判断触发类型
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-          # 标签触发
+      - name: Extract Version Info
+        id: version
+        run: |
           TAG="${{ github.ref_name }}"
-          IS_TAG=true
-          echo "Triggered by tag: $TAG"
-        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          # 手动触发
-          TAG="${{ github.event.inputs.tag_name }}"
-          IS_TAG="${{ github.event.inputs.force_release }}"
-          echo "Manual trigger with tag: $TAG"
-        else
-          # 提交触发
-          TAG="commit-${{ github.sha }}"
-          IS_TAG=false
-          echo "Triggered by commit: ${{ github.sha }}"
-        fi
+          VERSION=$(echo $TAG | sed 's/^v//')
+          BUILD_NUM="${{ github.run_number }}"
 
-        VERSION=$(echo $TAG | sed 's/^v//' | sed 's/^commit-//')
-        BUILD_NUM="${{ github.run_number }}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
 
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+          echo "=== Build Info ==="
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "Build Number: $BUILD_NUM"
+
+      - name: Create Environment File
+        run: |
+          cat > .env.release << EOF
+          MODEL_PROVIDER=openrouter
+          MODEL_BASE_URL=https://openrouter.ai/api/v1
+          MODEL_API_KEY=sk-or-v1
+          MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+          USE_LOCAL_CONFIG=false
+          EOF
+
+      - name: Build Android Release APK
+        run: |
+          flutter build apk \
+            --release \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.build_number }}" \
+            --split-per-abi
+
+      - name: Prepare Release Files
+        run: |
+          mkdir -p release-files
+
+          # Copy APK files with better naming
+          if [ -f "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ]; then
+            cp "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" \
+               "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_arm64.apk"
+          fi
+
+          if [ -f "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
+            cp "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" \
+               "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_arm.apk"
+          fi
+
+          if [ -f "build/app/outputs/flutter-apk/app-x86_64-release.apk" ]; then
+            cp "build/app/outputs/flutter-apk/app-x86_64-release.apk" \
+               "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_amd64.apk"
+          fi
+
+          # Fallback: if split APKs don't exist, use universal APK
+          if [ ! -f "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_arm64.apk" ]; then
+            if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+              cp "build/app/outputs/flutter-apk/app-release.apk" \
+                 "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_universal.apk"
+            fi
+          fi
+
+          echo "📦 Release files:"
+          ls -la release-files/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
+          files: release-files/*.apk
+          body: |
+            # 🌟 ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
+
+            **AI驱动的智能问答日记应用**
+
+            ## 📱 下载安装
+
+            ### APK文件说明
+            - **arm64.apk**: 64位ARM处理器版本（推荐，适用于大多数现代Android设备）
+            - **arm.apk**: 32位ARM处理器版本（兼容旧设备）
+            - **amd64.apk**: x86_64处理器版本（适用于模拟器或x86设备）
+            - **universal.apk**: 通用版本（如果上述版本不可用）
+
+            ### 安装步骤
+            1. 根据设备处理器架构下载对应的APK文件
+            2. 在Android设备上启用"未知来源"安装
+            3. 安装APK文件
+            4. 首次使用时配置AI模型API
+
+            ## ✨ 主要功能
+            - 🤖 AI问答式日记记录
+            - 🎨 淡雅/深色主题切换
+            - 📝 多种日记模式
+            - 💬 智能问题生成
+            - 📱 现代化UI设计
+
+            ## 🔧 技术信息
+            - **版本**: ${{ steps.version.outputs.version }}
+            - **构建号**: ${{ steps.version.outputs.build_number }}
+            - **提交**: ${{ github.sha }}
+            - **Flutter版本**: 3.32.5
+
+            ---
+
+            > 💡 如果遇到安装或使用问题，请在Issues中反馈
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  releaseLinux:
+    name: Release Linux
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y ninja-build libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libunwind-dev
+
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: Extract Version Info
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION=$(echo $TAG | sed 's/^v//')
+          BUILD_NUM="${{ github.run_number }}"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+
+      - name: Create Environment File
+        run: |
+          cat > .env.release << EOF
+          MODEL_PROVIDER=openrouter
+          MODEL_BASE_URL=https://openrouter.ai/api/v1
+          MODEL_API_KEY=sk-or-v1
+          MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+          USE_LOCAL_CONFIG=false
+          EOF
+
+      - name: Build Linux
+        run: |
+          flutter build linux \
+            --release \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.build_number }}"
+
+      - name: Create Linux AppImage
+        run: |
+          # Install linuxdeploy and appimagetool
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+          # Create AppDir structure
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/lib
+
+          # Copy application
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
+
+          # Create desktop entry
+          cat > AppDir/${{ env.APP_NAME }}.desktop << EOF
+          [Desktop Entry]
+          Type=Application
+          Name=${{ env.APP_NAME }}
+          Comment=AI驱动的智能问答日记应用
+          Exec=${{ env.APP_NAME }}
+          Icon=${{ env.APP_NAME }}
+          Categories=Office;Education;
+          EOF
+
+          # Create AppImage
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+
+          # Rename AppImage
+          mv *.AppImage ${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_amd64.AppImage
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_amd64.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  releaseWindows:
+    name: Release Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Extract Version Info
+        id: version
+        shell: bash
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION=$(echo $TAG | sed 's/^v//')
+          BUILD_NUM="${{ github.run_number }}"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+
+      - name: Create Environment File
+        shell: bash
+        run: |
+          cat > .env.release << EOF
+          MODEL_PROVIDER=openrouter
+          MODEL_BASE_URL=https://openrouter.ai/api/v1
+          MODEL_API_KEY=sk-or-v1
+          MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+          USE_LOCAL_CONFIG=false
+          EOF
+
+      - name: Build Windows
+        run: |
+          flutter build windows --release --build-name="${{ steps.version.outputs.version }}" --build-number="${{ steps.version.outputs.build_number }}"
+
+      - name: Create Windows Archive
+        shell: bash
+        run: |
+          cd build/windows/x64/runner/Release
+          7z a "../../../../../${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_windows_amd64.zip" .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_windows_amd64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
         echo "is_release=$IS_TAG" >> $GITHUB_OUTPUT
 

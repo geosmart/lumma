@@ -122,111 +122,143 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                 ),
 
                 // 浅色主题
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFFfdf7f0),
-                          Color(0xFFf0e6d6),
-                        ],
+                Container(
+                  decoration: BoxDecoration(
+                    color: ThemeService.instance.themeMode == ThemeMode.light
+                        ? const Color(0xFFF3E5AB).withOpacity(0.3)  // 选中时用温暖的金黄色背景
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: ThemeService.instance.themeMode == ThemeMode.light
+                        ? Border.all(color: const Color(0xFFD4A574), width: 1.5)  // 选中时添加金色边框
+                        : null,
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFfdf7f0),
+                            Color(0xFFf0e6d6),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: ThemeService.instance.themeMode == ThemeMode.light
+                              ? const Color(0xFFD4A574)   // 选中时用金色边框
+                              : context.borderColor,
+                          width: ThemeService.instance.themeMode == ThemeMode.light ? 3 : 2,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: context.borderColor,
-                        width: 2,
+                      child: const Icon(
+                        Icons.wb_sunny,
+                        color: Color(0xFF8d6e63),
+                        size: 20,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.wb_sunny,
-                      color: Color(0xFF8d6e63),
-                      size: 20,
+                    title: Text(
+                      '浅色模式',
+                      style: TextStyle(
+                        fontWeight: ThemeService.instance.themeMode == ThemeMode.light
+                            ? FontWeight.w600  // 选中时字体加粗
+                            : FontWeight.w500,
+                        color: context.primaryTextColor,
+                      ),
                     ),
-                  ),
-                  title: Text(
-                    '浅色模式',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: context.primaryTextColor,
+                    subtitle: Text(
+                      '温暖淡雅的浅色主题',
+                      style: TextStyle(
+                        color: context.secondaryTextColor,
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    '温暖淡雅的浅色主题',
-                    style: TextStyle(
-                      color: context.secondaryTextColor,
+                    trailing: Radio<ThemeMode>(
+                      value: ThemeMode.light,
+                      groupValue: ThemeService.instance.themeMode,
+                      activeColor: const Color(0xFFD4A574),  // 浅色主题用金色
+                      onChanged: (value) {
+                        if (value != null) {
+                          ThemeService.instance.setTheme(value);
+                          setState(() {});
+                        }
+                      },
                     ),
-                  ),
-                  trailing: Radio<ThemeMode>(
-                    value: ThemeMode.light,
-                    groupValue: ThemeService.instance.themeMode,
-                    onChanged: (value) {
-                      if (value != null) {
-                        ThemeService.instance.setTheme(value);
-                        setState(() {});
-                      }
+                    onTap: () {
+                      ThemeService.instance.setTheme(ThemeMode.light);
+                      setState(() {});
                     },
                   ),
-                  onTap: () {
-                    ThemeService.instance.setTheme(ThemeMode.light);
-                    setState(() {});
-                  },
                 ),
 
                 Divider(color: context.borderColor, height: 1),
 
                 // 暗色主题
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF1a1a2e),
-                          Color(0xFF0f3460),
-                        ],
+                Container(
+                  decoration: BoxDecoration(
+                    color: ThemeService.instance.themeMode == ThemeMode.dark
+                        ? const Color(0xFF3B4CCA).withOpacity(0.2)  // 选中时用蓝紫色背景
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: ThemeService.instance.themeMode == ThemeMode.dark
+                        ? Border.all(color: const Color(0xFF9FA8DA), width: 1.5)  // 选中时添加淡蓝色边框
+                        : null,
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF1a1a2e),
+                            Color(0xFF0f3460),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: ThemeService.instance.themeMode == ThemeMode.dark
+                              ? const Color(0xFF9FA8DA)   // 选中时用淡蓝色边框
+                              : context.borderColor,
+                          width: ThemeService.instance.themeMode == ThemeMode.dark ? 3 : 2,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: context.borderColor,
-                        width: 2,
+                      child: const Icon(
+                        Icons.nightlight_round,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.nightlight_round,
-                      color: Colors.white,
-                      size: 20,
+                    title: Text(
+                      '暗色模式',
+                      style: TextStyle(
+                        fontWeight: ThemeService.instance.themeMode == ThemeMode.dark
+                            ? FontWeight.w600  // 选中时字体加粗
+                            : FontWeight.w500,
+                        color: context.primaryTextColor,
+                      ),
                     ),
-                  ),
-                  title: Text(
-                    '暗色模式',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: context.primaryTextColor,
+                    subtitle: Text(
+                      '护眼深邃的暗色主题',
+                      style: TextStyle(
+                        color: context.secondaryTextColor,
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    '护眼深邃的暗色主题',
-                    style: TextStyle(
-                      color: context.secondaryTextColor,
+                    trailing: Radio<ThemeMode>(
+                      value: ThemeMode.dark,
+                      groupValue: ThemeService.instance.themeMode,
+                      activeColor: const Color(0xFF9FA8DA),  // 暗色主题用淡蓝色
+                      onChanged: (value) {
+                        if (value != null) {
+                          ThemeService.instance.setTheme(value);
+                          setState(() {});
+                        }
+                      },
                     ),
-                  ),
-                  trailing: Radio<ThemeMode>(
-                    value: ThemeMode.dark,
-                    groupValue: ThemeService.instance.themeMode,
-                    onChanged: (value) {
-                      if (value != null) {
-                        ThemeService.instance.setTheme(value);
-                        setState(() {});
-                      }
+                    onTap: () {
+                      ThemeService.instance.setTheme(ThemeMode.dark);
+                      setState(() {});
                     },
                   ),
-                  onTap: () {
-                    ThemeService.instance.setTheme(ThemeMode.dark);
-                    setState(() {});
-                  },
                 ),
               ],
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../widgets/mermaid_widget.dart';
+import '../services/theme_service.dart';
 
 /// 支持 mermaid 代码块的 markdown 渲染组件
 class EnhancedMarkdown extends StatelessWidget {
@@ -12,6 +13,27 @@ class EnhancedMarkdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final blocks = _splitMarkdownWithMermaid(data);
+    final theme = Theme.of(context);
+    final defaultStyleSheet = MarkdownStyleSheet.fromTheme(theme).copyWith(
+      p: theme.textTheme.bodyMedium?.copyWith(color: context.primaryTextColor),
+      code: theme.textTheme.bodySmall?.copyWith(
+        color: context.secondaryTextColor,
+        backgroundColor: theme.colorScheme.surface,
+      ),
+      strong: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: context.primaryTextColor),
+      blockquote: theme.textTheme.bodyMedium?.copyWith(color: context.secondaryTextColor.withOpacity(0.8)),
+      h1: theme.textTheme.headlineLarge?.copyWith(color: context.primaryTextColor),
+      h2: theme.textTheme.headlineMedium?.copyWith(color: context.primaryTextColor),
+      h3: theme.textTheme.headlineSmall?.copyWith(color: context.primaryTextColor),
+      h4: theme.textTheme.titleLarge?.copyWith(color: context.primaryTextColor),
+      h5: theme.textTheme.titleMedium?.copyWith(color: context.primaryTextColor),
+      h6: theme.textTheme.titleSmall?.copyWith(color: context.primaryTextColor),
+      em: theme.textTheme.bodyMedium?.copyWith(
+        color: context.secondaryTextColor,
+        fontStyle: FontStyle.italic,
+      ),
+      listBullet: theme.textTheme.bodyMedium?.copyWith(color: context.primaryTextColor),
+    );
     return Padding(
       padding: padding ?? EdgeInsets.zero,
       child: Column(
@@ -28,7 +50,7 @@ class EnhancedMarkdown extends StatelessWidget {
           } else {
             return MarkdownBody(
               data: b['content']!,
-              styleSheet: styleSheet,
+              styleSheet: styleSheet ?? defaultStyleSheet,
             );
           }
         }).toList(),

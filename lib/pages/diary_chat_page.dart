@@ -8,6 +8,7 @@ import 'diary_file_list_page.dart';
 import '../services/diary_qa_title_service.dart';
 import '../services/prompt_service.dart';
 import '../services/config_service.dart';
+import '../services/theme_service.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -221,7 +222,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       builder: (context, snapshot) {
         final title = snapshot.data ?? 'AI 问答式日记';
         return Scaffold(
-          backgroundColor: const Color(0xFFF7F9FB),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: Stack(
               children: [
@@ -230,14 +231,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                     // 顶部工具栏区（只保留返回和标题）
                     Container(
                       height: 52,
-                      color: Colors.white.withOpacity(0.85),
+                      color: context.cardBackgroundColor,
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       child: Row(
                         children: [
                           // 返回按钮
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
+                              color: context.cardBackgroundColor,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -248,7 +249,10 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               ],
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black54),
+                              icon: Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                color: context.primaryTextColor,
+                              ),
                               onPressed: () => Navigator.of(context).maybePop(),
                               tooltip: '返回',
                               padding: const EdgeInsets.all(8),
@@ -256,7 +260,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: context.primaryTextColor,
+                            ),
+                          ),
                           const Spacer(),
                         ],
                       ),
@@ -289,17 +300,30 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                           margin: const EdgeInsets.only(bottom: 4),
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
-                                            color: Colors.green[50],
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? const Color(0xFF2D5A2B)  // 深色模式下的深绿色
+                                                : Colors.green[50],        // 浅色模式下的浅绿色
                                             borderRadius: BorderRadius.circular(16),
-                                            border: Border.all(color: Colors.green[100]!),
+                                            border: Border.all(
+                                              color: Theme.of(context).brightness == Brightness.dark
+                                                  ? const Color(0xFF4CAF50)  // 深色模式下的绿色边框
+                                                  : Colors.green[100]!,     // 浅色模式下的浅绿色边框
+                                            ),
                                           ),
                                           child: EnhancedMarkdown(data: h['q'] ?? ''),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const CircleAvatar(
-                                        backgroundColor: Color(0xFFE8F5E9),
-                                        child: Icon(Icons.person, color: Colors.green),
+                                      CircleAvatar(
+                                        backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                            ? const Color(0xFF2D5A2B)  // 深色模式下的深绿色
+                                            : const Color(0xFFE8F5E9), // 浅色模式下的浅绿色
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? const Color(0xFF4CAF50)  // 深色模式下的绿色图标
+                                              : Colors.green,           // 浅色模式下的绿色图标
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -312,8 +336,15 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                           _showModelTooltip(context, details.globalPosition);
                                         },
                                         child: CircleAvatar(
-                                          backgroundColor: Colors.blueGrey[50],
-                                          child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                          backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                              ? const Color(0xFF37474F)    // 深色模式下的深蓝灰色
+                                              : Colors.blueGrey[50],       // 浅色模式下的浅蓝灰色
+                                          child: Icon(
+                                            Icons.smart_toy,
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? const Color(0xFF90A4AE)  // 深色模式下的蓝灰色图标
+                                                : Colors.blueGrey,         // 浅色模式下的蓝灰色图标
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -330,9 +361,15 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                               margin: const EdgeInsets.only(bottom: 12),
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
-                                                color: Colors.blue[50],
+                                                color: Theme.of(context).brightness == Brightness.dark
+                                                    ? const Color(0xFF1E3A8A)  // 深色模式下的深蓝色
+                                                    : Colors.blue[50],         // 浅色模式下的浅蓝色
                                                 borderRadius: BorderRadius.circular(16),
-                                                border: Border.all(color: Colors.blue[100]!),
+                                                border: Border.all(
+                                                  color: Theme.of(context).brightness == Brightness.dark
+                                                      ? const Color(0xFF3B82F6)  // 深色模式下的蓝色边框
+                                                      : Colors.blue[100]!,      // 浅色模式下的浅蓝色边框
+                                                ),
                                               ),
                                               child: EnhancedMarkdown(data: h['a'] ?? ''),
                                             ),
@@ -354,8 +391,15 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                     _showModelTooltip(context, details.globalPosition);
                                   },
                                   child: CircleAvatar(
-                                    backgroundColor: Colors.blueGrey[50],
-                                    child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                        ? const Color(0xFF37474F)    // 深色模式下的深蓝灰色
+                                        : Colors.blueGrey[50],       // 浅色模式下的浅蓝灰色
+                                    child: Icon(
+                                      Icons.smart_toy,
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? const Color(0xFF90A4AE)  // 深色模式下的蓝灰色图标
+                                          : Colors.blueGrey,         // 浅色模式下的蓝灰色图标
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -374,9 +418,15 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         margin: const EdgeInsets.only(bottom: 4),
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
-                                          color: Colors.grey[100],
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? const Color(0xFF374151)  // 深色模式下的深灰色
+                                              : Colors.grey[100],        // 浅色模式下的浅灰色
                                           borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(color: Colors.grey[200]!),
+                                          border: Border.all(
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? const Color(0xFF6B7280)  // 深色模式下的灰色边框
+                                                : Colors.grey[200]!,       // 浅色模式下的浅灰色边框
+                                          ),
                                         ),
                                         child: EnhancedMarkdown(data: _askStreaming.isEmpty ? 'AI 正在思考...' : _askStreaming),
                                       ),
@@ -394,7 +444,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                     ),
                     // 按钮区：输入框上方，只显示调试、保存、日记列表按钮
                     Container(
-                      color: Colors.white.withOpacity(0.95),
+                      color: context.cardBackgroundColor,
                       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                       child: Row(
                         children: [
@@ -538,14 +588,16 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                     ),
                     // 底部输入栏，贴边圆角悬浮
                     Container(
-                      color: Colors.white.withOpacity(0.95),
+                      color: context.cardBackgroundColor,
                       padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
                       child: Row(
                         children: [
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF374151)  // 深色模式下的深灰色
+                                    : Colors.grey[100],        // 浅色模式下的浅灰色
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
@@ -557,10 +609,12 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               ),
                               child: TextField(
                                 controller: _ctrl,
-                                decoration: const InputDecoration(
+                                style: TextStyle(color: context.primaryTextColor),
+                                decoration: InputDecoration(
                                   hintText: '记下现在的想法...',
+                                  hintStyle: TextStyle(color: context.secondaryTextColor),
                                   border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                                 ),
                                 minLines: 1,
                                 maxLines: 4,
@@ -675,14 +729,14 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
                 Icon(
                   _expanded ? Icons.expand_less : Icons.expand_more,
                   size: 18,
-                  color: Colors.grey,
+                  color: context.secondaryTextColor,
                 ),
                 const SizedBox(width: 2),
                 Text(
                   '模型思考过程',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: context.secondaryTextColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -694,12 +748,17 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
               margin: const EdgeInsets.only(top: 2, bottom: 4),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF374151)  // 深色模式下的深灰色
+                    : Colors.grey[100],        // 浅色模式下的浅灰色
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 widget.content,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.secondaryTextColor,
+                ),
               ),
             ),
         ],
