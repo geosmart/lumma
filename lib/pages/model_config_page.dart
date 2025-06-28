@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/model_config.dart';
 import '../services/config_service.dart';
+import 'model_edit_page.dart';
 
 class ModelConfigPage extends StatefulWidget {
   const ModelConfigPage({super.key});
@@ -30,68 +31,23 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
     });
   }
 
-  void _showEditDialog({ModelConfig? config, int? index}) {
-    final providerCtrl = TextEditingController(text: config?.provider ?? '');
-    final baseUrlCtrl = TextEditingController(text: config?.baseUrl ?? '');
-    final apiKeyCtrl = TextEditingController(text: config?.apiKey ?? '');
-    final modelCtrl = TextEditingController(text: config?.model ?? '');
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(config == null ? '添加模型' : '编辑模型'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: providerCtrl,
-                decoration: const InputDecoration(labelText: 'Provider'),
-              ),
-              TextField(
-                controller: baseUrlCtrl,
-                decoration: const InputDecoration(labelText: 'Base URL'),
-              ),
-              TextField(
-                controller: apiKeyCtrl,
-                decoration: const InputDecoration(labelText: 'API Key'),
-              ),
-              TextField(
-                controller: modelCtrl,
-                decoration: const InputDecoration(labelText: 'Model'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final newConfig = ModelConfig(
-                provider: providerCtrl.text,
-                baseUrl: baseUrlCtrl.text,
-                apiKey: apiKeyCtrl.text,
-                model: modelCtrl.text,
-                isActive: config?.isActive ?? false,
-              );
-              if (index != null) {
-                _configs[index] = newConfig;
-              } else {
-                _configs.add(newConfig);
-              }
-              print('[model_config_page] 保存 configs: ' + _configs.map((c) => c.toJson().toString()).join(','));
-              await ConfigService.saveModelConfigs(_configs);
-              setState(() {});
-              // ignore: use_build_context_synchronously
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('保存'),
-          ),
-        ],
+  void _showEditDialog({ModelConfig? config, int? index}) async {
+    final result = await Navigator.of(context).push<ModelConfig>(
+      MaterialPageRoute(
+        builder: (context) => ModelEditPage(config: config),
       ),
     );
+
+    if (result != null) {
+      setState(() {
+        if (index != null) {
+          _configs[index] = result;
+        } else {
+          _configs.add(result);
+        }
+      });
+      await ConfigService.saveModelConfigs(_configs);
+    }
   }
 
   void _deleteConfig(int index) async {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'diary_chat_page.dart';
+import 'diary_qa_page.dart';
 import 'settings_page.dart';
 import 'diary_file_list_page.dart';
+import '../services/diary_mode_config_service.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -126,10 +128,19 @@ class _MainTabPageState extends State<MainTabPage> {
                         color: Colors.black87,
                         width: 312,
                         big: true,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const DiaryChatPage()),
-                          );
+                        onTap: () async {
+                          // 根据当前日记模式跳转到不同页面
+                          final mode = await DiaryModeConfigService.loadDiaryMode();
+                          if (mode == 'chat') {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const DiaryChatPage()),
+                            );
+                          } else {
+                            // qa 模式或其他默认使用固定问答
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const DiaryQaPage()),
+                            );
+                          }
                         },
                         extraWidget: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

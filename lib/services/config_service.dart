@@ -19,6 +19,14 @@ class ConfigService {
     return ModelConfig.listFromJson(content);
   }
 
+  static Future<ModelConfig> loadActiveModelConfig() async {
+    final configs = await loadModelConfigs();
+    if (configs.isEmpty) {
+      throw Exception('No model configurations found.');
+    }
+    return configs.firstWhere((c) => c.isActive, orElse: () => configs.first);
+  }
+
   static Future<void> saveModelConfigs(List<ModelConfig> configs, {BuildContext? context}) async {
     try {
       final file = context == null
@@ -79,6 +87,59 @@ class ConfigService {
     if (config.isEmpty) {
       final defaultConfig = {'mode': 0};
       await saveDiaryConfigs(defaultConfig);
+    }
+  }
+
+  // qa_questions.json 相关
+  static const String _qaConfigFileName = 'qa_questions.json';
+  static Future<File> get _projectQaConfigFile async {
+    final dir = await getProjectConfigDir();
+    return File(p.join(dir, _qaConfigFileName));
+  }
+
+  static Future<List<String>> loadQaQuestions() async {
+    final file = await _projectQaConfigFile;
+    if (!await file.exists()) {
+      await ensureDefaultQaQuestions();
+      // after ensuring default, load again
+      final defaultFile = await _projectQaConfigFile;
+      final content = await defaultFile.readAsString();
+      final questions = jsonDecode(content) as List<dynamic>;
+      return questions.cast<String>();
+    }
+    final content = await file.readAsString();
+    if (content.isEmpty) {
+      await ensureDefaultQaQuestions();
+      final defaultFile = await _projectQaConfigFile;
+      final newContent = await defaultFile.readAsString();
+      final questions = jsonDecode(newContent) as List<dynamic>;
+      return questions.cast<String>();
+    }
+    final questions = jsonDecode(content) as List<dynamic>;
+    return questions.cast<String>();
+  }
+
+  static Future<void> saveQaQuestions(List<String> questions) async {
+    final file = await _projectQaConfigFile;
+    await file.writeAsString(jsonEncode(questions));
+  }
+
+  static Future<void> ensureDefaultQaQuestions() async {
+    final file = await _projectQaConfigFile;
+    if (!await file.exists()) {
+      final List<String> defaultQuestions = [
+        '今天哪些细节引起了你的注意？',
+        '今天谁做了什么具体的事？',
+        '今天你做成了什么事？',
+        '什么时候你感到开心、轻松或觉得有趣？',
+        '今天你收到了哪些支持或善意？',
+        '今天你遇到了哪些外部挑战？',
+        '你在什么时候感受到不适的情绪？',
+        '你的身体有没有发出一些信号？',
+        '我今天又出现了什么反应模式？',
+        '针对今日问题制定明日可行的小步优化？',
+      ];
+      await saveQaQuestions(defaultQuestions);
     }
   }
 

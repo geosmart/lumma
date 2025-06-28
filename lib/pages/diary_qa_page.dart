@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../services/ai_service.dart';
+import 'dart:io';
 import '../services/markdown_service.dart';
 import '../services/diary_qa_title_service.dart';
+import '../services/ai_service.dart';
+import '../services/config_service.dart';
+import '../services/prompt_service.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});
@@ -11,51 +14,206 @@ class DiaryQaPage extends StatefulWidget {
 }
 
 class _DiaryQaPageState extends State<DiaryQaPage> {
-  final List<String> _questions = [
-    '今天哪些细节引起了你的注意？',
-    '今天谁做了什么具体的事？',
-    '今天你做成了什么事？',
-    '什么时候你感到开心、轻松或觉得有趣？',
-    '今天你收到了哪些支持或善意？',
-    '今天你遇到了哪些外部挑战？',
-    '你在什么时候感受到不适的情绪？',
-    '你的身体有没有发出一些信号？',
-    '我今天又出现了什么反应模式？',
-    '针对今日问题制定明日可行的小步优化？',
-  ];
+  List<String> _questions = [];
   final List<String> _answers = [];
   int _current = 0;
-  bool _summaryLoading = false;
-  bool _summaryInterrupted = false;
-  String? _summary;
-  String _streamingSummary = '';
   final TextEditingController _ctrl = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _aiResultController = TextEditingController();
+
+  String? _diaryFileName; // 当前日记文件名
+  bool _diaryCreated = false; // 是否已创建日记
+
+  // AI相关状态
+  bool _isProcessing = false;
+  String? _aiResult; // 非null时表示进入AI结果页
+  bool _isLoadingQuestions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _createDiary();
+    _loadQuestions();
+  }
 
   @override
   void dispose() {
     _ctrl.dispose();
     _scrollController.dispose();
+    _aiResultController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveDiary() async {
-    final content = StringBuffer();
-    for (int i = 0; i < _questions.length; i++) {
-      content.writeln('* ${_questions[i]}');
-      content.writeln('  - ${_answers[i]}');
-    }
-    content.writeln('\n---\n$_summary');
+  Future<void> _loadQuestions() async {
+    setState(() {
+      _isLoadingQuestions = true;
+    });
     try {
-      await MarkdownService.saveDiaryMarkdown(content.toString());
+      final questions = await ConfigService.loadQaQuestions();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
-        Navigator.of(context).pop(true); // 保存后返回并通知刷新
+        setState(() {
+          _questions = questions;
+          _isLoadingQuestions = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingQuestions = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载问题列表失败: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _createDiary() async {
+    try {
+      final now = DateTime.now();
+      final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+      _diaryFileName = fileName;
+
+      final diaryDir = await MarkdownService.getDiaryDir();
+      final file = File('$diaryDir/$fileName');
+
+      if (!await file.exists()) {
+        final initialContent = '# 今日问答日记\n\n创建时间: ${now.toString().split('.')[0]}\n\n---\n\n';
+        await MarkdownService.saveDiaryMarkdown(initialContent, fileName: fileName);
+      }
+
+      setState(() {
+        _diaryCreated = true;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('创建日记失败: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _appendToDialog() async {
+    if (!_diaryCreated || _diaryFileName == null) return;
+
+    try {
+      final diaryDir = await MarkdownService.getDiaryDir();
+      final file = File('$diaryDir/$_diaryFileName');
+
+      if (await file.exists()) {
+        final currentContent = await file.readAsString();
+        final newEntry = '\n**Q${_answers.length}: ${_questions[_answers.length - 1]}**\n\n${_answers.last}\n\n---\n';
+        await file.writeAsString(currentContent + newEntry);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: \n${e.toString()}')),
+          SnackBar(content: Text('追加内容失败: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _startSummaryStream() async {
+    if (!_diaryCreated || _diaryFileName == null) return;
+
+    // 立即进入AI结果页并显示加载状态
+    setState(() {
+      _aiResult = ''; // 触发构建AI结果页
+      _isProcessing = true;
+      _aiResultController.text = '';
+    });
+
+    try {
+      final diaryDir = await MarkdownService.getDiaryDir();
+      final file = File('$diaryDir/$_diaryFileName');
+      final content = await file.readAsString();
+
+      final systemPrompt = await PromptService.getActivePromptContent('summary');
+      final messages = AiService.buildMessages(
+        systemPrompt: systemPrompt,
+        history: [],
+        userInput: content,
+      );
+
+      await AiService.askStream(
+        messages: messages,
+        onDelta: (buffer) {
+          if (mounted) {
+            _aiResultController.text = buffer;
+          }
+        },
+        onDone: (finalResult) {
+          if (mounted) {
+            setState(() {
+              _aiResult = finalResult;
+              _isProcessing = false;
+            });
+          }
+        },
+        onError: (error) {
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('AI 总结失败: ${error.toString()}')),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('AI 总结失败: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleAiResultAction(String action) async {
+    if (_aiResult == null || _diaryFileName == null) return;
+    final editedResult = _aiResultController.text;
+
+    try {
+      switch (action) {
+        case 'replace':
+          await MarkdownService.saveDiaryMarkdown(editedResult, fileName: _diaryFileName);
+          break;
+        case 'append':
+          final diaryDir = await MarkdownService.getDiaryDir();
+          final file = File('$diaryDir/$_diaryFileName');
+          if (await file.exists()) {
+            final currentContent = await file.readAsString();
+            await file.writeAsString('$currentContent\n\n---\n\n$editedResult');
+          }
+          break;
+        case 'new':
+          final now = DateTime.now();
+          final newFileName =
+              '${now.toIso8601String().split('.')[0].replaceAll(':', '-')}.md';
+          await MarkdownService.saveDiaryMarkdown(editedResult,
+              fileName: newFileName);
+          break;
+      }
+
+      setState(() {
+        _aiResult = null;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('操作完成: $action')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('操作失败: ${e.toString()}')),
         );
       }
     }
@@ -75,246 +233,280 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_aiResult != null) {
+      return _buildAiResultPage();
+    }
     return FutureBuilder<String>(
       future: getDiaryQaTitle(),
       builder: (context, snapshot) {
-        final title = snapshot.data ?? 'AI 问答式日记';
-        if (_summaryLoading) {
-          return Scaffold(
-            appBar: AppBar(title: Text('日记总结')),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('AI 总结（流式返回）：', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Container(
-                      alignment: Alignment.topLeft,
-                      child: SelectableText(_streamingSummary),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.save),
-                      label: const Text('保存日记'),
-                      onPressed: _saveDiary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-        if (_summary != null) {
-          return Scaffold(
-            appBar: AppBar(title: Text('日记总结')),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('AI 总结：', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(_summary!),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.save),
-                      label: const Text('保存日记'),
-                      onPressed: _saveDiary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-        if (_current == _questions.length && _summary == null && !_summaryLoading) {
-          return Scaffold(
-            appBar: AppBar(title: Text(title)),
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('所有问题已完成，请选择：', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.auto_awesome),
-                    label: const Text('AI总结并保存到日记'),
-                    onPressed: _onAiSummaryAndSave,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    label: const Text('直接保存到日记'),
-                    onPressed: _onSaveDirect,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        // 聊天气泡风格
+        final title = snapshot.data ?? '固定问答式日记';
         return Scaffold(
-          appBar: AppBar(title: Text(title)),
-          body: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _current + 1, // 展示到当前问题
-                  itemBuilder: (ctx, i) {
-                    final isAnswered = i < _answers.length;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // 问题气泡（左侧）
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 4, right: 48),
-                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text('Q${i + 1}: ${_questions[i]}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        if (isAnswered)
-                          // 回答气泡（右侧）
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 2, left: 48, bottom: 12),
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Text(_answers[i]),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              // 聊天输入区
-              if (_current < _questions.length)
+          backgroundColor: const Color(0xFFF7F9FB),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // 顶部工具栏区（只保留返回和标题）
                 Container(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                  color: Colors.transparent,
+                  height: 52,
+                  color: Colors.white.withOpacity(0.85),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _ctrl,
-                          decoration: InputDecoration(
-                            hintText: '请输入你的回答...（${_current + 1}/${_questions.length}）',
-                            border: const OutlineInputBorder(),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                          ),
-                          onSubmitted: (value) => _onSubmit(),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black54),
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          tooltip: '返回',
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Material(
-                        color: Colors.transparent,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: _onSubmit,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Icon(Icons.send, size: 32, color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ),
-                      ),
+                      Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Spacer(),
                     ],
                   ),
                 ),
-            ],
+                // 主内容区
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: (_current + 1).clamp(0, _questions.length),
+                    itemBuilder: (ctx, i) {
+                      final isAnswered = i < _answers.length;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 4, right: 48),
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text('Q${i + 1}: ${_questions[i]}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          if (isAnswered)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                margin: const EdgeInsets.only(top: 2, left: 48, bottom: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withAlpha(30),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(_answers[i]),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                // 按钮区：始终显示在输入框上方，左对齐
+                Container(
+                  color: Colors.white.withOpacity(0.95),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: _isProcessing
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.smart_toy, color: Colors.deepOrange),
+                          tooltip: 'AI 总结',
+                          onPressed: _isProcessing ? null : _startSummaryStream,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.save, color: Colors.blue),
+                          tooltip: '完成日记',
+                          onPressed: () => Navigator.of(context).pop(true),
+                        ),
+                      ),
+                      // Spacer() 让按钮靠左
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+                // 底部输入栏，风格与chat_page一致
+                if (_current < _questions.length)
+                  Container(
+                    color: Colors.white.withOpacity(0.95),
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.08),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: TextField(
+                              controller: _ctrl,
+                              decoration: InputDecoration(
+                                hintText: '请输入你的回答...（${_current + 1}/${_questions.length}）',
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                              ),
+                              onSubmitted: (value) => _onSubmit(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 44,
+                          width: 56,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: _onSubmit,
+                            child: Center(
+                              child: Icon(
+                                Icons.send,
+                                size: 30,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  void _onSubmit() {
+  Widget _buildAiResultPage() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('AI 总结结果'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            setState(() {
+              _aiResult = null;
+            });
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 操作按钮区，放在输入框上方
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.swap_horiz),
+                  label: const Text('替换'),
+                  onPressed: _isProcessing ? null : () => _handleAiResultAction('replace'),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('追加'),
+                  onPressed: _isProcessing ? null : () => _handleAiResultAction('append'),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.note_add),
+                  label: const Text('新增'),
+                  onPressed: _isProcessing ? null : () => _handleAiResultAction('new'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (_isProcessing)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                    SizedBox(width: 8),
+                    Text('AI 正在生成中...'),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: TextField(
+                controller: _aiResultController,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'AI 生成的内容将显示在这里...',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onSubmit() async {
     final answer = _ctrl.text.trim().isEmpty ? '无' : _ctrl.text.trim();
     setState(() {
       _answers.add(answer);
       _ctrl.clear();
       _current++;
     });
+
+    await _appendToDialog();
+
     _scrollToBottom();
-    if (_current == _questions.length) {
-      setState(() {
-        _summary = null;
-      });
-      // 不自动总结，等待用户选择
-    }
-  }
-
-  void _onAiSummaryAndSave() async {
-    setState(() {
-      _summaryLoading = true;
-      _summaryInterrupted = false;
-      _streamingSummary = '';
-    });
-    await AiService.summaryWithPromptStream(
-      questions: _questions,
-      answers: _answers,
-      onDelta: (content) {
-        if (!_summaryInterrupted) {
-          setState(() {
-            _streamingSummary = content;
-          });
-        }
-      },
-      onDone: (content) async {
-        if (!_summaryInterrupted) {
-          setState(() {
-            _summary = content;
-            _summaryLoading = false;
-            _streamingSummary = '';
-          });
-          await _saveDiary();
-        }
-      },
-      onError: (err) {
-        if (!_summaryInterrupted) {
-          setState(() {
-            _summaryLoading = false;
-            _streamingSummary = 'AI接口错误: $err';
-          });
-        }
-      },
-    );
-  }
-
-  void _onSaveDirect() async {
-    final content = StringBuffer();
-    for (int i = 0; i < _questions.length; i++) {
-      content.writeln('* ${_questions[i]}');
-      content.writeln('  - ${_answers[i]}');
-    }
-    try {
-      await MarkdownService.saveDiaryMarkdown(content.toString());
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
-        Navigator.of(context).pop(true); // 保存后返回并通知刷新
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: \n${e.toString()}')),
-        );
-      }
-    }
   }
 }

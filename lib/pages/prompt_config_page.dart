@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/prompt_service.dart';
+import 'prompt_edit_page.dart';
 
 class PromptConfigPage extends StatefulWidget {
   const PromptConfigPage({super.key});
@@ -17,26 +18,28 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
   @override
   void initState() {
     super.initState();
-    _initDefaultPrompt();
+    _initDefaultPrompts();
     _loadPrompts();
     _loadActivePrompt();
     _printPromptDir();
   }
 
-  Future<void> _initDefaultPrompt() async {
+  Future<void> _initDefaultPrompts() async {
     final files = await PromptService.listPrompts();
-    final defaultName = '问答AI日记助手.md';
-    if (!files.any((f) => f.path.split('/').last == defaultName)) {
-      final dir = await PromptService.getPromptDir();
-      final f = File('$dir/$defaultName');
-      final now = DateTime.now().toIso8601String();
+    final dir = await PromptService.getPromptDir();
+    final now = DateTime.now().toIso8601String();
+
+    // QA默认提示词
+    final qaDefaultName = '问答AI日记助手.md';
+    if (!files.any((f) => f.path.split('/').last == qaDefaultName)) {
+      final f = File('$dir/$qaDefaultName');
       await f.writeAsString('''---
 type: qa
 created: $now
 updated: $now
 active: true
 ---
-你是一个专业、灵活的“AI 日记伙伴”。你的核心任务是倾听我用自然语言（通常是语音输入）自由地讲述今天发生的事情和感受，并智能地将这些零散的信息整理成一份结构化的日记。
+你是一个专业、灵活的"AI 日记伙伴"。你的核心任务是倾听我用自然语言（通常是语音输入）自由地讲述今天发生的事情和感受，并智能地将这些零散的信息整理成一份结构化的日记。
 
 #### 核心能力
 1. 自动纠错：你能自动识别并修正我语音输入时产生的错别字、同音字和语法错误，理解口语化的表达。
@@ -44,14 +47,40 @@ active: true
 3. 非线性处理：你完全理解我不会按顺序讲述。我可以随时谈论任何主题，你可以接收、暂存并最终将所有信息整合在一起。
 ''');
     }
+
+    // 总结默认提示词
+    final summaryDefaultName = '内容总结助手.md';
+    if (!files.any((f) => f.path.split('/').last == summaryDefaultName)) {
+      final f = File('$dir/$summaryDefaultName');
+      await f.writeAsString('''---
+type: summary
+created: $now
+updated: $now
+active: true
+---
+你是一个专业的内容总结助手。你的任务是：
+
+1. **提取要点**：从长文本中提取关键信息和核心观点
+2. **结构化总结**：按主题或时间线组织总结内容
+3. **保持完整性**：确保总结涵盖原文的重要信息
+4. **简洁明了**：用简练的语言表达核心内容
+
+请对以下内容进行总结：
+''');
+    }
   }
 
   Future<void> _loadActivePrompt() async {
     // 获取当前激活 prompt 文件名
-    final file = await PromptService.getActivePromptFile(_activeCategory);
-    setState(() {
-      _activePrompt = {_activeCategory: file?.path};
-    });
+    try {
+      final file = await PromptService.getActivePromptFile(_activeCategory);
+      setState(() {
+        _activePrompt = {_activeCategory: file?.path};
+      });
+      print('[PromptConfigPage] 当前 $_activeCategory 类型的激活文件: ${file?.path ?? 'null'}');
+    } catch (e) {
+      print('[PromptConfigPage] 加载激活提示词失败: $e');
+    }
   }
 
   Future<void> _loadPrompts() async {
@@ -74,93 +103,21 @@ active: true
   }
 
   final Map<String, String> _categoryNames = {
-    'qa': '日记问答',
-    'correction': '纠错',
+    'qa': '问答',
     'summary': '总结',
-    'markdown': 'markdown格式化',
   };
 
   void _showPrompt(FileSystemEntity? file) async {
-    final isSystem = file?.path.split('/').last == '问答AI日记助手.md';
-    final content = file == null ? '' : await File(file.path).readAsString();
-    final meta = file == null ? {} : await PromptService.getPromptFrontmatter(File(file.path));
-    final ctrl = TextEditingController(text: content);
-    final nameCtrl = TextEditingController(text: file?.path.split('/').last.replaceAll('.md', '') ?? '');
-    String selectedCategory = meta['type'] ?? _activeCategory;
-    bool isActive = meta['active'] == true || meta['active'] == 'true';
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(file == null ? '新建提示词' : isSystem ? '系统提示词' : '编辑提示词'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: '角色名称/文件名'),
-              enabled: !isSystem,
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: selectedCategory,
-              items: _categoryNames.entries
-                  .map((e) => DropdownMenuItem<String>(
-                        value: e.key,
-                        child: Text(e.value),
-                      ))
-                  .toList(),
-              onChanged: isSystem ? null : (v) {
-                if (v != null) selectedCategory = v;
-              },
-              decoration: const InputDecoration(labelText: '分类'),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Checkbox(
-                  value: isActive,
-                  onChanged: isSystem
-                      ? null
-                      : (v) {
-                          isActive = v ?? false;
-                        },
-                ),
-                const Text('设为激活'),
-              ],
-            ),
-            TextField(
-              controller: ctrl,
-              maxLines: 12,
-              decoration: const InputDecoration(labelText: 'Markdown 内容'),
-              enabled: !isSystem,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
-          if (!isSystem)
-            ElevatedButton(
-              onPressed: () async {
-                final name = nameCtrl.text.trim().isEmpty ? 'prompt_${DateTime.now().millisecondsSinceEpoch}' : nameCtrl.text.trim();
-                await PromptService.savePrompt(
-                  fileName: '$name.md',
-                  content: ctrl.text,
-                  type: selectedCategory,
-                  oldFileName: file?.path.split('/').last,
-                );
-                if (isActive) {
-                  await PromptService.setActivePrompt(selectedCategory, '$name.md');
-                }
-                await _loadPrompts();
-                await _loadActivePrompt();
-                // ignore: use_build_context_synchronously
-                Navigator.of(ctx).pop();
-              },
-              child: const Text('保存'),
-            ),
-        ],
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => PromptEditPage(file: file, activeCategory: _activeCategory),
       ),
     );
+
+    if (result == true) {
+      await _loadPrompts();
+      await _loadActivePrompt();
+    }
   }
 
   void _deletePrompt(FileSystemEntity file) async {
@@ -199,6 +156,7 @@ active: true
                           setState(() {
                             _activeCategory = entry.key;
                           });
+                          _loadActivePrompt();
                         },
                       ),
                   ],
@@ -252,9 +210,20 @@ active: true
                                     ),
                                     onPressed: () async {
                                       final fileName = file.path.split('/').last;
-                                      await PromptService.setActivePrompt(_activeCategory, fileName);
-                                      await _loadActivePrompt();
-                                      setState(() {});
+                                      print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
+                                      try {
+                                        await PromptService.setActivePrompt(_activeCategory, fileName);
+                                        print('[PromptConfigPage] 设置激活提示词成功');
+                                        await _loadActivePrompt();
+                                        setState(() {});
+                                      } catch (e) {
+                                        print('[PromptConfigPage] 设置激活提示词失败: $e');
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('设置激活失败: $e')),
+                                          );
+                                        }
+                                      }
                                     },
                                     tooltip: '设为激活',
                                   ),

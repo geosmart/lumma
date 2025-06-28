@@ -6,6 +6,7 @@ import '../services/ai_service.dart';
 import '../services/chat_history_service.dart';
 import 'diary_file_list_page.dart';
 import '../services/diary_qa_title_service.dart';
+import '../services/prompt_service.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -50,19 +51,24 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     });
     final userInput = _history.isNotEmpty ? _history.last['q'] ?? '' : _ctrl.text.trim();
     final historyWindow = ChatHistoryService.getRecent(_history);
-    final raw = await AiService.buildChatRequestRaw(
+
+    final systemPrompt = await PromptService.getActivePromptContent('qa');
+    final messages = AiService.buildMessages(
+      systemPrompt: systemPrompt,
       history: historyWindow,
       userInput: userInput,
+    );
+
+    final raw = await AiService.buildChatRequestRaw(
+      messages: messages,
       stream: true,
-      injectSystemPrompt: true,
     );
     final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
     setState(() {
       _lastRequestJson = '```bash\n$prettyJson\n```';
     });
     await AiService.askStream(
-      history: historyWindow,
-      userInput: userInput,
+      messages: messages,
       onDelta: (content) {
         if (!_askInterrupted) {
           setState(() {
@@ -80,11 +86,17 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             _asking = false;
             _askStreaming = '';
           });
-          final raw = await AiService.buildChatRequestRaw(
+
+          final systemPrompt = await PromptService.getActivePromptContent('qa');
+          final messages = AiService.buildMessages(
+            systemPrompt: systemPrompt,
             history: ChatHistoryService.getRecent(_history),
             userInput: '',
+          );
+
+          final raw = await AiService.buildChatRequestRaw(
+            messages: messages,
             stream: true,
-            injectSystemPrompt: true,
           );
           final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
           setState(() {
@@ -332,10 +344,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               onPressed: () async {
                                 final content = _history.map((h) => 'Q: ${h['q'] ?? ''}\nA: ${h['a'] ?? ''}').join('\n\n');
                                 try {
-                                  await MarkdownService.saveDiaryMarkdown(content);
+                                  // 追加到当天的日记文件
+                                  await MarkdownService.appendToDailyDiary(content);
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
-                                    Navigator.of(context).pop(true); // 保存后返回并通知刷新
+                                    // 跳转到日记列表页面
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
+                                    );
                                   }
                                 } catch (e) {
                                   if (mounted) {

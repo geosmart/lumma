@@ -87,4 +87,23 @@ class MarkdownService {
       }
     }
   }
+
+  /// 追加内容到当天的日记文件
+  static Future<void> appendToDailyDiary(String contentToAppend) async {
+    final now = DateTime.now();
+    final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+    final diaryDir = await getDiaryDir();
+    final file = File('$diaryDir/$fileName');
+
+    if (!await file.exists()) {
+      // 如果文件不存在，创建并写入初始内容
+      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n---\n\n$contentToAppend\n\n';
+      await saveDiaryMarkdown(initialContent, fileName: fileName);
+    } else {
+      // 如果文件存在，追加内容
+      final currentContent = await file.readAsString();
+      final newContent = '$currentContent\n---\n\n$contentToAppend\n\n';
+      await saveDiaryMarkdown(newContent, fileName: fileName);
+    }
+  }
 }
