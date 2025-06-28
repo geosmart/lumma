@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/markdown_service.dart';
 import '../services/diary_frontmatter_util.dart';
+import '../pages/diary_content_page.dart';
 
 /// 日记文件管理组件，集成列表、增删改查、编辑、选择等全部逻辑
 class DiaryFileManager extends StatefulWidget {
@@ -17,7 +18,6 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
   List<String> _files = [];
   bool _loading = false;
   final TextEditingController _editCtrl = TextEditingController();
-  bool _saving = false;
 
   @override
   void initState() {
@@ -55,87 +55,6 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
         SnackBar(content: Text('加载日记文件失败: ${e.toString()}')),
       );
     }
-  }
-
-  Future<void> _editFile(String file) async {
-    setState(() {
-      _editCtrl.text = '';
-      _saving = false;
-    });
-    final diaryDir = await MarkdownService.getDiaryDir();
-    final f = File('$diaryDir/$file');
-    if (await f.exists()) {
-      _editCtrl.text = await f.readAsString();
-    }
-    final nameCtrl = TextEditingController(text: file);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: '文件名'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _editCtrl,
-                    maxLines: 12,
-                    decoration: InputDecoration(
-                      labelText: file,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.save),
-                      label: _saving ? const Text('保存中...') : const Text('保存'),
-                      onPressed: _saving
-                          ? null
-                          : () async {
-                              setState(() => _saving = true);
-                              final newName = nameCtrl.text.trim();
-                              final diaryDir = await MarkdownService.getDiaryDir();
-                              final oldFile = File('$diaryDir/$file');
-                              final newFile = File('$diaryDir/$newName');
-                              await oldFile.writeAsString(_editCtrl.text);
-                              if (newName != file && newName.isNotEmpty) {
-                                await oldFile.rename(newFile.path);
-                              }
-                              setState(() => _saving = false);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('保存成功')));
-                                Navigator.of(ctx).pop();
-                                await _loadFiles();
-                              }
-                            },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    ).whenComplete(() {
-      setState(() {
-        _editCtrl.clear();
-      });
-    });
   }
 
   Future<void> _deleteFile(String file) async {
@@ -261,7 +180,17 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                               ),
                           ],
                         ),
-                        onTap: () => _editFile(f), // 直接进入编辑详情
+                        onTap: () {
+                          if (widget.onFileSelected != null) {
+                            widget.onFileSelected!(f);
+                          } else {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => DiaryContentPage(fileName: f),
+                              ),
+                            );
+                          }
+                        },
                         trailing: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 40), // 只保留删除按钮
                           child: Row(

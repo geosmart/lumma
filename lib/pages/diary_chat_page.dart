@@ -191,12 +191,68 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                        itemCount: _summary == null ? (_asking ? _history.length + 1 : _history.length) : _history.length + 1,
+                        itemCount: _history.length + (_asking ? 1 : 0),
                         itemBuilder: (ctx, i) {
                           if (_summary != null && i == 0) {
                             return SizedBox.shrink(); // 全屏聊天时不显示AI总结/编辑区
                           }
-                          if (_asking && i == _history.length) {
+                          if (i < _history.length) {
+                            final h = _history[i];
+                            return Column(
+                              children: [
+                                if (h['q'] != null && h['q']!.isNotEmpty)
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      const SizedBox(width: 32),
+                                      Expanded(
+                                        child: Container(
+                                          margin: const EdgeInsets.only(bottom: 4),
+                                          padding: const EdgeInsets.all(14),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green[50],
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(color: Colors.green[100]!),
+                                          ),
+                                          child: EnhancedMarkdown(data: h['q'] ?? ''),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const CircleAvatar(
+                                        backgroundColor: Color(0xFFE8F5E9),
+                                        child: Icon(Icons.person, color: Colors.green),
+                                      ),
+                                    ],
+                                  ),
+                                if (h['a'] != null && h['a']!.isNotEmpty)
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.blueGrey[50],
+                                        child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Container(
+                                          margin: const EdgeInsets.only(bottom: 12),
+                                          padding: const EdgeInsets.all(14),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue[50],
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(color: Colors.blue[100]!),
+                                          ),
+                                          child: EnhancedMarkdown(data: h['a'] ?? ''),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 32),
+                                    ],
+                                  ),
+                              ],
+                            );
+                          } else if (_asking && i == _history.length) {
+                            // AI 正在思考/流式输出
                             return Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -220,64 +276,9 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 const SizedBox(width: 32),
                               ],
                             );
-                          }
-                          if (_asking && i == _history.length - 1) {
+                          } else {
                             return const SizedBox.shrink();
                           }
-                          final h = _history[i];
-                          return Column(
-                            children: [
-                              if (h['q'] != null && h['q']!.isNotEmpty)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    const SizedBox(width: 32),
-                                    Expanded(
-                                      child: Container(
-                                        margin: const EdgeInsets.only(bottom: 4),
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green[50],
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(color: Colors.green[100]!),
-                                        ),
-                                        child: EnhancedMarkdown(data: h['q'] ?? ''),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const CircleAvatar(
-                                      backgroundColor: Color(0xFFE8F5E9),
-                                      child: Icon(Icons.person, color: Colors.green),
-                                    ),
-                                  ],
-                                ),
-                              if (h['a'] != null && h['a']!.isNotEmpty)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: Colors.blueGrey[50],
-                                      child: const Icon(Icons.smart_toy, color: Colors.blueGrey),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Container(
-                                        margin: const EdgeInsets.only(bottom: 12),
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue[50],
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(color: Colors.blue[100]!),
-                                        ),
-                                        child: EnhancedMarkdown(data: h['a'] ?? ''),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 32),
-                                  ],
-                                ),
-                            ],
-                          );
                         },
                       ),
                     ),
@@ -344,10 +345,17 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               onPressed: () async {
                                 final content = _history.map((h) => 'Q: ${h['q'] ?? ''}\nA: ${h['a'] ?? ''}').join('\n\n');
                                 try {
-                                  // 追加到当天的日记文件
-                                  await MarkdownService.appendToDailyDiary(content);
+                                  // 覆盖当天的日记文件
+                                  await MarkdownService.overwriteDailyDiary(content);
+                                  final now = DateTime.now();
+                                  final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+                                  final diaryDir = await MarkdownService.getDiaryDir();
+                                  final filePath = '$diaryDir/$fileName';
+                                  // 打印保存路径
+                                  // ignore: avoid_print
+                                  print('日记已保存到: $filePath');
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('日记已保存')));
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('日记已保存到: $filePath')));
                                     // 跳转到日记列表页面
                                     Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
