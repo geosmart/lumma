@@ -1,0 +1,146 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+        - release
+        - debug
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+
+    - name: Get dependencies
+      run: flutter pub get
+
+    - name: Analyze code
+      run: flutter analyze
+
+    - name: Run tests
+      run: flutter test --coverage
+
+    - name: Create .env.release file
+      run: |
+        cat > .env.release << EOF
+        MODEL_PROVIDER=openrouter
+        MODEL_BASE_URL=https://openrouter.ai/api/v1
+        MODEL_API_KEY=sk-or-v1
+        MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+        USE_LOCAL_CONFIG=false
+        EOF
+
+    - name: Build APK (Release)
+      if: github.event.inputs.build_type != 'debug'
+      run: |
+        flutter build apk --release \
+          --build-name=${{ github.ref_name }} \
+          --build-number=${{ github.run_number }}
+
+    - name: Build APK (Debug)
+      if: github.event.inputs.build_type == 'debug'
+      run: |
+        flutter build apk --debug \
+          --build-name=${{ github.ref_name }} \
+          --build-number=${{ github.run_number }}
+
+    - name: Rename APK files
+      run: |
+        if [ "${{ github.event.inputs.build_type }}" == "debug" ]; then
+          BUILD_TYPE="debug"
+        else
+          BUILD_TYPE="release"
+        fi
+
+        # Create output directory
+        mkdir -p build/outputs
+
+        # Rename APK with version info
+        if [ -f "build/app/outputs/flutter-apk/app-${BUILD_TYPE}.apk" ]; then
+          cp "build/app/outputs/flutter-apk/app-${BUILD_TYPE}.apk" \
+             "build/outputs/lumma-${BUILD_TYPE}-${{ github.ref_name }}-${{ github.run_number }}.apk"
+        fi
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: lumma-apk-${{ github.ref_name }}-${{ github.run_number }}
+        path: build/outputs/*.apk
+        retention-days: 30
+
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/outputs/*.apk
+        name: Lumma ${{ github.ref_name }}
+        body: |
+          ## Lumma ${{ github.ref_name }}
+
+          AI驱动的问答日记应用
+
+          ### 下载说明
+          - 下载对应的APK文件安装到Android设备
+          - 首次使用需要配置AI模型API
+
+          ### 更新内容
+          请查看提交记录了解详细更新内容
+
+          ---
+          Build: ${{ github.run_number }}
+          Commit: ${{ github.sha }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload to Release Assets
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        echo "✅ APK files uploaded to release assets"
+        echo "📱 Release created: ${{ github.ref_name }}"
+
+    - name: Build Summary
+      run: |
+        echo "## 📱 Android Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Build Information" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch/Tag**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Type**: ${{ github.event.inputs.build_type || 'release' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "- APK files are available in the artifacts section" >> $GITHUB_STEP_SUMMARY
+        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          echo "- 🎉 Release created with APK attachments" >> $GITHUB_STEP_SUMMARY
+        fi

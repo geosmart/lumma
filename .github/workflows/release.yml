@@ -1,0 +1,183 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  release:
+    name: Create Release Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
+        cache: true
+
+    - name: Verify Flutter Installation
+      run: |
+        flutter doctor -v
+        flutter --version
+
+    - name: Install Dependencies
+      run: flutter pub get
+
+    - name: Run Tests
+      run: flutter test
+      continue-on-error: true
+
+    - name: Create Environment File
+      run: |
+        cat > .env.release << EOF
+        MODEL_PROVIDER=openrouter
+        MODEL_BASE_URL=https://openrouter.ai/api/v1
+        MODEL_API_KEY=sk-or-v1
+        MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+        USE_LOCAL_CONFIG=false
+        EOF
+
+    - name: Extract Version Info
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          TAG="${{ github.event.inputs.tag_name }}"
+        else
+          TAG="${{ github.ref_name }}"
+        fi
+
+        VERSION=$(echo $TAG | sed 's/^v//')
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "build_number=${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+        echo "Tag: $TAG"
+        echo "Version: $VERSION"
+        echo "Build Number: ${{ github.run_number }}"
+
+    - name: Build Release APK (Unsigned)
+      run: |
+        echo "Building unsigned release APK..."
+        flutter build apk \
+          --release \
+          --build-name="${{ steps.version.outputs.version }}" \
+          --build-number="${{ steps.version.outputs.build_number }}" \
+          --verbose
+
+    - name: Build Debug APK
+      run: |
+        echo "Building debug APK..."
+        flutter build apk \
+          --debug \
+          --build-name="${{ steps.version.outputs.version }}" \
+          --build-number="${{ steps.version.outputs.build_number }}"
+
+    - name: Prepare Release Files
+      run: |
+        # Create release directory
+        mkdir -p release-files
+
+        # Copy and rename APK files
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          cp "build/app/outputs/flutter-apk/app-release.apk" \
+             "release-files/lumma-${{ steps.version.outputs.tag }}-release.apk"
+          echo "✅ Release APK ready"
+        fi
+
+        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+          cp "build/app/outputs/flutter-apk/app-debug.apk" \
+             "release-files/lumma-${{ steps.version.outputs.tag }}-debug.apk"
+          echo "✅ Debug APK ready"
+        fi
+
+        # List files
+        echo "📦 Release files:"
+        ls -la release-files/
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: lumma-apk-${{ steps.version.outputs.tag }}
+        path: release-files/*.apk
+        retention-days: 90
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: Lumma ${{ steps.version.outputs.tag }}
+        files: release-files/*.apk
+        body: |
+          # 🌟 Lumma ${{ steps.version.outputs.tag }}
+
+          **AI驱动的智能问答日记应用**
+
+          ## 📱 下载安装
+
+          ### APK文件说明
+          - **lumma-${{ steps.version.outputs.tag }}-release.apk**: 发布版本，推荐使用
+          - **lumma-${{ steps.version.outputs.tag }}-debug.apk**: 调试版本，用于开发测试
+
+          ### 安装步骤
+          1. 下载对应的APK文件
+          2. 在Android设备上启用"未知来源"安装
+          3. 安装APK文件
+          4. 首次使用时配置AI模型API
+
+          ## ✨ 主要功能
+          - 🤖 AI问答式日记记录
+          - 🎨 淡雅/深色主题切换
+          - 📝 多种日记模式
+          - 💬 智能问题生成
+          - 📱 现代化UI设计
+
+          ## 🔧 技术信息
+          - **版本**: ${{ steps.version.outputs.version }}
+          - **构建号**: ${{ steps.version.outputs.build_number }}
+          - **提交**: ${{ github.sha }}
+          - **构建时间**: ${{ github.run_started_at }}
+
+          ---
+
+          > 💡 如果遇到安装或使用问题，请在Issues中反馈
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Summary
+      run: |
+        echo "## 🎉 Release Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 Build Information" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tag**: ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Number**: ${{ steps.version.outputs.build_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Generated Files" >> $GITHUB_STEP_SUMMARY
+        echo "- Release APK: lumma-${{ steps.version.outputs.tag }}-release.apk" >> $GITHUB_STEP_SUMMARY
+        echo "- Debug APK: lumma-${{ steps.version.outputs.tag }}-debug.apk" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "- APK files are available in GitHub Release" >> $GITHUB_STEP_SUMMARY
+        echo "- Artifacts are also available for download" >> $GITHUB_STEP_SUMMARY
