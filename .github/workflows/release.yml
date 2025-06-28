@@ -298,16 +298,19 @@ jobs:
             ${{ env.APP_NAME }}_${{ steps.version.outputs.build_number }}_windows_amd64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
-        echo "is_release=$IS_TAG" >> $GITHUB_OUTPUT
 
-        echo "=== Build Info ==="
-        echo "Tag: $TAG"
-        echo "Version: $VERSION"
-        echo "Build Number: $BUILD_NUM"
-        echo "Is Tag: $IS_TAG"
+      - name: Output Build Information
+        run: |
+          echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
+          echo "is_release=$IS_TAG" >> $GITHUB_OUTPUT
 
-    - name: Build Release APK (Unsigned)
+          echo "=== Build Info ==="
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "Build Number: $BUILD_NUM"
+          echo "Is Tag: $IS_TAG"
+
+      - name: Build Release APK (Unsigned)
       run: |
         echo "Building unsigned release APK..."
         flutter build apk \
