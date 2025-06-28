@@ -2,7 +2,12 @@ name: Release Build
 
 on:
   push:
-    branches: 
+    bra    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.27.0'
+        channel: 'stable'
+        cache: true
       - main
       - master
     tags:
@@ -47,6 +52,7 @@ jobs:
 
     - name: Verify Flutter Installation
       run: |
+        flutter config --no-analytics
         flutter doctor -v
         flutter --version
 
@@ -85,19 +91,19 @@ jobs:
           IS_TAG=false
           echo "Triggered by commit: ${{ github.sha }}"
         fi
-        
+
         VERSION=$(echo $TAG | sed 's/^v//' | sed 's/^commit-//')
         BUILD_NUM="${{ github.run_number }}"
-        
+
         echo "tag=$TAG" >> $GITHUB_OUTPUT
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
         echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
         echo "is_release=$IS_TAG" >> $GITHUB_OUTPUT
-        
+
         echo "=== Build Info ==="
         echo "Tag: $TAG"
-        echo "Version: $VERSION"  
+        echo "Version: $VERSION"
         echo "Build Number: $BUILD_NUM"
         echo "Is Tag: $IS_TAG"
 
@@ -156,36 +162,36 @@ jobs:
         files: release-files/*.apk
         body: |
           # 🌟 Lumma ${{ steps.version.outputs.tag }}
-          
+
           **AI驱动的智能问答日记应用**
-          
+
           ## 📱 下载安装
-          
+
           ### APK文件说明
           - **lumma-${{ steps.version.outputs.tag }}-release.apk**: 发布版本，推荐使用
           - **lumma-${{ steps.version.outputs.tag }}-debug.apk**: 调试版本，用于开发测试
-          
+
           ### 安装步骤
           1. 下载对应的APK文件
           2. 在Android设备上启用"未知来源"安装
           3. 安装APK文件
           4. 首次使用时配置AI模型API
-          
+
           ## ✨ 主要功能
           - 🤖 AI问答式日记记录
           - 🎨 淡雅/深色主题切换
           - 📝 多种日记模式
           - 💬 智能问题生成
           - 📱 现代化UI设计
-          
+
           ## 🔧 技术信息
           - **版本**: ${{ steps.version.outputs.version }}
           - **构建号**: ${{ steps.version.outputs.build_number }}
           - **提交**: ${{ github.sha }}
           - **构建时间**: ${{ github.run_started_at }}
-          
+
           ---
-          
+
           > 💡 如果遇到安装或使用问题，请在Issues中反馈
         draft: false
         prerelease: false
@@ -219,7 +225,7 @@ jobs:
           echo "- **Build Number**: ${{ steps.version.outputs.build_number }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Release Created**: ❌ No (commit build)" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📦 Generated Files" >> $GITHUB_STEP_SUMMARY
@@ -227,7 +233,7 @@ jobs:
         echo "- Debug APK: lumma-${{ steps.version.outputs.tag }}-debug.apk" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🔗 Download Links" >> $GITHUB_STEP_SUMMARY
-        
+
         if [ "${{ steps.version.outputs.is_release }}" == "true" ]; then
           echo "- 📋 [GitHub Release](https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }})" >> $GITHUB_STEP_SUMMARY
         fi

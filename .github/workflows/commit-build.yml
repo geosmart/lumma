@@ -2,7 +2,7 @@ name: Commit Build
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - master
       - develop
@@ -16,7 +16,7 @@ jobs:
   commit-build:
     name: Build APK from Commit
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -30,9 +30,12 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.0'
+        flutter-version: '3.27.0'
         channel: 'stable'
         cache: true
+
+    - name: Disable Flutter Analytics
+      run: flutter config --no-analytics
 
     - name: Get Dependencies
       run: flutter pub get
@@ -54,12 +57,12 @@ jobs:
         BUILD_NAME="dev-$COMMIT_SHORT"
         BUILD_NUMBER="${{ github.run_number }}"
         TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-        
+
         echo "commit_short=$COMMIT_SHORT" >> $GITHUB_OUTPUT
         echo "build_name=$BUILD_NAME" >> $GITHUB_OUTPUT
         echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
         echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
-        
+
         echo "🔨 Building commit: ${{ github.sha }}"
         echo "📦 Build name: $BUILD_NAME"
         echo "🔢 Build number: $BUILD_NUMBER"
@@ -75,13 +78,13 @@ jobs:
     - name: Prepare APK
       run: |
         mkdir -p build-output
-        
+
         # Copy and rename APK
         if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
           APK_NAME="lumma-commit-${{ steps.build_info.outputs.commit_short }}-${{ steps.build_info.outputs.timestamp }}.apk"
           cp "build/app/outputs/flutter-apk/app-release.apk" "build-output/$APK_NAME"
           echo "✅ APK ready: $APK_NAME"
-          
+
           # Get APK size
           APK_SIZE=$(ls -lh "build-output/$APK_NAME" | awk '{print $5}')
           echo "📏 APK size: $APK_SIZE"

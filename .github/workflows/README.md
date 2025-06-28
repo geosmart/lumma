@@ -6,7 +6,41 @@
 
 ### 1. `commit-build.yml` - 提交自动构建 ⭐推荐
 **触发条件**：
-- 推送到 `main`/`master`/`develop` 分支
+- 推送到 `main`## 🚨 常见问题
+
+### Q: 每次提交都会构建吗？
+A: 是的，除非是文档或配置文件的更改
+
+### Q: 如何避免某次提交触发构建？
+A: 在提交信息中添加 `[skip ci]` 或 `[ci skip]`
+
+### Q: 开发版和发布版APK有什么区别？
+A:
+- 开发版：包含调试信息，文件较大，适合开发测试
+- 发布版：优化过的版本，文件较小，适合正式使用
+
+### Q: APK在哪里下载？
+A:
+- 开发版：Actions页面的Artifacts
+- 发布版：Releases页面或Artifacts
+
+### Q: 构建失败"SDK version solving failed"怎么办？
+A: 这通常是Flutter/Dart版本不匹配导致的：
+1. 检查 `pubspec.yaml` 中的SDK版本要求
+2. 确保GitHub Actions使用的Flutter版本包含对应的Dart SDK
+3. 当前配置：Flutter 3.27.0（包含Dart 3.8.1+）
+
+### Q: 构建失败"dependencies failed"怎么办？
+A: 常见解决方案：
+1. 清理并重新获取依赖：`flutter clean && flutter pub get`
+2. 检查网络连接（可能是pub.dev访问问题）
+3. 检查依赖版本冲突
+
+### Q: APK无法安装？
+A: 确保：
+- 启用"未知来源"安装
+- 下载完整的APK文件
+- Android版本兼容（最低API级别检查）p` 分支
 - 自动忽略文档和配置文件更改
 
 **功能特性**：
@@ -120,7 +154,7 @@ USE_LOCAL_CONFIG=false
 - GitHub Actions配置 (`.github/**`)
 
 ### Flutter版本
-- 使用 Flutter 3.24.0 stable
+- 使用 Flutter 3.27.0 stable（包含Dart 3.8.1+）
 - Java 17
 - 自动缓存依赖
 
@@ -151,12 +185,12 @@ A: 是的，除非是文档或配置文件的更改
 A: 在提交信息中添加 `[skip ci]` 或 `[ci skip]`
 
 ### Q: 开发版和发布版APK有什么区别？
-A: 
+A:
 - 开发版：包含调试信息，文件较大，适合开发测试
 - 发布版：优化过的版本，文件较小，适合正式使用
 
 ### Q: APK在哪里下载？
-A: 
+A:
 - 开发版：Actions页面的Artifacts
 - 发布版：Releases页面或Artifacts
 
