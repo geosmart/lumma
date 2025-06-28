@@ -198,6 +198,9 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                           }
                           if (i < _history.length) {
                             final h = _history[i];
+                            final isLast = i == _history.length - 1;
+                            // 如果正在流式输出，最后一条的 answer 不渲染（只渲染流式）
+                            final showAnswer = h['a'] != null && h['a']!.isNotEmpty && (!(_asking && isLast));
                             return Column(
                               children: [
                                 if (h['q'] != null && h['q']!.isNotEmpty)
@@ -225,7 +228,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                       ),
                                     ],
                                   ),
-                                if (h['a'] != null && h['a']!.isNotEmpty)
+                                if (showAnswer)
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [

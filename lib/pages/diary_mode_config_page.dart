@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/diary_mode_config_service.dart';
+import '../config/settings_ui_config.dart';
 
 class DiaryModeConfigPage extends StatefulWidget {
   const DiaryModeConfigPage({super.key});
@@ -43,8 +44,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.all(16),
-          child: Text('日记输入模式', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          padding: EdgeInsets.all(4),
         ),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -53,8 +53,8 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               _mode == 'qa' ? Icons.check_circle : Icons.circle_outlined,
               color: _mode == 'qa' ? Colors.green : null,
             ),
-            title: const Text('固定问答（结构化引导）'),
-            subtitle: const Text('逐条回答预设问题，适合新手或需要结构化梳理时'),
+            title: const Text('固定问答'),
+            subtitle: const Text('逐条回答预设问题，生成结构化日记'),
             onTap: () => _setMode('qa'),
           ),
         ),
@@ -65,8 +65,8 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               _mode == 'chat' ? Icons.check_circle : Icons.circle_outlined,
               color: _mode == 'chat' ? Colors.green : null,
             ),
-            title: const Text('AI问答（自由对话）'),
-            subtitle: const Text('与AI自由对话，适合有经验用户或灵活记录'),
+            title: const Text('AI问答'),
+            subtitle: const Text('按问答提示词与AI对话，生成自定义日记'),
             onTap: () => _setMode('chat'),
           ),
         ),

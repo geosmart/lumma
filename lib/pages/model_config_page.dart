@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/model_config.dart';
 import '../services/config_service.dart';
 import 'model_edit_page.dart';
+import '../config/settings_ui_config.dart';
 
 class ModelConfigPage extends StatefulWidget {
   const ModelConfigPage({super.key});
@@ -26,7 +27,8 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
     final configs = await ConfigService.loadModelConfigs();
     print('[model_config_page] 读取到 configs: ' + configs.map((c) => c.toJson().toString()).join(','));
     setState(() {
-      _configs = configs;
+      // 按 provider+model 名称升序排序
+      _configs = configs..sort((a, b) => ('${a.provider}-${a.model}').compareTo('${b.provider}-${b.model}'));
       _loading = false;
     });
   }
@@ -91,6 +93,32 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
     setState(() {});
   }
 
+  Widget _buildModelIcon(ModelConfig c) {
+    // 预设一组有趣的icon
+    const icons = [
+      Icons.android,
+      Icons.memory,
+      Icons.bolt,
+      Icons.auto_awesome,
+      Icons.rocket_launch,
+      Icons.catching_pokemon,
+      Icons.lightbulb,
+      Icons.science,
+      Icons.emoji_objects,
+      Icons.language,
+      Icons.star,
+      Icons.emoji_emotions,
+      Icons.extension,
+      Icons.sports_esports,
+      Icons.pets,
+    ];
+    // 用模型名hash到icon
+    final name = (c.model.isNotEmpty ? c.model : c.provider);
+    final hash = name.codeUnits.fold(0, (a, b) => a + b);
+    final icon = icons[hash % icons.length];
+    return Icon(icon, color: c.isActive ? Colors.green : Colors.blueGrey, size: 26);
+  }
+
   @override
   Widget build(BuildContext context) {
     return _loading
@@ -108,29 +136,54 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
                             itemBuilder: (ctx, i) {
                               final c = _configs[i];
                               return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                child: ListTile(
-                                  leading: Icon(
-                                    c.isActive ? Icons.check_circle : Icons.circle_outlined,
-                                    color: c.isActive ? Colors.green : null,
+                                margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
+                                  child: ListTile(
+                                    dense: true,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                    leading: _buildModelIcon(c),
+                                    title: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          c.provider,
+                                          style: TextStyle(fontSize: SettingsUiConfig.subtitleFontSize, color: Colors.blueGrey, fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          c.model,
+                                          style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, color: Colors.black87),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.copy, size: 20),
+                                          onPressed: () {
+                                            final copy = ModelConfig.fromJson(c.toJson());
+                                            _showEditDialog(config: copy);
+                                          },
+                                          tooltip: '复制',
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, size: 20),
+                                          onPressed: () => _showEditDialog(config: c, index: i),
+                                          tooltip: '编辑',
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, size: 20),
+                                          onPressed: () => _deleteConfig(i),
+                                          tooltip: '删除',
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () => _setActive(i),
                                   ),
-                                  title: Text('${c.provider} - ${c.model}'),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () => _showEditDialog(config: c, index: i),
-                                        tooltip: '编辑',
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () => _deleteConfig(i),
-                                        tooltip: '删除',
-                                      ),
-                                    ],
-                                  ),
-                                  onTap: () => _setActive(i),
                                 ),
                               );
                             },

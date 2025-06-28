@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/prompt_service.dart';
 import 'prompt_edit_page.dart';
+import '../config/settings_ui_config.dart';
 
 class PromptConfigPage extends StatefulWidget {
   const PromptConfigPage({super.key});
@@ -184,48 +185,56 @@ active: true
                           String title = name;
                           // 只显示文件名，不再格式化为日期
                           return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), // 与日记模式一致
                             child: ListTile(
-                              leading: const Icon(Icons.chat_bubble_outline),
-                              title: Text(title),
+                              dense: false, // 日记模式未用dense
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // 与日记模式一致
+                              leading: IconButton(
+                                icon: Icon(
+                                  _activePrompt[_activeCategory] == file.path
+                                      ? Icons.check_circle
+                                      : Icons.circle_outlined,
+                                  color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
+                                  size: 28, // 与日记模式按钮大小一致
+                                ),
+                                onPressed: () async {
+                                  final fileName = file.path.split('/').last;
+                                  print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
+                                  try {
+                                    await PromptService.setActivePrompt(_activeCategory, fileName);
+                                    print('[PromptConfigPage] 设置激活提示词成功');
+                                    await _loadActivePrompt();
+                                    setState(() {});
+                                  } catch (e) {
+                                    print('[PromptConfigPage] 设置激活提示词失败: $e');
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('设置激活失败: $e')),
+                                      );
+                                    }
+                                  }
+                                },
+                                tooltip: '设为激活',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              title: Text(title, style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, fontWeight: SettingsUiConfig.titleFontWeight)), // 与日记模式一致
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit),
+                                    icon: const Icon(Icons.edit, size: 22), // 稍大
                                     onPressed: () => _showPrompt(file),
                                     tooltip: '编辑',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete),
+                                    icon: const Icon(Icons.delete, size: 22),
                                     onPressed: () => _deletePrompt(file),
                                     tooltip: '删除',
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      _activePrompt[_activeCategory] == file.path
-                                          ? Icons.check_circle
-                                          : Icons.circle_outlined,
-                                      color: _activePrompt[_activeCategory] == file.path ? Colors.green : null,
-                                    ),
-                                    onPressed: () async {
-                                      final fileName = file.path.split('/').last;
-                                      print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
-                                      try {
-                                        await PromptService.setActivePrompt(_activeCategory, fileName);
-                                        print('[PromptConfigPage] 设置激活提示词成功');
-                                        await _loadActivePrompt();
-                                        setState(() {});
-                                      } catch (e) {
-                                        print('[PromptConfigPage] 设置激活提示词失败: $e');
-                                        if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('设置激活失败: $e')),
-                                          );
-                                        }
-                                      }
-                                    },
-                                    tooltip: '设为激活',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
                                 ],
                               ),

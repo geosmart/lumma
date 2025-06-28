@@ -21,7 +21,7 @@ class SettingsPage extends StatelessWidget {
               Tab(text: '模型', icon: Icon(Icons.memory, size: 18)),
               Tab(text: '提示词', icon: Icon(Icons.chat, size: 18)),
               Tab(text: '日记模式', icon: Icon(Icons.edit_note, size: 18)),
-              Tab(text: '问答列表', icon: Icon(Icons.question_answer, size: 18)),
+              Tab(text: '问题列表', icon: Icon(Icons.question_answer, size: 18)),
             ],
           ),
         ),
