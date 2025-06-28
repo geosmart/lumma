@@ -47,5 +47,4 @@ app.*.map.json
 # Local model configuration
 test/sample_data
 .env.local
-config
 flutter_app_vscode
