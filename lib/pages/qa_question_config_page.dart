@@ -90,8 +90,8 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                 Text(
                   '问题列表',
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: SettingsUiConfig.titleFontSize,
+                    fontWeight: SettingsUiConfig.titleFontWeight,
                     color: context.primaryTextColor,
                   ),
                 ),

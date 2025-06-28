@@ -165,8 +165,8 @@ active: true
                 Text(
                   '提示词管理',
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: SettingsUiConfig.titleFontSize,
+                    fontWeight: SettingsUiConfig.titleFontWeight,
                     color: context.primaryTextColor,
                   ),
                 ),

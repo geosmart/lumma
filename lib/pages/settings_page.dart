@@ -4,6 +4,7 @@ import 'prompt_config_page.dart';
 import 'diary_mode_config_page.dart';
 import 'qa_question_config_page.dart';
 import '../services/theme_service.dart';
+import '../config/settings_ui_config.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -77,8 +78,8 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                 Text(
                   '外观设置',
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: SettingsUiConfig.titleFontSize,
+                    fontWeight: SettingsUiConfig.titleFontWeight,
                     color: context.primaryTextColor,
                   ),
                 ),
@@ -112,8 +113,8 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                       Text(
                         '主题外观',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                          fontSize: SettingsUiConfig.titleFontSize,
+                          fontWeight: SettingsUiConfig.titleFontWeight,
                           color: context.primaryTextColor,
                         ),
                       ),
