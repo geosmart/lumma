@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'diary_mode_config_service.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
+import '../model/enums.dart' as model_enums;
 
 class DiaryModeConfigPage extends StatefulWidget {
   const DiaryModeConfigPage({super.key});
@@ -11,8 +12,7 @@ class DiaryModeConfigPage extends StatefulWidget {
 }
 
 class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
-  // 'qa': 固定问答，'chat': AI问答
-  String _mode = 'qa';
+  model_enums.DiaryMode _mode = model_enums.DiaryMode.qa;
   bool _loading = true;
 
   @override
@@ -24,12 +24,12 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
   Future<void> _loadMode() async {
     final mode = await DiaryModeConfigService.loadDiaryMode();
     setState(() {
-      _mode = mode.toString();
+      _mode = mode;
       _loading = false;
     });
   }
 
-  Future<void> _setMode(String mode) async {
+  Future<void> _setMode(model_enums.DiaryMode mode) async {
     setState(() {
       _mode = mode;
     });
@@ -96,8 +96,8 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
             ),
             child: ListTile(
               leading: Icon(
-                _mode == 'qa' ? Icons.check_circle : Icons.circle_outlined,
-                color: _mode == 'qa' ? Colors.green : context.secondaryTextColor,
+                _mode == model_enums.DiaryMode.qa ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == model_enums.DiaryMode.qa ? Colors.green : context.secondaryTextColor,
                 size: 22,
               ),
               title: Column(
@@ -121,7 +121,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                   fontSize: SettingsUiConfig.subtitleFontSize,
                 ),
               ),
-              onTap: () => _setMode('qa'),
+              onTap: () => _setMode(model_enums.DiaryMode.qa),
             ),
           ),
           Container(
@@ -136,8 +136,8 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
             ),
             child: ListTile(
               leading: Icon(
-                _mode == 'chat' ? Icons.check_circle : Icons.circle_outlined,
-                color: _mode == 'chat' ? Colors.green : context.secondaryTextColor,
+                _mode == model_enums.DiaryMode.chat ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == model_enums.DiaryMode.chat ? Colors.green : context.secondaryTextColor,
                 size: 22,
               ),
               title: Column(
@@ -161,7 +161,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                   fontSize: SettingsUiConfig.subtitleFontSize,
                 ),
               ),
-              onTap: () => _setMode('chat'),
+              onTap: () => _setMode(model_enums.DiaryMode.chat),
             ),
           ),
         ],

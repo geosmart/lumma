@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'prompt_service.dart';
+import '../model/enums.dart';
 
 class PromptEditPage extends StatefulWidget {
   final FileSystemEntity? file;
-  final String activeCategory;
+  final PromptCategory activeCategory;
 
   const PromptEditPage({super.key, this.file, required this.activeCategory});
 
@@ -15,14 +16,9 @@ class PromptEditPage extends StatefulWidget {
 class _PromptEditPageState extends State<PromptEditPage> {
   late TextEditingController _nameCtrl;
   late TextEditingController _contentCtrl;
-  late String _selectedCategory;
+  late PromptCategory _selectedCategory;
   late bool _isActive;
   bool _isSystem = false;
-
-  final Map<String, String> _categoryNames = {
-    'qa': '问答',
-    'summary': '总结',
-  };
 
   @override
   void initState() {
@@ -44,7 +40,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
     setState(() {
       _contentCtrl.text = content;
       _nameCtrl.text = widget.file!.path.split('/').last.replaceAll('.md', '');
-      _selectedCategory = meta['type'] ?? widget.activeCategory;
+      _selectedCategory = promptCategoryFromString(meta['type'] ?? widget.activeCategory);
       _isActive = meta['active'] == true || meta['active'] == 'true';
     });
   }
@@ -88,12 +84,12 @@ class _PromptEditPageState extends State<PromptEditPage> {
               readOnly: _isSystem,
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<PromptCategory>(
               value: _selectedCategory,
-              items: _categoryNames.entries
-                  .map((e) => DropdownMenuItem<String>(
-                        value: e.key,
-                        child: Text(e.value),
+              items: PromptCategory.values
+                  .map((category) => DropdownMenuItem<PromptCategory>(
+                        value: category,
+                        child: Text(promptCategoryToDisplayName(category)),
                       ))
                   .toList(),
               onChanged: _isSystem

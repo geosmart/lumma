@@ -3,9 +3,15 @@ import 'main_page.dart';
 import 'config/theme_service.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lumma/util/config_service.dart';
+import 'package:lumma/util/yaml_encoder.dart';
+import 'config/llm_config_init.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 初始化默认配置
+  await ensureConfig();
 
   // 初始化主题服务
   await ThemeService.instance.init();

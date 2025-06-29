@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'model_config.dart';
+import '../model/llm_config.dart';
 import 'config_service.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
-import 'model_edit_page.dart';
+import 'llm_edit_page.dart';
 
-class ModelConfigPage extends StatefulWidget {
-  const ModelConfigPage({super.key});
+class LLMConfigPage extends StatefulWidget {
+  const LLMConfigPage({super.key});
 
   @override
-  State<ModelConfigPage> createState() => _ModelConfigPageState();
+  State<LLMConfigPage> createState() => _LLMConfigPageState();
 }
 
-class _ModelConfigPageState extends State<ModelConfigPage> {
-  List<ModelConfig> _configs = [];
+class _LLMConfigPageState extends State<LLMConfigPage> {
+  List<LLMConfig> _configs = [];
   bool _loading = true;
 
   @override
@@ -23,21 +23,17 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
   }
 
   Future<void> _loadConfigs() async {
-    print('[model_config_page] 调用 ensureDefaultConfig');
-    await ConfigService.ensureDefaultConfig();
-    final configs = await ConfigService.loadModelConfigs();
-    print('[model_config_page] 读取到 configs: ' + configs.map((c) => c.toJson().toString()).join(','));
+    final appConfig = await AppConfigService.load();
     setState(() {
-      // 按 provider+model 名称升序排序
-      _configs = configs..sort((a, b) => ('${a.provider}-${a.model}').compareTo('${b.provider}-${b.model}'));
+      _configs = List<LLMConfig>.from(appConfig.model);
       _loading = false;
     });
   }
 
-  void _showEditDialog({ModelConfig? config, int? index}) async {
-    final result = await Navigator.of(context).push<ModelConfig>(
+  void _showEditDialog({LLMConfig? config, int? index}) async {
+    final result = await Navigator.of(context).push<LLMConfig>(
       MaterialPageRoute(
-        builder: (context) => ModelEditPage(config: config),
+        builder: (context) => LLMEditPage(config: config),
       ),
     );
 
@@ -49,7 +45,7 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
           _configs.add(result);
         }
       });
-      await ConfigService.saveModelConfigs(_configs);
+      await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
     }
   }
 
@@ -73,24 +69,24 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
     );
     if (confirm == true) {
       _configs.removeAt(index);
-      print('[model_config_page] 删除后 configs: ' + _configs.map((c) => c.toJson().toString()).join(','));
-      await ConfigService.saveModelConfigs(_configs);
+      await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
       setState(() {});
     }
   }
 
   void _setActive(int index) async {
     for (var i = 0; i < _configs.length; i++) {
-      _configs[i] = ModelConfig(
+      _configs[i] = LLMConfig(
         provider: _configs[i].provider,
         baseUrl: _configs[i].baseUrl,
         apiKey: _configs[i].apiKey,
         model: _configs[i].model,
         active: i == index,
+        created: _configs[i].created,
+        updated: DateTime.now(),
       );
     }
-    print('[model_config_page] 设置激活 configs: ' + _configs.map((c) => c.toJson().toString()).join(','));
-    await ConfigService.saveModelConfigs(_configs);
+    await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
     setState(() {});
   }
 
@@ -214,7 +210,15 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
                                               color: context.secondaryTextColor,
                                             ),
                                             onPressed: () {
-                                              final copy = ModelConfig.fromJson(c.toJson());
+                                              final copy = LLMConfig(
+                                                provider: c.provider,
+                                                baseUrl: c.baseUrl,
+                                                apiKey: c.apiKey,
+                                                model: c.model,
+                                                active: c.active,
+                                                created: c.created,
+                                                updated: DateTime.now(),
+                                              );
                                               _showEditDialog(config: copy);
                                             },
                                             tooltip: '复制',

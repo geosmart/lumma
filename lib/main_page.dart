@@ -8,6 +8,7 @@ import 'config/diary_mode_config_service.dart';
 import 'config/theme_service.dart';
 import 'util/storage_service.dart';
 import 'util/sync_service.dart';
+import 'model/enums.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -165,7 +166,7 @@ class _MainTabPageState extends State<MainTabPage> {
                           borderRadius: BorderRadius.circular(32),
                           onTap: () async {
                             final mode = await DiaryModeConfigService.loadDiaryMode();
-                            if (mode == 'chat') {
+                            if (mode == DiaryMode.chat) {
                               Navigator.of(context).push(
                                 MaterialPageRoute(builder: (_) => const DiaryChatPage()),
                               );

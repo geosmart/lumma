@@ -1,13 +1,16 @@
 import 'dart:io';
+import 'package:lumma/model/enums.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
-import 'model_config.dart';
+import '../model/prompt_config.dart';
+import 'config_service.dart';
 
 class PromptService {
-  static const List<String> promptTypes = [
-    'qa', 'correction', 'summary', 'markdown'
+  static const List<PromptCategory> promptCategories = [
+    PromptCategory.qa,
+    PromptCategory.summary,
   ];
 
   static Future<String> get _promptDir async {
@@ -24,18 +27,17 @@ class PromptService {
   }
 
   /// 获取所有 prompt 文件（可选按类型过滤）
-  static Future<List<FileSystemEntity>> listPrompts({String? type}) async {
+  static Future<List<FileSystemEntity>> listPrompts({PromptCategory? category}) async {
     final dir = await _promptDir;
-    final files = Directory(dir)
-        .listSync()
-        .where((f) => f.path.endsWith('.md'))
-        .toList();
-    if (type == null) return files;
+    final files = Directory(
+      dir,
+    ).listSync().where((f) => f.path.endsWith('.md')).toList();
+    if (category == null) return files;
     // 修正：异步过滤
     List<FileSystemEntity> filtered = [];
     for (final f in files) {
       final fm = await getPromptFrontmatter(File(f.path));
-      if (fm['type'] == type) filtered.add(f);
+      if (fm['type'] == promptCategoryToString(category)) filtered.add(f);
     }
     return filtered;
   }
@@ -54,16 +56,13 @@ class PromptService {
   static Future<void> savePrompt({
     required String fileName,
     required String content,
-    required String type,
+    required PromptCategory type,
     String? oldFileName,
   }) async {
     final dir = await _promptDir;
     final file = File('$dir/$fileName');
     final now = DateTime.now().toIso8601String();
-    Map<String, dynamic> frontmatter = {
-      'type': type,
-      'updated': now,
-    };
+    Map<String, dynamic> frontmatter = {'type': promptCategoryToString(type), 'updated': now};
     if (await file.exists()) {
       final oldFront = await getPromptFrontmatter(file);
       frontmatter['created'] = oldFront['created'] ?? now;
@@ -116,8 +115,8 @@ class PromptService {
   }
 
   /// 获取指定类型的激活 prompt 文件（frontmatter active=true）
-  static Future<File?> getActivePromptFile(String type) async {
-    final prompts = await listPrompts(type: type);
+  static Future<File?> getActivePromptFile(PromptCategory category) async {
+    final prompts = await listPrompts(category: category);
     for (final f in prompts) {
       final fm = await getPromptFrontmatter(File(f.path));
       if (fm['active'] == true || fm['active'] == 'true') return File(f.path);
@@ -126,16 +125,21 @@ class PromptService {
   }
 
   /// 获取指定类型的激活 prompt 内容
-  static Future<String?> getActivePromptContent(String type) async {
-    final file = await getActivePromptFile(type);
+  static Future<String?> getActivePromptContent(PromptCategory category) async {
+    final file = await getActivePromptFile(category);
     if (file == null) return null;
     final content = await file.readAsString();
     return _stripFrontmatter(content);
   }
 
   /// 设置指定类型的激活 prompt（将所有同类active=false，目标active=true）
-  static Future<void> setActivePrompt(String type, String fileName, {BuildContext? context}) async {
-    final prompts = await listPrompts(type: type);
+  static Future<void> setActivePrompt(
+    PromptCategory category,
+    String fileName, {
+    BuildContext? context,
+  }) async {
+    final prompts = await listPrompts(category: category);
+    // 更新文件系统中的 markdown 文件的激活状态
     for (final f in prompts) {
       final file = File(f.path);
       final fm = await getPromptFrontmatter(file);
@@ -147,5 +151,35 @@ class PromptService {
       final fmStr = _frontmatterToString(newFm);
       await file.writeAsString('$fmStr\n$body');
     }
+    // 同时更新 AppConfig 中的激活状态
+    await AppConfigService.update((config) {
+      for (var prompt in config.prompt) {
+        if (prompt.type == category) {
+          // 把所有同类型的设为非激活
+          prompt.active = false;
+        }
+      }
+      // 将目标提示词设为激活
+      final targetPrompt = config.prompt.firstWhere(
+        (p) =>
+            p.type == category && p.name.contains(fileName.replaceAll('.md', '')),
+        orElse: () => config.prompt.firstWhere(
+          (p) => p.type == category,
+          orElse: () => PromptConfig(
+            name: fileName.replaceAll('.md', ''),
+            type: category,
+            active: true,
+            content: '',
+          ),
+        ),
+      );
+
+      targetPrompt.active = true;
+
+      // 如果是新增的 prompt（不在现有列表中），则添加到列表
+      if (!config.prompt.contains(targetPrompt)) {
+        config.prompt.add(targetPrompt);
+      }
+    });
   }
 }

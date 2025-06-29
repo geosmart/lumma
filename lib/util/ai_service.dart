@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../model/app_config.dart';
 import '../config/config_service.dart';
 import '../config/prompt_service.dart';
+import '../model/enums.dart';
 
 class AiService {
   /// 构造消息体
@@ -42,13 +44,13 @@ class AiService {
     required void Function(Map<String, String>) onDone,
     required void Function(Object error)? onError,
   }) async {
-    final configs = await ConfigService.loadModelConfigs();
+    final appConfig = await AppConfigService.load();
+    final configs = appConfig.model;
     if (configs.isEmpty) {
       onError?.call(Exception('没有可用的模型配置'));
       return;
     }
-    final active =
-        configs.firstWhere((e) => e.active, orElse: () => configs.first);
+    final active = configs.firstWhere((e) => e.active, orElse: () => configs.first);
     final url = Uri.parse('${active.baseUrl}/chat/completions');
     final body = jsonEncode({
       'model': active.model,
@@ -212,7 +214,9 @@ class AiService {
     required void Function(Object error)? onError,
   }) async {
     try {
-      final systemPrompt = await PromptService.getActivePromptContent(promptType);
+      final systemPrompt = await PromptService.getActivePromptContent(
+        PromptCategory.values.firstWhere((e) => promptCategoryToString(e) == promptType, orElse: () => PromptCategory.qa),
+      );
       final messages = buildMessages(
         systemPrompt: systemPrompt,
         history: [],
@@ -235,9 +239,10 @@ class AiService {
     required List<Map<String, String>> messages,
     bool stream = true,
   }) async {
-    final activeConfigs = await ConfigService.loadModelConfigs();
-    final active = activeConfigs.firstWhere((e) => e.active,
-        orElse: () => activeConfigs.first);
+    final appConfig = await AppConfigService.load();
+    final configs = appConfig.model;
+    final active = configs.firstWhere((e) => e.active,
+        orElse: () => configs.first);
     final url = Uri.parse('${active.baseUrl}/chat/completions');
 
     final body = {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'model_config_page.dart';
+import 'llm_config_page.dart';
 import 'prompt_config_page.dart';
 import 'diary_mode_config_page.dart';
 import '../diary/qa_question_config_page.dart';
@@ -31,7 +31,7 @@ class SettingsPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            ModelConfigPage(),
+            LLMConfigPage(),
             PromptConfigPage(),
             DiaryModeConfigPage(),
             QaQuestionConfigPage(),

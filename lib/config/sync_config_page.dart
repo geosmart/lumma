@@ -5,6 +5,22 @@ import '../util/storage_service.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
 import '../util/storage_permission_handler.dart';
+import '../config/config_service.dart';
+import '../model/sync_config.dart';
+
+class SyncConfigService {
+  static Future<Map?> loadSyncConfig() async {
+    final appConfig = await AppConfigService.load();
+    return appConfig.sync.isNotEmpty ? appConfig.sync.first.toMap() : null;
+  }
+
+  static Future<void> saveSyncConfig(Map syncConfig) async {
+    await AppConfigService.update((c) {
+      // 假设 sync 只存一个配置
+      c.sync = [SyncConfig.fromMap(syncConfig)];
+    });
+  }
+}
 
 class SyncConfigPage extends StatefulWidget {
   const SyncConfigPage({super.key});

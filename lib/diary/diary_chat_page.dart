@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../util/ai_service.dart';
-import '../util/ai_service.dart';
 import '../util/curl_helper.dart';
 import '../util/markdown_service.dart';
 import '../util/frontmatter_service.dart';
@@ -12,6 +11,8 @@ import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
+import '../model/app_config.dart';
+import '../model/enums.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -47,9 +48,9 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   // 加载当前模型名称
   void _loadCurrentModelName() async {
     try {
-      final config = await ConfigService.loadActiveModelConfig();
+      final config = await AppConfigService.load();
       setState(() {
-        _currentModelName = config.model;
+        _currentModelName = config.model.isNotEmpty ? config.model.first.model : '未知模型';
       });
     } catch (e) {
       setState(() {
@@ -121,7 +122,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     final userInput = _history.isNotEmpty ? _history.last['q'] ?? '' : _ctrl.text.trim();
     final historyWindow = ChatHistoryService.getRecent(_history);
 
-    final systemPrompt = await PromptService.getActivePromptContent('qa');
+    final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.qa);
     final messages = AiService.buildMessages(
       systemPrompt: systemPrompt,
       history: historyWindow,
@@ -166,7 +167,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             }
           });
 
-          final systemPrompt = await PromptService.getActivePromptContent('qa');
+          final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.qa);
           final messages = AiService.buildMessages(
             systemPrompt: systemPrompt,
             history: ChatHistoryService.getRecent(_history),

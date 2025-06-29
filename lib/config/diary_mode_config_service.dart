@@ -1,36 +1,30 @@
-import 'dart:io';
-import 'dart:convert';
 import 'config_service.dart';
-import 'package:path/path.dart' as p;
+import '../model/enums.dart';
 
+/// Service for managing diary mode configuration
 class DiaryModeConfigService {
-  static const String _fileName = 'diary_configs.json';
-
-  // 统一调用 ConfigService 的 configDir
-  static Future<String> get _configDir async {
-    // 这里直接用项目根目录下 config
-    return await ConfigService.getProjectConfigDir();
+  /// Load the current diary mode from app config
+  static Future<DiaryMode> loadDiaryMode() async {
+    final config = await AppConfigService.load();
+    return config.diaryMode;
   }
 
-  static Future<File> get _configFile async {
-    final path = await _configDir;
-    return File(p.join(path, _fileName));
+  /// Save the diary mode to app config
+  static Future<void> saveDiaryMode(DiaryMode mode) async {
+    await AppConfigService.update((config) {
+      config.diaryMode = mode;
+    });
   }
 
-  static Future<String> loadDiaryMode() async {
-    final file = await _configFile;
-    if (await file.exists()) {
-      final content = await file.readAsString();
-      if (content.isNotEmpty) {
-        final map = jsonDecode(content);
-        return map['mode'] ?? 'qa';
-      }
-    }
-    return 'qa'; // 默认固定问答
+  /// 新增: 持久化日记模式配置到 lumma_config.json
+  static Future<void> save() async {
+    // 假设 diaryMode 已在 AppConfig 中，直接调用 AppConfigService.save()
+    await AppConfigService.save();
   }
 
-  static Future<void> saveDiaryMode(String mode) async {
-    final file = await _configFile;
-    await file.writeAsString(jsonEncode({'mode': mode}));
+  /// Initialize the diary mode config if needed
+  static Future<void> init() async {
+    // The AppConfig constructor already sets a default DiaryMode.qa
+    // No additional initialization needed
   }
 }

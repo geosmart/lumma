@@ -1,0 +1,51 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import '../model/llm_config.dart';
+import '../model/prompt_config.dart';
+import 'config_service.dart';
+
+/// 初始化 LLM 和 Prompt 配置，如果没有则从 .env 读取并写入
+Future<void> ensureConfig() async {
+  final config = await AppConfigService.load();
+  final env = await _readEnv();
+  bool updated = false;
+
+  // LLM 初始化
+  if (config.model.isEmpty) {
+    final llm = LLMConfig(
+      provider: env['MODEL_PROVIDER'] ?? '',
+      baseUrl: env['MODEL_BASE_URL'] ?? '',
+      apiKey: env['MODEL_API_KEY'] ?? '',
+      model: env['MODEL_NAME'] ?? '',
+      active: true,
+    );
+    config.model = [llm];
+    updated = true;
+    debugPrint('[ensureLlmAndPromptConfigFromEnv] 已根据 .env 初始化 LLM 配置');
+  }
+
+  if (updated) {
+    await AppConfigService.update((c) {
+      c.model = config.model;
+      c.prompt = config.prompt;
+    });
+  }
+}
+
+Future<Map<String, String>> _readEnv() async {
+  final file = File('.env');
+  if (!await file.exists()) return {};
+  final lines = await file.readAsLines();
+  final map = <String, String>{};
+  for (final line in lines) {
+    final trimmed = line.trim();
+    if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
+    final idx = trimmed.indexOf('=');
+    if (idx > 0) {
+      final key = trimmed.substring(0, idx).trim();
+      final value = trimmed.substring(idx + 1).trim();
+      map[key] = value;
+    }
+  }
+  return map;
+}

@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lumma/config/prompt_config_service.dart';
+import 'package:lumma/model/enums.dart';
 import 'prompt_service.dart';
 import 'theme_service.dart';
 import 'prompt_edit_page.dart';
@@ -14,62 +16,15 @@ class PromptConfigPage extends StatefulWidget {
 
 class _PromptConfigPageState extends State<PromptConfigPage> {
   List<FileSystemEntity> _allPrompts = [];
-  String _activeCategory = 'qa';
-  Map<String, String?> _activePrompt = {};
+  PromptCategory _activeCategory = PromptCategory.qa;
+  Map<PromptCategory, String?> _activePrompt = {};
 
   @override
   void initState() {
     super.initState();
-    _initDefaultPrompts();
     _loadPrompts();
     _loadActivePrompt();
     _printPromptDir();
-  }
-
-  Future<void> _initDefaultPrompts() async {
-    final files = await PromptService.listPrompts();
-    final dir = await PromptService.getPromptDir();
-    final now = DateTime.now().toIso8601String();
-
-    // QA默认提示词
-    final qaDefaultName = '问答AI日记助手.md';
-    if (!files.any((f) => f.path.split('/').last == qaDefaultName)) {
-      final f = File('$dir/$qaDefaultName');
-      await f.writeAsString('''---
-type: qa
-created: $now
-updated: $now
-active: true
----
-你是一个专业、灵活的"AI 日记伙伴"。你的核心任务是倾听我用自然语言（通常是语音输入）自由地讲述今天发生的事情和感受，并智能地将这些零散的信息整理成一份结构化的日记。
-
-#### 核心能力
-1. 自动纠错：你能自动识别并修正我语音输入时产生的错别字、同音字和语法错误，理解口语化的表达。
-2. 意图识别与归类：你拥有强大的内容理解能力。我不需要说出标签，你能根据我描述的事情和感受，自动判断它属于哪个日记分类（如 #环境, #成就, #情绪 等）。一件事可能同时属于多个分类。
-3. 非线性处理：你完全理解我不会按顺序讲述。我可以随时谈论任何主题，你可以接收、暂存并最终将所有信息整合在一起。
-''');
-    }
-
-    // 总结默认提示词
-    final summaryDefaultName = '内容总结助手.md';
-    if (!files.any((f) => f.path.split('/').last == summaryDefaultName)) {
-      final f = File('$dir/$summaryDefaultName');
-      await f.writeAsString('''---
-type: summary
-created: $now
-updated: $now
-active: true
----
-你是一个专业的内容总结助手。你的任务是：
-
-1. **提取要点**：从长文本中提取关键信息和核心观点
-2. **结构化总结**：按主题或时间线组织总结内容
-3. **保持完整性**：确保总结涵盖原文的重要信息
-4. **简洁明了**：用简练的语言表达核心内容
-
-请对以下内容进行总结：
-''');
-    }
   }
 
   Future<void> _loadActivePrompt() async {
@@ -79,17 +34,20 @@ active: true
       setState(() {
         _activePrompt = {_activeCategory: file?.path};
       });
-      print('[PromptConfigPage] 当前 $_activeCategory 类型的激活文件: ${file?.path ?? 'null'}');
+      print('[PromptConfigPage] 当前 ${promptCategoryToString(_activeCategory)} 类型的激活文件: [38;5;2m${file?.path ?? 'null'}[0m');
     } catch (e) {
       print('[PromptConfigPage] 加载激活提示词失败: $e');
     }
   }
 
   Future<void> _loadPrompts() async {
+    // 如果没有提示词，先初始化
+    await PromptConfigService.init();
+
+    // 加载所有提示词文件
     final files = await PromptService.listPrompts();
-    _allPrompts = files;
     setState(() {
-      // 数据已加载完成
+      _allPrompts = files;
     });
   }
 
@@ -97,17 +55,12 @@ active: true
     List<FileSystemEntity> result = [];
     for (final f in _allPrompts) {
       final meta = await PromptService.getPromptFrontmatter(File(f.path));
-      if ((meta['type'] ?? 'qa') == _activeCategory) {
+      if ((meta['type'] ?? 'qa') == promptCategoryToString(_activeCategory)) {
         result.add(f);
       }
     }
     return result;
   }
-
-  final Map<String, String> _categoryNames = {
-    'qa': '问答',
-    'summary': '总结',
-  };
 
   void _showPrompt(FileSystemEntity? file) async {
     final result = await Navigator.of(context).push<bool>(
@@ -124,11 +77,32 @@ active: true
 
   void _deletePrompt(FileSystemEntity file) async {
     final name = file.path.split('/').last;
-    if (name == '问答AI日记助手.md') {
+
+    // 系统默认提示词不可删除
+    if (name == '问答AI日记助手.md' || name == '总结AI日记助手.md') {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('系统提示词不可删除')));
       return;
     }
+
+    // 检查是否为激活中的提示词
+    final activeFile = await PromptService.getActivePromptFile(_activeCategory);
+    final isActivePrompt = activeFile != null && activeFile.path == file.path;
+
+    // 删除提示词文件
     await PromptService.deletePrompt(name);
+
+    // 如果删除的是激活中的提示词，需要重新设置激活项
+    if (isActivePrompt) {
+      // 获取同类型的第一个提示词并设为激活
+      final remainingFiles = await PromptService.listPrompts(category: _activeCategory);
+      if (remainingFiles.isNotEmpty) {
+        final firstFile = remainingFiles.first;
+        final firstName = firstFile.path.split('/').last;
+        await PromptService.setActivePrompt(_activeCategory, firstName);
+      }
+    }
+
+    // 重新加载提示词列表和激活状态
     await _loadPrompts();
     await _loadActivePrompt();
   }
@@ -181,13 +155,13 @@ active: true
                   child: Wrap(
                     spacing: 8,
                     children: [
-                      for (final entry in _categoryNames.entries)
+                      for (final category in PromptCategory.values)
                         ChoiceChip(
-                          label: Text(entry.value),
-                          selected: _activeCategory == entry.key,
+                          label: Text(promptCategoryToDisplayName(category)),
+                          selected: _activeCategory == category,
                           onSelected: (v) {
                             setState(() {
-                              _activeCategory = entry.key;
+                              _activeCategory = category;
                             });
                             _loadActivePrompt();
                           },
@@ -264,7 +238,7 @@ active: true
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _categoryNames[_activeCategory] ?? '提示词',
+                                        promptCategoryToDisplayName(_activeCategory),
                                         style: TextStyle(
                                           fontSize: SettingsUiConfig.subtitleFontSize,
                                           color: context.secondaryTextColor,
@@ -323,9 +297,9 @@ active: true
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-                            );
+                                ), // End of ListTile
+                              ), // End of Padding
+                            ); // End of Container
                           },
                         );
                       },

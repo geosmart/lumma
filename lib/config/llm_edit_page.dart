@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import '../config/model_config.dart';
+import '../model/llm_config.dart';
 
-class ModelEditPage extends StatefulWidget {
-  final ModelConfig? config;
+class LLMEditPage extends StatefulWidget {
+  final LLMConfig? config;
 
-  const ModelEditPage({super.key, this.config});
+  const LLMEditPage({super.key, this.config});
 
   @override
-  State<ModelEditPage> createState() => _ModelEditPageState();
+  State<LLMEditPage> createState() => _LLMEditPageState();
 }
 
-class _ModelEditPageState extends State<ModelEditPage> {
+class _LLMEditPageState extends State<LLMEditPage> {
   late TextEditingController _providerCtrl;
   late TextEditingController _baseUrlCtrl;
   late TextEditingController _apiKeyCtrl;
@@ -25,7 +25,6 @@ class _ModelEditPageState extends State<ModelEditPage> {
     _baseUrlCtrl = TextEditingController(text: config?.baseUrl ?? '');
     _apiKeyCtrl = TextEditingController(text: config?.apiKey ?? '');
     _modelCtrl = TextEditingController(text: config?.model ?? '');
-    // Assuming the default model has a specific provider name, e.g., 'default'
     _isDefault = config?.provider == 'default';
   }
 
@@ -39,12 +38,14 @@ class _ModelEditPageState extends State<ModelEditPage> {
   }
 
   void _saveConfig() {
-    final newConfig = ModelConfig(
+    final newConfig = LLMConfig(
       provider: _providerCtrl.text,
       baseUrl: _baseUrlCtrl.text,
       apiKey: _apiKeyCtrl.text,
       model: _modelCtrl.text,
       active: widget.config?.active ?? false,
+      created: widget.config?.created,
+      updated: DateTime.now(),
     );
     Navigator.of(context).pop(newConfig);
   }

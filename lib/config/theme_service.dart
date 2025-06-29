@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../config/config_service.dart';
+import '../model/app_config.dart';
+import '../model/enums.dart';
 
 /// 主题管理服务
 class ThemeService extends ChangeNotifier {
-  static const String _themeKey = 'app_theme_mode';
-
   ThemeMode _themeMode = ThemeMode.light;
 
   ThemeMode get themeMode => _themeMode;
@@ -18,9 +18,9 @@ class ThemeService extends ChangeNotifier {
 
   /// 初始化主题设置
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedTheme = prefs.getString(_themeKey) ?? 'light';
-    _themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
+    final appConfig = await AppConfigService.load();
+    final savedTheme = appConfig.theme;
+    _themeMode = savedTheme == ThemeModeType.dark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 
@@ -42,8 +42,12 @@ class ThemeService extends ChangeNotifier {
 
   /// 保存主题设置
   Future<void> _saveTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, _themeMode == ThemeMode.dark ? 'dark' : 'light');
+    await AppConfigService.update((c) => c.theme = _themeMode == ThemeMode.dark ? ThemeModeType.dark : ThemeModeType.light);
+  }
+
+  /// 新增: 持久化主题配置到 lumma_config.json
+  Future<void> save() async {
+    await _saveTheme();
   }
 }
 

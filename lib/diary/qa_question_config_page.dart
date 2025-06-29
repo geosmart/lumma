@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../config/settings_ui_config.dart';
+import '../model/app_config.dart';
+import 'qa_questions_service.dart';
 
 class QaQuestionConfigPage extends StatefulWidget {
   const QaQuestionConfigPage({super.key});
@@ -18,11 +20,18 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
   @override
   void initState() {
     super.initState();
-    _questionsFuture = _loadQuestions();
+    _questionsFuture = _initAndLoadQuestions();
+  }
+
+  Future<List<String>> _initAndLoadQuestions() async {
+    // 保证有默认值并持久化
+    await QaQuestionsService.init();
+    return _loadQuestions();
   }
 
   Future<List<String>> _loadQuestions() async {
-    final questions = await ConfigService.loadQaQuestions();
+    final config = await AppConfigService.load();
+    final questions = config.qaQuestions;
     _controllers.clear();
     for (var q in questions) {
       _controllers.add(TextEditingController(text: q));
@@ -48,7 +57,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
     });
     try {
       final questions = _controllers.map((c) => c.text).toList();
-      await ConfigService.saveQaQuestions(questions);
+      await AppConfigService.update((c) => c.qaQuestions = List<String>.from(questions));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Questions saved successfully!')),
       );

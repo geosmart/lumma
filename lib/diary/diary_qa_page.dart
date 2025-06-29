@@ -6,6 +6,7 @@ import '../util/ai_service.dart';
 import '../config/config_service.dart';
 import '../config/prompt_service.dart';
 import '../config/theme_service.dart';
+import '../model/enums.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});
@@ -46,7 +47,8 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
   Future<void> _loadQuestions() async {
     try {
-      final questions = await ConfigService.loadQaQuestions();
+      final config = await AppConfigService.load();
+      final questions = config.qaQuestions;
       if (mounted) {
         setState(() {
           _questions = questions;
@@ -55,7 +57,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载问题列表失败: ${e.toString()}')),
+          SnackBar(content: Text('加载问题列表失败: e.toString()}')),
         );
       }
     }
@@ -70,7 +72,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       final file = File('$diaryDir/$fileName');
 
       if (!await file.exists()) {
-        final now = DateTime.now();
         final initialContent = '# 今日问答日记\n\n---\n\n';
         await MarkdownService.saveDiaryMarkdown(initialContent, fileName: fileName);
       }
@@ -123,7 +124,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       final file = File('$diaryDir/$_diaryFileName');
       final content = await file.readAsString();
 
-      final systemPrompt = await PromptService.getActivePromptContent('summary');
+      final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.summary);
       final messages = AiService.buildMessages(
         systemPrompt: systemPrompt,
         history: [],
