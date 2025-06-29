@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'frontmatter_service.dart';
@@ -91,7 +92,7 @@ class MarkdownService {
   /// 追加内容到当天的日记文件
   static Future<void> appendToDailyDiary(String contentToAppend) async {
     final now = DateTime.now();
-    final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+    final fileName = getDiaryFileName();
     final diaryDir = await getDiaryDir();
     final file = File('$diaryDir/$fileName');
 
@@ -110,7 +111,7 @@ class MarkdownService {
   /// 覆盖当天的日记内容（不追加，直接覆盖）
   static Future<void> overwriteDailyDiary(String contentToWrite) async {
     final now = DateTime.now();
-    final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+    final fileName = getDiaryFileName();
     final diaryDir = await getDiaryDir();
     final file = File('$diaryDir/$fileName');
 
@@ -122,5 +123,60 @@ class MarkdownService {
       // 如果文件存在，直接覆盖内容
       await saveDiaryMarkdown(contentToWrite, fileName: fileName);
     }
+  }
+
+  /// 将所有日记导出为Markdown文件到指定目录
+  static Future<int> exportDiaries(String targetDir) async {
+    try {
+      final diaryDir = await getDiaryDir();
+      final files = Directory(diaryDir)
+          .listSync()
+          .where((f) => f.path.endsWith('.md'))
+          .toList();
+
+      int exportCount = 0;
+      for (final file in files) {
+        if (file is File) {
+          final fileName = file.uri.pathSegments.last;
+          final targetFile = File('$targetDir/$fileName');
+
+          // 读取源文件内容
+          final content = await file.readAsString();
+
+          // 写入目标文件
+          await targetFile.writeAsString(content);
+          exportCount++;
+        }
+      }
+
+      return exportCount;  // 返回成功导出的文件数量
+    } catch (e) {
+      rethrow;
+    }
+  }  /// 导出指定日记文件为字节数组，用于下载/保存
+  static Future<Uint8List> exportDiaryFile(String fileName) async {
+    try {
+      final diaryDir = await getDiaryDir();
+      final file = File('$diaryDir/$fileName');
+
+      if (await file.exists()) {
+        // 直接读取文件内容并转换为字节数组
+        return await file.readAsBytes();
+      } else {
+        throw FileSystemException('文件不存在', fileName);
+      }
+    } catch (e) {
+      // 添加更多错误信息以便调试
+      if (e is FileSystemException) {
+        throw FileSystemException('文件访问错误: ${e.message}', fileName, e.osError);
+      }
+      rethrow;
+    }
+  }
+
+  /// 获取指定日期的日记文件名，不指定则为当天
+  static String getDiaryFileName([DateTime? date]) {
+    final now = date ?? DateTime.now();
+    return 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
   }
 }

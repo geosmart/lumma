@@ -535,8 +535,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 try {
                                   // 覆盖当天的日记文件
                                   await MarkdownService.overwriteDailyDiary(content);
-                                  final now = DateTime.now();
-                                  final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+                                  final fileName = MarkdownService.getDiaryFileName();
                                   final diaryDir = await MarkdownService.getDiaryDir();
                                   final filePath = '$diaryDir/$fileName';
                                   // 打印保存路径

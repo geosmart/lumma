@@ -221,6 +221,7 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(),
                                           ),
+                                          const SizedBox(width: 8), // 添加间距
                                           IconButton(
                                             icon: Icon(
                                               Icons.edit,
@@ -232,6 +233,7 @@ class _ModelConfigPageState extends State<ModelConfigPage> {
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(),
                                           ),
+                                          const SizedBox(width: 8), // 添加间距
                                           IconButton(
                                             icon: const Icon(
                                               Icons.delete,

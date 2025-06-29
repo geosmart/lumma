@@ -40,11 +40,11 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "my_app");
+    gtk_header_bar_set_title(header_bar, "lumma");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "my_app");
+    gtk_window_set_title(window, "lumma");
   }
 
   gtk_window_set_default_size(window, 1280, 720);
@@ -83,7 +83,7 @@ static gboolean my_application_local_command_line(GApplication* application, gch
 
 // Implements GApplication::startup.
 static void my_application_startup(GApplication* application) {
-  //MyApplication* self = MY_APPLICATION(object);
+  //MyApplication* self = MY_APPLICATION(application);
 
   // Perform any actions required at application startup.
 
@@ -92,7 +92,7 @@ static void my_application_startup(GApplication* application) {
 
 // Implements GApplication::shutdown.
 static void my_application_shutdown(GApplication* application) {
-  //MyApplication* self = MY_APPLICATION(object);
+  //MyApplication* self = MY_APPLICATION(application);
 
   // Perform any actions required at application shutdown.
 

@@ -104,15 +104,6 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '日记模式',
-                    style: TextStyle(
-                      fontSize: SettingsUiConfig.subtitleFontSize,
-                      color: context.secondaryTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
                     '固定问答',
                     style: TextStyle(
                       fontSize: SettingsUiConfig.titleFontSize,
@@ -152,15 +143,6 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '日记模式',
-                    style: TextStyle(
-                      fontSize: SettingsUiConfig.subtitleFontSize,
-                      color: context.secondaryTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
                   Text(
                     'AI问答',
                     style: TextStyle(

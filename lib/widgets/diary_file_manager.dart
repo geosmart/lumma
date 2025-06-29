@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../services/markdown_service.dart';
 import '../services/diary_frontmatter_util.dart';
 import '../services/theme_service.dart';
+import '../services/storage_permission_handler.dart';
 import '../pages/diary_content_page.dart';
 
 /// 日记文件管理组件，集成列表、增删改查、编辑、选择等全部逻辑
@@ -118,6 +120,106 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     }
   }
 
+  Future<void> _exportFile(String file) async {
+    // 对于 Android，首先检查权限
+    if (Platform.isAndroid) {
+      final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
+      if (!hasPermission) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('需要文件访问权限才能导出日记'),
+          duration: Duration(seconds: 3),
+        ));
+        return;
+      }
+    }
+
+    try {
+      // 准备文件内容
+      final bytes = await MarkdownService.exportDiaryFile(file);
+
+      // 在 Android 上使用更兼容的方式进行文件保存
+      if (Platform.isAndroid) {
+        // 尝试使用 saveFile 方法
+        try {
+          final result = await FilePicker.platform.saveFile(
+            dialogTitle: '导出日记文件',
+            fileName: file,
+            bytes: bytes,
+            type: FileType.any, // 确保可以选择任意类型
+          );
+          if (result != null) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('导出成功')));
+          }
+        } catch (e) {
+          // 如果默认方法失败，显示详细错误信息并提供建议
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('导出失败: ${e.toString()}\n请尝试导出全部日记功能，并选择一个可写的目录。'),
+            duration: const Duration(seconds: 5),
+          ));
+        }
+      } else {
+        // 非 Android 平台使用标准方法
+        final result = await FilePicker.platform.saveFile(
+          dialogTitle: '导出日记文件',
+          fileName: file,
+          bytes: bytes,
+        );
+        if (result != null) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('导出成功')));
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('导出失败: ${e.toString()}'),
+        duration: const Duration(seconds: 5),
+      ));
+    }
+  }
+
+  // 导出全部日记到指定目录
+  Future<void> _exportDiaries() async {
+    // 对于 Android，首先检查权限
+    if (Platform.isAndroid) {
+      final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
+      if (!hasPermission) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('需要文件访问权限才能导出日记'),
+          duration: Duration(seconds: 3),
+        ));
+        return;
+      }
+    }
+
+    // 使用file_picker让用户选择导出目录
+    final directory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: '选择导出目录',
+    );
+
+    if (directory == null) {
+      // 用户取消了选择
+      return;
+    }
+
+    try {
+      setState(() => _loading = true);
+      final exportCount = await MarkdownService.exportDiaries(directory);
+      setState(() => _loading = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('成功导出 $exportCount 个日记文件到:\n$directory')),
+        );
+      }
+    } catch (e) {
+      setState(() => _loading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('导出失败: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _editCtrl.dispose();
@@ -156,6 +258,12 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                 icon: Icons.refresh,
                 tooltip: '刷新',
                 onPressed: _loadFiles,
+              ),
+              const SizedBox(width: 8),
+              _ActionButton(
+                icon: Icons.file_download,
+                tooltip: '导出全部日记',
+                onPressed: _exportDiaries,
               ),
               const SizedBox(width: 8),
               _ActionButton(

@@ -3,6 +3,7 @@ import 'model_config_page.dart';
 import 'prompt_config_page.dart';
 import 'diary_mode_config_page.dart';
 import 'qa_question_config_page.dart';
+import 'sync_config_page.dart';
 import '../services/theme_service.dart';
 import '../config/settings_ui_config.dart';
 
@@ -12,7 +13,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('设置', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
@@ -23,6 +24,7 @@ class SettingsPage extends StatelessWidget {
               Tab(icon: Icon(Icons.chat, size: 20)),
               Tab(icon: Icon(Icons.auto_stories, size: 20)),
               Tab(icon: Icon(Icons.question_answer, size: 20)),
+              Tab(icon: Icon(Icons.sync, size: 20)),
               Tab(icon: Icon(Icons.palette, size: 20)),
             ],
           ),
@@ -33,6 +35,7 @@ class SettingsPage extends StatelessWidget {
             PromptConfigPage(),
             DiaryModeConfigPage(),
             QaQuestionConfigPage(),
+            SyncConfigPage(),
             _ThemeSettingsPage(),
           ],
         ),

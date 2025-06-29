@@ -63,15 +63,15 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
   Future<void> _createDiary() async {
     try {
-      final now = DateTime.now();
-      final fileName = 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+      final fileName = MarkdownService.getDiaryFileName();
       _diaryFileName = fileName;
 
       final diaryDir = await MarkdownService.getDiaryDir();
       final file = File('$diaryDir/$fileName');
 
       if (!await file.exists()) {
-        final initialContent = '# 今日问答日记\n\n创建时间: ${now.toString().split('.')[0]}\n\n---\n\n';
+        final now = DateTime.now();
+        final initialContent = '# 今日问答日记\n\n---\n\n';
         await MarkdownService.saveDiaryMarkdown(initialContent, fileName: fileName);
       }
 
@@ -341,7 +341,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                   child: SafeArea(
                     top: false,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -503,6 +503,13 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                   hintStyle: TextStyle(color: context.secondaryTextColor),
                   fillColor: context.cardBackgroundColor,
                   filled: true,
+                  contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  isDense: true,
+                  alignLabelWithHint: true,
+                ),
+                strutStyle: const StrutStyle(
+                  height: 1.0,
+                  forceStrutHeight: true,
                 ),
               ),
             ),

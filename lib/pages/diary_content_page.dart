@@ -77,9 +77,17 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                           controller: _controller,
                           maxLines: null,
                           expands: true,
+                          textAlignVertical: TextAlignVertical.top,
                           decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: '编辑日记',
+                            alignLabelWithHint: true,
+                            contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 12),
+                            isDense: true,
+                          ),
+                          strutStyle: const StrutStyle(
+                            height: 1.0,
+                            forceStrutHeight: true,
                           ),
                         ),
                       ),
