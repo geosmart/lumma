@@ -9,6 +9,7 @@ import 'config/theme_service.dart';
 import 'util/storage_service.dart';
 import 'util/sync_service.dart';
 import 'model/enums.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -206,6 +207,7 @@ class _MainTabPageState extends State<MainTabPage> {
 
                     // 次要操作按钮
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: _SecondaryButton(
@@ -218,7 +220,19 @@ class _MainTabPageState extends State<MainTabPage> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _SecondaryButton(
+                            icon: Icons.sync,
+                            label: '数据同步',
+                            onTap: () async {
+                              // 直接调用主页同步按钮逻辑
+                              final syncButtonState = context.findAncestorStateOfType<_SyncButtonState>();
+                              syncButtonState?._syncData();
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: _SecondaryButton(
                             icon: Icons.settings,
@@ -232,11 +246,6 @@ class _MainTabPageState extends State<MainTabPage> {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 16),
-
-                    // 数据同步按钮
-                    const _SyncButton(),
 
                     const SizedBox(height: 60),
                   ],
@@ -264,42 +273,32 @@ class _SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: context.cardBackgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
-      ),
+    return SizedBox(
+      height: 44,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: context.primaryTextColor,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                   color: context.primaryTextColor,
-                  size: 18,
+                  letterSpacing: 0.5,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: context.primaryTextColor,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -319,61 +318,16 @@ class _SyncButtonState extends State<_SyncButton> {
   bool _isSyncing = false;
 
   Future<void> _syncData() async {
-    developer.log('同步按钮被点击', name: 'SyncButton');
-
-    // 诊断目录配置
-    developer.log('诊断目录配置...', name: 'SyncButton');
-    final obsidianDir = await StorageService.getObsidianDiaryDir();
-    final userDiaryDir = await StorageService.getUserDiaryDir();
-
-    // 诊断 Obsidian 目录
-    developer.log('诊断 Obsidian 目录...', name: 'SyncButton');
-    final obsidianDiagnostic = await SyncService.diagnoseDirectoryAccess(obsidianDir ?? '');
-    developer.log('Obsidian 目录诊断结果: $obsidianDiagnostic', name: 'SyncButton');
-
-    // 诊断用户日记目录
-    developer.log('诊断用户日记目录...', name: 'SyncButton');
-    final userDiaryDiagnostic = await SyncService.diagnoseDirectoryAccess(userDiaryDir ?? '');
-    developer.log('用户日记目录诊断结果: $userDiaryDiagnostic', name: 'SyncButton');
-
-    // 检查同步配置是否已设置
-    developer.log('检查同步配置...', name: 'SyncButton');
-    final isSyncConfigured = await SyncService.isSyncConfigured();
-    developer.log('同步配置状态: ${isSyncConfigured ? "已配置" : "未配置"}', name: 'SyncButton');
-
-    if (!isSyncConfigured) {
-      developer.log('同步未配置，显示提示', name: 'SyncButton');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('同步未配置，请先在设置中配置日记目录'),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-      return;
-    }
-
-    // 开始同步
+    const uri = 'obsidian://adv-uri?vault=mobile&commandid=nutstore-sync%3Astart-sync';
     setState(() {
       _isSyncing = true;
     });
-
     try {
-      // 执行同步操作
-      final result = await SyncService.syncData(context);
-
-      if (mounted) {
-        // 显示同步结果对话框
-        await SyncService.showSyncResultDialog(context, result);
-      }
-    } catch (e) {
-      if (mounted) {
+      if (await canLaunch(uri)) {
+        await launch(uri);
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('同步出错: $e'),
-            duration: const Duration(seconds: 3),
-          ),
+          const SnackBar(content: Text('无法打开 Obsidian 同步 URI')),
         );
       }
     } finally {
