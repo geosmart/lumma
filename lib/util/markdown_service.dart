@@ -3,9 +3,24 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'frontmatter_service.dart';
+import 'storage_service.dart';
 
 class MarkdownService {
   static Future<String> getDiaryDir() async {
+    // 优先使用系统配置中的 Obsidian 日记目录
+    try {
+      final obsidianDir = await StorageService.getObsidianDiaryDir();
+      if (obsidianDir != null && obsidianDir.isNotEmpty) {
+        final diaryDir = Directory(obsidianDir);
+        if (!await diaryDir.exists()) {
+          await diaryDir.create(recursive: true);
+        }
+        return diaryDir.path;
+      }
+    } catch (e) {
+      // 忽略异常，降级使用默认目录
+    }
+    // fallback: 原有逻辑
     final dir = await getApplicationDocumentsDirectory();
     final diaryDir = Directory('${dir.path}/data/diary');
     if (!await diaryDir.exists()) {

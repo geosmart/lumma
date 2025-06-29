@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pages/main_tab_page.dart';
-import 'services/theme_service.dart';
+import 'main_page.dart';
+import 'config/theme_service.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

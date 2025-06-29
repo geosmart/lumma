@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lumma/services/config_service.dart';
-import '../services/theme_service.dart';
+import '../config/config_service.dart';
+import '../config/theme_service.dart';
 import '../config/settings_ui_config.dart';
 
 class QaQuestionConfigPage extends StatefulWidget {

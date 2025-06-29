@@ -1,4 +1,4 @@
-import '../services/diary_mode_config_service.dart';
+import '../config/diary_mode_config_service.dart';
 
 Future<String> getDiaryQaTitle() async {
   String mode = await DiaryModeConfigService.loadDiaryMode();

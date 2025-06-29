@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'model_config_page.dart';
 import 'prompt_config_page.dart';
 import 'diary_mode_config_page.dart';
-import 'qa_question_config_page.dart';
+import '../diary/qa_question_config_page.dart';
 import 'sync_config_page.dart';
-import '../services/theme_service.dart';
-import '../config/settings_ui_config.dart';
+import 'theme_service.dart';
+import 'settings_ui_config.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

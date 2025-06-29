@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/diary_mode_config_service.dart';
-import '../services/theme_service.dart';
-import '../config/settings_ui_config.dart';
+import 'diary_mode_config_service.dart';
+import 'theme_service.dart';
+import 'settings_ui_config.dart';
 
 class DiaryModeConfigPage extends StatefulWidget {
   const DiaryModeConfigPage({super.key});

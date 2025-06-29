@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../services/prompt_service.dart';
+import 'prompt_service.dart';
 
 class PromptEditPage extends StatefulWidget {
   final FileSystemEntity? file;

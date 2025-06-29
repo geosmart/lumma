@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import '../services/markdown_service.dart';
-import '../services/diary_qa_title_service.dart';
-import '../services/ai_service.dart';
-import '../services/config_service.dart';
-import '../services/prompt_service.dart';
-import '../services/theme_service.dart';
+import '../util/markdown_service.dart';
+import 'diary_qa_title_service.dart';
+import '../util/ai_service.dart';
+import '../config/config_service.dart';
+import '../config/prompt_service.dart';
+import '../config/theme_service.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'diary_chat_page.dart';
-import 'diary_qa_page.dart';
-import 'settings_page.dart';
-import 'diary_file_list_page.dart';
-import '../services/diary_mode_config_service.dart';
-import '../services/theme_service.dart';
+import 'dart:developer' as developer;
+import 'diary/diary_chat_page.dart';
+import 'diary/diary_qa_page.dart';
+import 'config/settings_page.dart';
+import 'diary/diary_file_list_page.dart';
+import 'config/diary_mode_config_service.dart';
+import 'config/theme_service.dart';
+import 'util/storage_service.dart';
+import 'util/sync_service.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -17,6 +20,15 @@ class _MainTabPageState extends State<MainTabPage> {
   @override
   void initState() {
     super.initState();
+
+    // 应用启动时检查同步配置
+    _checkSyncConfig();
+  }
+
+  Future<void> _checkSyncConfig() async {
+    developer.log('应用启动时检查同步配置', name: 'MainTabPage');
+    final isSyncConfigured = await SyncService.isSyncConfigured();
+    developer.log('同步配置状态: ${isSyncConfigured ? "已配置" : "未配置"}', name: 'MainTabPage');
   }
 
   @override
@@ -220,6 +232,11 @@ class _MainTabPageState extends State<MainTabPage> {
                       ],
                     ),
 
+                    const SizedBox(height: 16),
+
+                    // 数据同步按钮
+                    const _SyncButton(),
+
                     const SizedBox(height: 60),
                   ],
                 ),
@@ -273,6 +290,140 @@ class _SecondaryButton extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: context.primaryTextColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 同步按钮组件
+class _SyncButton extends StatefulWidget {
+  const _SyncButton();
+
+  @override
+  State<_SyncButton> createState() => _SyncButtonState();
+}
+
+class _SyncButtonState extends State<_SyncButton> {
+  bool _isSyncing = false;
+
+  Future<void> _syncData() async {
+    developer.log('同步按钮被点击', name: 'SyncButton');
+
+    // 诊断目录配置
+    developer.log('诊断目录配置...', name: 'SyncButton');
+    final obsidianDir = await StorageService.getObsidianDiaryDir();
+    final userDiaryDir = await StorageService.getUserDiaryDir();
+
+    // 诊断 Obsidian 目录
+    developer.log('诊断 Obsidian 目录...', name: 'SyncButton');
+    final obsidianDiagnostic = await SyncService.diagnoseDirectoryAccess(obsidianDir ?? '');
+    developer.log('Obsidian 目录诊断结果: $obsidianDiagnostic', name: 'SyncButton');
+
+    // 诊断用户日记目录
+    developer.log('诊断用户日记目录...', name: 'SyncButton');
+    final userDiaryDiagnostic = await SyncService.diagnoseDirectoryAccess(userDiaryDir ?? '');
+    developer.log('用户日记目录诊断结果: $userDiaryDiagnostic', name: 'SyncButton');
+
+    // 检查同步配置是否已设置
+    developer.log('检查同步配置...', name: 'SyncButton');
+    final isSyncConfigured = await SyncService.isSyncConfigured();
+    developer.log('同步配置状态: ${isSyncConfigured ? "已配置" : "未配置"}', name: 'SyncButton');
+
+    if (!isSyncConfigured) {
+      developer.log('同步未配置，显示提示', name: 'SyncButton');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('同步未配置，请先在设置中配置日记目录'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    // 开始同步
+    setState(() {
+      _isSyncing = true;
+    });
+
+    try {
+      // 执行同步操作
+      final result = await SyncService.syncData(context);
+
+      if (mounted) {
+        // 显示同步结果对话框
+        await SyncService.showSyncResultDialog(context, result);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('同步出错: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 56,
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: context.cardBackgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: context.borderColor,
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: _isSyncing ? null : _syncData,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _isSyncing
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.primaryTextColor,
+                      ),
+                    )
+                  : Icon(
+                      Icons.sync,
+                      color: context.primaryTextColor,
+                      size: 18,
+                    ),
+                const SizedBox(width: 8),
+                Text(
+                  _isSyncing ? '正在同步...' : '数据同步',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

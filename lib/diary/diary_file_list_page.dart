@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/diary_file_manager.dart';
-import '../services/theme_service.dart';
+import '../config/theme_service.dart';
 
 /// 日记管理页面，支持选择、增删日记文件
 class DiaryFileListPage extends StatelessWidget {

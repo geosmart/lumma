@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/model_config.dart';
+import '../config/model_config.dart';
 
 class ModelEditPage extends StatefulWidget {
   final ModelConfig? config;

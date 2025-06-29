@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import '../services/markdown_service.dart';
-import '../services/diary_frontmatter_util.dart';
-import '../services/theme_service.dart';
-import '../services/storage_permission_handler.dart';
-import '../pages/diary_content_page.dart';
+import '../util/markdown_service.dart';
+import '../util/diary_frontmatter_util.dart';
+import '../util/storage_permission_handler.dart';
+import '../util/storage_service.dart';
+import '../config/theme_service.dart';
+import '../diary/diary_content_page.dart';
 
 /// 日记文件管理组件，集成列表、增删改查、编辑、选择等全部逻辑
 class DiaryFileManager extends StatefulWidget {

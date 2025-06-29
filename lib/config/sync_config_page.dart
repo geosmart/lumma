@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import '../services/storage_service.dart';
-import '../services/theme_service.dart';
-import '../config/settings_ui_config.dart';
-import '../services/storage_permission_handler.dart';
+import '../util/storage_service.dart';
+import 'theme_service.dart';
+import 'settings_ui_config.dart';
+import '../util/storage_permission_handler.dart';
 
 class SyncConfigPage extends StatefulWidget {
   const SyncConfigPage({super.key});

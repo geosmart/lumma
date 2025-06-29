@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import '../services/markdown_service.dart';
+import '../util/markdown_service.dart';
 import 'dart:io';
 
 /// 单篇日记详情页，全屏、只读Markdown渲染，带编辑提示

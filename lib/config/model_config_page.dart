@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/model_config.dart';
-import '../services/config_service.dart';
-import '../services/theme_service.dart';
+import 'model_config.dart';
+import 'config_service.dart';
+import 'theme_service.dart';
+import 'settings_ui_config.dart';
 import 'model_edit_page.dart';
-import '../config/settings_ui_config.dart';
 
 class ModelConfigPage extends StatefulWidget {
   const ModelConfigPage({super.key});

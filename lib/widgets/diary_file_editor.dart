@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../services/markdown_service.dart';
+import '../util/markdown_service.dart';
 
 class DiaryFileEditor extends StatefulWidget {
   final String fileName;

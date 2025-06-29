@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../services/prompt_service.dart';
-import '../services/theme_service.dart';
+import 'prompt_service.dart';
+import 'theme_service.dart';
 import 'prompt_edit_page.dart';
-import '../config/settings_ui_config.dart';
+import 'settings_ui_config.dart';
 
 class PromptConfigPage extends StatefulWidget {
   const PromptConfigPage({super.key});

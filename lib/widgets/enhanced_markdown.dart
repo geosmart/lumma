@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../widgets/mermaid_widget.dart';
-import '../services/theme_service.dart';
+import '../config/theme_service.dart';
 
 /// 支持 mermaid 代码块的 markdown 渲染组件
 class EnhancedMarkdown extends StatelessWidget {
