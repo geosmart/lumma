@@ -1,9 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../util/ai_service.dart';
-import '../util/curl_helper.dart';
 import '../util/markdown_service.dart';
-import '../util/frontmatter_service.dart';
 import '../diary/chat_history_service.dart';
 import '../diary/diary_qa_title_service.dart';
 import '../config/prompt_service.dart';
@@ -11,7 +9,6 @@ import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
-import '../model/app_config.dart';
 import '../model/enums.dart';
 
 class DiaryChatPage extends StatefulWidget {
@@ -153,44 +150,70 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
               }
             }
           });
+          // 新增日志打印大模型返回内容
+          print('[LLM] Delta: \\n${data.toString()}');
           _scrollToBottom();
         }
       },
       onDone: (data) async {
+        // 检查是否为API返回的JSON错误（如401等）
+        String? errorMsg;
+        try {
+          if (data['content'] != null && data['content']!.trim().startsWith('{')) {
+            final errJson = jsonDecode(data['content']!);
+            if (errJson is Map && errJson['error'] != null && errJson['error']['message'] != null) {
+              errorMsg = 'AI接口错误: ${errJson['error']['message']}';
+            }
+          }
+        } catch (_) {}
         if (!_askInterrupted) {
           setState(() {
             _asking = false;
-            _askStreaming = '';
+            _askStreaming = errorMsg ?? '';
             _askStreamingReasoning = '';
             if (data['reasoning'] != null && _history.isNotEmpty) {
               _history[_history.length - 1]['reasoning'] = data['reasoning']!;
             }
           });
-
-          final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.qa);
-          final messages = AiService.buildMessages(
-            systemPrompt: systemPrompt,
-            history: ChatHistoryService.getRecent(_history),
-            userInput: '',
-          );
-
-          final raw = await AiService.buildChatRequestRaw(
-            messages: messages,
-            stream: true,
-          );
-          final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
-          setState(() {
-            _lastRequestJson = '```bash\n$prettyJson\n```';
-          });
-          _scrollToBottom();
+          if (errorMsg == null) {
+            final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.qa);
+            final messages = AiService.buildMessages(
+              systemPrompt: systemPrompt,
+              history: ChatHistoryService.getRecent(_history),
+              userInput: '',
+            );
+            final raw = await AiService.buildChatRequestRaw(
+              messages: messages,
+              stream: true,
+            );
+            final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
+            setState(() {
+              _lastRequestJson = '```bash\n$prettyJson\n```';
+            });
+            // 新增日志打印大模型最终返回内容
+            print('[LLM] Done: \n${data.toString()}');
+            _scrollToBottom();
+          }
         }
       },
       onError: (err) {
         if (!_askInterrupted) {
+          String errorMsg = 'AI接口错误: $err';
+          // 检查是否为API返回的JSON错误
+          try {
+            if (err is String && err.trim().startsWith('{')) {
+              final errJson = jsonDecode(err);
+              if (errJson is Map && errJson['error'] != null && errJson['error']['message'] != null) {
+                errorMsg = 'AI接口错误: ${errJson['error']['message']}';
+              }
+            }
+          } catch (_) {}
           setState(() {
             _asking = false;
-            _askStreaming = 'AI接口错误: $err';
+            _askStreaming = errorMsg;
           });
+          // 新增日志打印错误信息
+          print('[LLM] Error: $err');
         }
       },
     );
@@ -453,138 +476,99 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                       child: Row(
                         children: [
                           // 调试按钮
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
-                              tooltip: '调试/查看请求JSON',
-                              onPressed: () {
-                                if (_lastRequestJson != null) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: const Text('请求 JSON'),
-                                      content: SingleChildScrollView(
-                                        child: SelectableText(_lastRequestJson!),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(ctx).pop(),
-                                          child: const Text('关闭'),
-                                        ),
-                                      ],
+                          IconButton(
+                            icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
+                            tooltip: '调试/查看请求JSON',
+                            onPressed: () {
+                              if (_lastRequestJson != null) {
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('请求 JSON'),
+                                    content: SingleChildScrollView(
+                                      child: SelectableText(_lastRequestJson!),
                                     ),
-                                  );
-                                }
-                              },
-                            ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(ctx).pop(),
+                                        child: const Text('关闭'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
                           ),
                           const SizedBox(width: 4),
                           // 保存按钮
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.save, color: Colors.blue),
-                              tooltip: '保存当前对话为日记',
-                              onPressed: () async {
-                                // 构建结构化的日记内容
-                                final buffer = StringBuffer();
+                          IconButton(
+                            icon: const Icon(Icons.save, color: Colors.blue),
+                            tooltip: '保存当前对话为日记',
+                            onPressed: () async {
+                              // 构建结构化的日记内容
+                              final buffer = StringBuffer();
 
-                                // 添加summary部分（可以后续扩展为AI生成的摘要）
-                                buffer.writeln('#${DateTime.now().toString().split(' ')[0]}');
-                                buffer.writeln();
+                              // 添加summary部分（可以后续扩展为AI生成的摘要）
+                              buffer.writeln('#${DateTime.now().toString().split(' ')[0]}');
+                              buffer.writeln();
 
-                                // 添加每轮对话
-                                for (int i = 0; i < _history.length; i++) {
-                                  final h = _history[i];
-                                  if (h['q']?.isNotEmpty == true || h['a']?.isNotEmpty == true) {
-                                    buffer.writeln('## Round${i + 1}');
+                              // 添加每轮对话
+                              for (int i = 0; i < _history.length; i++) {
+                                final h = _history[i];
+                                if (h['q']?.isNotEmpty == true || h['a']?.isNotEmpty == true) {
+                                  buffer.writeln('## Round${i + 1}');
+                                  buffer.writeln();
+
+                                  if (h['q']?.isNotEmpty == true) {
+                                    buffer.writeln('### Q');
+                                    buffer.writeln(h['q']!);
                                     buffer.writeln();
+                                  }
 
-                                    if (h['q']?.isNotEmpty == true) {
-                                      buffer.writeln('### Q');
-                                      buffer.writeln(h['q']!);
-                                      buffer.writeln();
-                                    }
-
-                                    if (h['a']?.isNotEmpty == true) {
-                                      buffer.writeln('### A');
-                                      buffer.writeln(h['a']!);
-                                      buffer.writeln();
-                                    }
+                                  if (h['a']?.isNotEmpty == true) {
+                                    buffer.writeln('### A');
+                                    buffer.writeln(h['a']!);
+                                    buffer.writeln();
                                   }
                                 }
+                              }
 
-                                final content = buffer.toString();
-                                try {
-                                  // 覆盖当天的日记文件
-                                  await MarkdownService.overwriteDailyDiary(content);
-                                  final fileName = MarkdownService.getDiaryFileName();
-                                  final diaryDir = await MarkdownService.getDiaryDir();
-                                  final filePath = '$diaryDir/$fileName';
-                                  // 打印保存路径
-                                  // ignore: avoid_print
-                                  print('日记已保存到: $filePath');
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('日记已保存到: $filePath')));
-                                    // 跳转到日记列表页面
-                                    Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('保存失败: \n${e.toString()}')),
-                                    );
-                                  }
+                              final content = buffer.toString();
+                              try {
+                                // 覆盖当天的日记文件
+                                await MarkdownService.overwriteDailyDiary(content);
+                                final fileName = MarkdownService.getDiaryFileName();
+                                final diaryDir = await MarkdownService.getDiaryDir();
+                                final filePath = '$diaryDir/$fileName';
+                                // 打印保存路径
+                                // ignore: avoid_print
+                                print('日记已保存到: $filePath');
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('日记已保存到: $filePath')));
+                                  // 跳转到日记列表页面
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
+                                  );
                                 }
-                              },
-                            ),
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('保存失败: \n${e.toString()}')),
+                                  );
+                                }
+                              }
+                            },
                           ),
                           const SizedBox(width: 4),
                           // 日记列表按钮
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.menu_book, color: Colors.teal),
-                              tooltip: '查看日记列表',
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                                );
-                              },
-                            ),
+                          IconButton(
+                            icon: const Icon(Icons.menu_book, color: Colors.teal),
+                            tooltip: '查看日记列表',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -599,8 +583,8 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Theme.of(context).brightness == Brightness.dark
-                                    ? const Color(0xFF374151)  // 深色模式下的深灰色
-                                    : Colors.grey[100],        // 浅色模式下的浅灰色
+                                    ? const Color(0xFF374151)
+                                    : Colors.grey[100],
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
@@ -636,10 +620,10 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               child: Center(
                                 child: Icon(
                                   Icons.send,
-                                  size: 30, // 稍大一点
-                                  color: (!_asking && _summary == null)
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.grey[400],
+                                  size: 30,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white
+                                      : Theme.of(context).primaryColor,
                                 ),
                               ),
                             ),

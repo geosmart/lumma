@@ -1,4 +1,3 @@
-import 'timestamped.dart';
 
 enum DiaryMode { qa, chat }
 

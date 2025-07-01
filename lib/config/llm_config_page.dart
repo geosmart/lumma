@@ -189,68 +189,72 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
+                                          const SizedBox(height: 2),
                                           Text(
                                             c.model,
                                             style: TextStyle(
                                               fontSize: SettingsUiConfig.titleFontSize,
                                               color: context.primaryTextColor,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                             overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
+                                            maxLines: 2,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Row(
+                                            children: [
+                                              Spacer(),
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.copy,
+                                                  size: 20,
+                                                  color: context.secondaryTextColor,
+                                                ),
+                                                onPressed: () {
+                                                  final copy = LLMConfig(
+                                                    provider: c.provider,
+                                                    baseUrl: c.baseUrl,
+                                                    apiKey: c.apiKey,
+                                                    model: c.model,
+                                                    active: c.active,
+                                                    created: c.created,
+                                                    updated: DateTime.now(),
+                                                  );
+                                                  _showEditDialog(config: copy);
+                                                },
+                                                tooltip: '复制',
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.edit,
+                                                  size: 20,
+                                                  color: context.secondaryTextColor,
+                                                ),
+                                                onPressed: () => _showEditDialog(config: c, index: i),
+                                                tooltip: '编辑',
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.delete,
+                                                  size: 20,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () => _deleteConfig(i),
+                                                tooltip: '删除',
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.copy,
-                                              size: 20,
-                                              color: context.secondaryTextColor,
-                                            ),
-                                            onPressed: () {
-                                              final copy = LLMConfig(
-                                                provider: c.provider,
-                                                baseUrl: c.baseUrl,
-                                                apiKey: c.apiKey,
-                                                model: c.model,
-                                                active: c.active,
-                                                created: c.created,
-                                                updated: DateTime.now(),
-                                              );
-                                              _showEditDialog(config: copy);
-                                            },
-                                            tooltip: '复制',
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                          ),
-                                          const SizedBox(width: 8), // 添加间距
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.edit,
-                                              size: 20,
-                                              color: context.secondaryTextColor,
-                                            ),
-                                            onPressed: () => _showEditDialog(config: c, index: i),
-                                            tooltip: '编辑',
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                          ),
-                                          const SizedBox(width: 8), // 添加间距
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              size: 20,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: () => _deleteConfig(i),
-                                            tooltip: '删除',
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                          ),
-                                        ],
-                                      ),
+                                      trailing: null,
                                     ),
                                   ),
                                 );
@@ -268,8 +272,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                       heroTag: 'add-model',
                       onPressed: () => _showEditDialog(),
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      child: const Icon(Icons.add, size: 28),
                       tooltip: '添加模型',
+                      child: const Icon(Icons.add, size: 28),
                     ),
                   ),
                 ),

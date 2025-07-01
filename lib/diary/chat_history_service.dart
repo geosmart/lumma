@@ -1,5 +1,6 @@
 /// chat_history_service.dart
 /// 聊天历史管理，便于 UI 层瘦身
+library;
 
 class ChatHistoryService {
   static const int maxHistory = 20;

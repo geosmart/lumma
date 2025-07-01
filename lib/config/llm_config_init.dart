@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../model/llm_config.dart';
-import '../model/prompt_config.dart';
 import 'config_service.dart';
 
 /// 初始化 LLM 和 Prompt 配置，如果没有则从 .env 读取并写入

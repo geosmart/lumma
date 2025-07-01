@@ -13,9 +13,9 @@ class PromptConfig extends Timestamped {
     required this.type,
     this.active = false,
     this.content = '',
-    DateTime? created,
-    DateTime? updated,
-  }) : super(created: created, updated: updated);
+    super.created,
+    super.updated,
+  });
 
   /// 问答提示词默认配置
   factory PromptConfig.qaDefault() => PromptConfig(

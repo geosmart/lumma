@@ -3,13 +3,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import '../config/config_service.dart';
 
 class StorageService {
-  // Keys for different settings
-  static const _key = 'user_diary_dir';
-  static const _obsidianDirKey = 'obsidian_diary_dir';
-  static const _backupDirKey = 'system_backup_dir';
-
   // Path to the sync_configs.json file
   static Future<String> get _configFilePath async {
     // Get the application directory path
@@ -33,111 +29,115 @@ class StorageService {
     return file;
   }
 
-  // Read all configurations from file
-  static Future<Map<String, dynamic>> _readConfigs() async {
-    try {
-      final file = await _configFile;
-      final String contents = await file.readAsString();
-      if (contents.isEmpty) return {};
-      return jsonDecode(contents) as Map<String, dynamic>;
-    } catch (e) {
-      developer.log('读取配置文件失败: $e', name: 'StorageService');
-      // If reading fails, return empty map and try to recreate the file
-      try {
-        final file = await _configFile;
-        await file.writeAsString('{}');
-        developer.log('重新创建了空配置文件', name: 'StorageService');
-      } catch (e2) {
-        developer.log('重新创建配置文件失败: $e2', name: 'StorageService');
-      }
-      return {};
-    }
-  }
-
-  // Save all configurations to file
-  static Future<void> _saveConfigs(Map<String, dynamic> configs) async {
-    try {
-      final file = await _configFile;
-      final String jsonString = jsonEncode(configs);
-      await file.writeAsString(jsonString);
-      developer.log('配置已保存到文件: $jsonString', name: 'StorageService', level: 800);
-    } catch (e) {
-      developer.log('保存配置文件失败: $e', name: 'StorageService', level: 1000);
-    }
-  }
-
-  // Get value by key
-  static Future<String?> _getValue(String key) async {
-    final configs = await _readConfigs();
-    final value = configs[key] as String?;
-    developer.log('_getValue 从配置读取 "$key": ${value ?? "null"}', name: 'StorageService', level: 800);
-    return value;
-  }
-
-  // Set value by key
-  static Future<void> _setValue(String key, String? value) async {
-    developer.log('_setValue 保存配置 "$key": ${value ?? "null"}', name: 'StorageService', level: 800);
-    final configs = await _readConfigs();
-    if (value == null) {
-      configs.remove(key);
-    } else {
-      configs[key] = value;
-    }
-    await _saveConfigs(configs);
-  }
-
-  /// 获取已选目录（无则返回null）
+  /// 获取用户日记目录
   static Future<String?> getUserDiaryDir() async {
-    final value = await _getValue(_key);
-    developer.log('获取用户日记目录: ${value ?? "null"}', name: 'StorageService');
-    return value;
+    try {
+      final appConfig = await AppConfigService.load();
+      final dir = appConfig.sync.diaryDir;
+      developer.log('获取用户日记目录: ${dir.isEmpty ? "null" : dir}', name: 'StorageService');
+      return dir.isEmpty ? null : dir;
+    } catch (e) {
+      developer.log('获取用户日记目录失败: $e', name: 'StorageService');
+      return null;
+    }
   }
 
-  /// 保存用户选定目录
+  /// 保存用户日记目录
   static Future<void> setUserDiaryDir(String path) async {
-    await _setValue(_key, path);
+    try {
+      await AppConfigService.update((config) {
+        config.sync.diaryDir = path;
+      });
+      developer.log('设置用户日记目录: $path', name: 'StorageService');
+    } catch (e) {
+      developer.log('设置用户日记目录失败: $e', name: 'StorageService');
+    }
   }
 
-  /// 清除用户目录
+  /// 清除用户日记目录
   static Future<void> clearUserDiaryDir() async {
-    await _setValue(_key, null);
+    try {
+      await AppConfigService.update((config) {
+        config.sync.diaryDir = '';
+      });
+      developer.log('清除用户日记目录', name: 'StorageService');
+    } catch (e) {
+      developer.log('清除用户日记目录失败: $e', name: 'StorageService');
+    }
   }
 
-  /// 获取Obsidian日记目录
-  static Future<String?> getObsidianDiaryDir() async {
-    final value = await _getValue(_obsidianDirKey);
-    developer.log('获取 Obsidian 日记目录: ${value ?? "null"}', name: 'StorageService');
-    return value;
+  /// 获取配置文件目录
+  static Future<String?> getConfigDir() async {
+    try {
+      final appConfig = await AppConfigService.load();
+      final dir = appConfig.sync.configDir;
+      developer.log('获取配置文件目录: ${dir.isEmpty ? "null" : dir}', name: 'StorageService');
+      return dir.isEmpty ? null : dir;
+    } catch (e) {
+      developer.log('获取配置文件目录失败: $e', name: 'StorageService');
+      return null;
+    }
   }
 
-  /// 设置Obsidian日记目录
-  static Future<void> setObsidianDiaryDir(String path) async {
-    developer.log('设置 Obsidian 日记目录: $path', name: 'StorageService');
-    await _setValue(_obsidianDirKey, path);
-
-    // 验证设置是否成功
-    final savedValue = await _getValue(_obsidianDirKey);
-    developer.log('设置后立即读取 Obsidian 日记目录: ${savedValue ?? "null"}', name: 'StorageService');
+  /// 设置配置文件目录
+  static Future<void> setConfigDir(String path) async {
+    try {
+      await AppConfigService.update((config) {
+        config.sync.configDir = path;
+      });
+      developer.log('设置配置文件目录: $path', name: 'StorageService');
+    } catch (e) {
+      developer.log('设置配置文件目录失败: $e', name: 'StorageService');
+    }
   }
 
-  /// 清除Obsidian日记目录
-  static Future<void> clearObsidianDiaryDir() async {
-    await _setValue(_obsidianDirKey, null);
+  /// 清除配置文件目录
+  static Future<void> clearConfigDir() async {
+    try {
+      await AppConfigService.update((config) {
+        config.sync.configDir = '';
+      });
+      developer.log('清除配置文件目录', name: 'StorageService');
+    } catch (e) {
+      developer.log('清除配置文件目录失败: $e', name: 'StorageService');
+    }
   }
 
-  /// 获取系统备份目录
-  static Future<String?> getSystemBackupDir() async {
-    return await _getValue(_backupDirKey);
+  /// 获取同步URI
+  static Future<String?> getSyncUri() async {
+    try {
+      final appConfig = await AppConfigService.load();
+      final uri = appConfig.sync.syncUri;
+      developer.log('获取同步URI: ${uri.isEmpty ? "null" : uri}', name: 'StorageService');
+      return uri.isEmpty ? null : uri;
+    } catch (e) {
+      developer.log('获取同步URI失败: $e', name: 'StorageService');
+      return null;
+    }
   }
 
-  /// 设置系统备份目录
-  static Future<void> setSystemBackupDir(String path) async {
-    await _setValue(_backupDirKey, path);
+  /// 设置同步URI
+  static Future<void> setSyncUri(String uri) async {
+    try {
+      await AppConfigService.update((config) {
+        config.sync.syncUri = uri;
+      });
+      developer.log('设置同步URI: $uri', name: 'StorageService');
+    } catch (e) {
+      developer.log('设置同步URI失败: $e', name: 'StorageService');
+    }
   }
 
-  /// 清除系统备份目录
-  static Future<void> clearSystemBackupDir() async {
-    await _setValue(_backupDirKey, null);
+  /// 清除同步URI
+  static Future<void> clearSyncUri() async {
+    try {
+      await AppConfigService.update((config) {
+        config.sync.syncUri = '';
+      });
+      developer.log('清除同步URI', name: 'StorageService');
+    } catch (e) {
+      developer.log('清除同步URI失败: $e', name: 'StorageService');
+    }
   }
 
   /// 获取配置文件路径（用于调试）

@@ -13,9 +13,9 @@ class LLMConfig extends Timestamped {
     required this.apiKey,
     required this.model,
     this.active = false,
-    DateTime? created,
-    DateTime? updated,
-  }) : super(created: created, updated: updated);
+    super.created,
+    super.updated,
+  });
 
   /// 创建默认的LLM配置（OpenAI）
   factory LLMConfig.openAIDefault() => LLMConfig(

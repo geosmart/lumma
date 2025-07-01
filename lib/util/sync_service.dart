@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import '../util/storage_service.dart';
 
 class SyncService {
   static Future<bool> isSyncConfigured() async {
-    // TODO: 实现同步配置检测逻辑
-    return true;
+    try {
+      final diaryDir = await StorageService.getUserDiaryDir();
+      final syncUri = await StorageService.getSyncUri();
+
+      // 至少需要配置日记目录和同步URI之一才算配置完成
+      return (diaryDir?.isNotEmpty == true) || (syncUri?.isNotEmpty == true);
+    } catch (e) {
+      return false;
+    }
   }
 
   static Future<String> diagnoseDirectoryAccess(String dir) async {
@@ -30,5 +38,10 @@ class SyncService {
         ],
       ),
     );
+  }
+
+  // 获取同步 URI，从配置中读取
+  static Future<String?> getSyncUri() async {
+    return await StorageService.getSyncUri();
   }
 }

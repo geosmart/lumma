@@ -405,13 +405,17 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                   height: 44,
                                   width: 44,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white.withOpacity(0.8)
+                                        : Theme.of(context).primaryColor.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(24),
                                   ),
                                   child: Icon(
                                     Icons.send,
                                     size: 28,
-                                    color: Theme.of(context).primaryColor,
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.black
+                                        : Theme.of(context).primaryColor,
                                   ),
                                 ),
                               ),

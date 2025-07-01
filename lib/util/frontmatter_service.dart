@@ -16,11 +16,11 @@ class FrontmatterService {
         final front = lines.sublist(0, endIdx+1);
         final body = lines.sublist(endIdx+1).join('\n');
         final updatedFront = front.map((l) => l.startsWith('updated:') ? 'updated: $updatedStr' : l).toList();
-        return updatedFront.join('\n') + '\n' + body;
+        return '${updatedFront.join('\n')}\n$body';
       }
     }
     // 没有 frontmatter，补全
     final createdStr = (created ?? updated).toIso8601String().substring(0,19).replaceAll(RegExp(r"\.\d+"), '');
-    return '''---\ncreated: $createdStr\nupdated: $updatedStr\n---\n''' + content;
+    return '''---\ncreated: $createdStr\nupdated: $updatedStr\n---\n$content''';
   }
 }

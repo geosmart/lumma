@@ -3,8 +3,6 @@ import 'main_page.dart';
 import 'config/theme_service.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:lumma/util/config_service.dart';
-import 'package:lumma/util/yaml_encoder.dart';
 import 'config/llm_config_init.dart';
 
 void main() async {
@@ -22,7 +20,9 @@ void main() async {
   try {
     print('[lumma] 当前目录: \\${Directory.current.path}');
     print('[lumma] .env.local exists: \\${File('.env.local').existsSync()}');
-    print('[lumma] .env.release exists: \\${File('.env.release').existsSync()}');
+    print(
+      '[lumma] .env.release exists: \\${File('.env.release').existsSync()}',
+    );
     await dotenv.load(fileName: '.env.local');
     print('[lumma] 加载 .env.local 成功');
     loaded = true;
@@ -60,6 +60,7 @@ class MyApp extends StatelessWidget {
       listenable: ThemeService.instance,
       builder: (context, child) {
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Lumma',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

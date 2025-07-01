@@ -7,15 +7,15 @@ import 'storage_service.dart';
 
 class MarkdownService {
   static Future<String> getDiaryDir() async {
-    // 优先使用系统配置中的 Obsidian 日记目录
+    // 优先使用系统配置中的日记目录
     try {
-      final obsidianDir = await StorageService.getObsidianDiaryDir();
-      if (obsidianDir != null && obsidianDir.isNotEmpty) {
-        final diaryDir = Directory(obsidianDir);
-        if (!await diaryDir.exists()) {
-          await diaryDir.create(recursive: true);
+      final diaryDir = await StorageService.getUserDiaryDir();
+      if (diaryDir != null && diaryDir.isNotEmpty) {
+        final diaryDirObj = Directory(diaryDir);
+        if (!await diaryDirObj.exists()) {
+          await diaryDirObj.create(recursive: true);
         }
-        return diaryDir.path;
+        return diaryDirObj.path;
       }
     } catch (e) {
       // 忽略异常，降级使用默认目录
@@ -91,14 +91,14 @@ class MarkdownService {
     final file = File('$diaryDir/$fileName');
     if (!await file.exists()) {
       final now = DateTime.now();
-      final frontmatter = FrontmatterService.generate(created: now, updated: now) + '\n';
+      final frontmatter = '${FrontmatterService.generate(created: now, updated: now)}\n';
       await file.writeAsString(frontmatter);
     } else {
       // 如果文件已存在但内容为空或无frontmatter，也补充frontmatter
       final content = await file.readAsString();
       if (!content.trim().startsWith('---')) {
         final now = DateTime.now();
-        final frontmatter = FrontmatterService.generate(created: now, updated: now) + '\n';
+        final frontmatter = '${FrontmatterService.generate(created: now, updated: now)}\n';
         await file.writeAsString(frontmatter + content);
       }
     }
@@ -192,6 +192,6 @@ class MarkdownService {
   /// 获取指定日期的日记文件名，不指定则为当天
   static String getDiaryFileName([DateTime? date]) {
     final now = date ?? DateTime.now();
-    return 'diary_${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
   }
 }

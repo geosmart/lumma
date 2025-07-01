@@ -5,19 +5,19 @@ import 'storage_service.dart';
 /// 解析 frontmatter 获取 created 字段
 Future<DateTime?> getDiaryCreatedTime(String diaryFileName) async {
   try {
-    // 优先使用系统配置中的 Obsidian 日记目录
+    // 优先使用系统配置中的日记目录
     String? diaryDirPath;
     try {
-      final obsidianDir = await StorageService.getObsidianDiaryDir();
-      if (obsidianDir != null && obsidianDir.isNotEmpty) {
-        diaryDirPath = obsidianDir;
+      final diaryDir = await StorageService.getUserDiaryDir();
+      if (diaryDir != null && diaryDir.isNotEmpty) {
+        diaryDirPath = diaryDir;
       }
     } catch (_) {}
     if (diaryDirPath == null) {
       final appDir = await getApplicationDocumentsDirectory();
       diaryDirPath = '${appDir.path}/data/diary';
     }
-    final file = File('${diaryDirPath}/$diaryFileName');
+    final file = File('$diaryDirPath/$diaryFileName');
     if (!await file.exists()) return null;
     final content = await file.readAsString();
     final reg = RegExp(r'^---([\s\S]*?)---', multiLine: true);

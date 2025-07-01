@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../model/app_config.dart';
 import '../config/config_service.dart';
 import '../config/prompt_service.dart';
 import '../model/enums.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../config/settings_ui_config.dart';
-import '../model/app_config.dart';
 import 'qa_questions_service.dart';
 
 class QaQuestionConfigPage extends StatefulWidget {

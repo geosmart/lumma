@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../config/config_service.dart';
-import '../model/app_config.dart';
 import '../model/enums.dart';
 
 /// 主题管理服务
@@ -62,7 +61,6 @@ class AppTheme {
         primary: Color(0xFFD7CCC8), // 淡雅的米棕色，与按钮颜色一致
         secondary: Color(0xFFd4a574),
         surface: Color(0xFFfdf7f0),
-        background: Color(0xFFfdf7f0),
       ),
       scaffoldBackgroundColor: const Color(0xFFfdf7f0),
       appBarTheme: const AppBarTheme(
@@ -88,7 +86,6 @@ class AppTheme {
         primary: Color(0xFF9FA8DA), // 淡雅的蓝紫色，与按钮颜色一致
         secondary: Color(0xFF764ba2),
         surface: Color(0xFF1a1a2e),
-        background: Color(0xFF1a1a2e),
       ),
       scaffoldBackgroundColor: const Color(0xFF1a1a2e),
       appBarTheme: const AppBarTheme(

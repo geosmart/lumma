@@ -8,7 +8,7 @@ class AppConfig {
   ThemeModeType theme;
   List<LLMConfig> model;
   List<PromptConfig> prompt;
-  List<SyncConfig> sync;
+  SyncConfig sync;
   List<String> qaQuestions;
 
   AppConfig({
@@ -16,10 +16,10 @@ class AppConfig {
     this.model = const [],
     List<PromptConfig>? prompt,
     this.theme = ThemeModeType.light,
-    List<SyncConfig>? sync,
+    SyncConfig? sync,
     List<String>? qaQuestions,
   })  : prompt = prompt ?? const [],
-        sync = sync ?? const [],
+        sync = sync ?? SyncConfig.defaultConfig(),
         qaQuestions = qaQuestions ?? const [];
 
   /// 创建默认配置
@@ -36,9 +36,7 @@ class AppConfig {
     ];
 
     // 创建默认同步配置
-    final defaultSync = [
-      SyncConfig.defaultConfig(),
-    ];
+    final defaultSync = SyncConfig.defaultConfig();
 
     return AppConfig(
       diaryMode: DiaryMode.qa,
@@ -55,7 +53,7 @@ class AppConfig {
         model: (map['model'] as List? ?? []).map((e) => LLMConfig.fromMap(e)).toList(),
         prompt: (map['prompt'] as List? ?? []).map((e) => PromptConfig.fromMap(e)).toList(),
         theme: themeModeTypeFromString(map['theme'] ?? 'light'),
-        sync: (map['sync'] as List? ?? []).map((e) => SyncConfig.fromMap(e)).toList(),
+        sync: map['sync'] != null ? SyncConfig.fromMap(map['sync']) : SyncConfig.defaultConfig(),
         qaQuestions: (map['qa_questions'] as List? ?? []).map((e) => e.toString()).toList(),
       );
   Map<String, dynamic> toMap() => {
@@ -63,7 +61,7 @@ class AppConfig {
         'model': model.map((e) => e.toMap()).toList(),
         'prompt': prompt.map((e) => e.toMap()).toList(),
         'theme': themeModeTypeToString(theme),
-        'sync': sync.map((e) => e.toMap()).toList(),
+        'sync': sync.toMap(),
         'qa_questions': qaQuestions,
       };
 }

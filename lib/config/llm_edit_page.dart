@@ -16,6 +16,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
   late TextEditingController _apiKeyCtrl;
   late TextEditingController _modelCtrl;
   bool _isDefault = false;
+  bool _obscureApiKey = true;
 
   @override
   void initState() {
@@ -76,7 +77,18 @@ class _LLMEditPageState extends State<LLMEditPage> {
                     ),
                     TextField(
                       controller: _apiKeyCtrl,
-                      decoration: const InputDecoration(labelText: 'API Key'),
+                      decoration: InputDecoration(
+                        labelText: 'API Key',
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscureApiKey ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () {
+                            setState(() {
+                              _obscureApiKey = !_obscureApiKey;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _obscureApiKey,
                       readOnly: _isDefault,
                     ),
                     TextField(

@@ -9,9 +9,9 @@ class QAQuestionConfig extends Timestamped {
     required this.question,
     required this.category,
     this.enabled = true,
-    DateTime? created,
-    DateTime? updated,
-  }) : super(created: created, updated: updated);
+    super.created,
+    super.updated,
+  });
 
   /// 创建默认的问题配置列表
   static List<QAQuestionConfig> defaultQuestions() => [

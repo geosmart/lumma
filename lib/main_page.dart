@@ -6,7 +6,6 @@ import 'config/settings_page.dart';
 import 'diary/diary_file_list_page.dart';
 import 'config/diary_mode_config_service.dart';
 import 'config/theme_service.dart';
-import 'util/storage_service.dart';
 import 'util/sync_service.dart';
 import 'model/enums.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -221,16 +220,9 @@ class _MainTabPageState extends State<MainTabPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
-                          child: _SecondaryButton(
-                            icon: Icons.sync,
-                            label: '数据同步',
-                            onTap: () async {
-                              // 直接调用主页同步按钮逻辑
-                              final syncButtonState = context.findAncestorStateOfType<_SyncButtonState>();
-                              syncButtonState?._syncData();
-                            },
-                          ),
+                        // 用 _SyncButton 替换原来的“数据同步”按钮
+                        const Expanded(
+                          child: _SyncButton(),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -307,90 +299,40 @@ class _SecondaryButton extends StatelessWidget {
 }
 
 // 同步按钮组件
-class _SyncButton extends StatefulWidget {
+class _SyncButton extends StatelessWidget {
   const _SyncButton();
 
-  @override
-  State<_SyncButton> createState() => _SyncButtonState();
-}
-
-class _SyncButtonState extends State<_SyncButton> {
-  bool _isSyncing = false;
-
-  Future<void> _syncData() async {
-    const uri = 'obsidian://adv-uri?vault=mobile&commandid=nutstore-sync%3Astart-sync';
-    setState(() {
-      _isSyncing = true;
-    });
-    try {
-      if (await canLaunch(uri)) {
-        await launch(uri);
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('无法打开 Obsidian 同步 URI')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSyncing = false;
-        });
-      }
+  Future<void> _syncData(BuildContext context) async {
+    // 从同步设置获取 URI，假设不会为空
+    final syncUri = await SyncService.getSyncUri();
+    final url = Uri.parse(syncUri!);
+    print('尝试同步数据: $url');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      print('无法启动同步命令，请检查同步设置或 Obsidian 是否安装。');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('无法启动同步'),
+          content: const Text('未检测到同步配置或 Obsidian 未安装。请在设置中检查同步 URI 并确保 Obsidian 已安装。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: context.cardBackgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: _isSyncing ? null : _syncData,
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _isSyncing
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: context.primaryTextColor,
-                      ),
-                    )
-                  : Icon(
-                      Icons.sync,
-                      color: context.primaryTextColor,
-                      size: 18,
-                    ),
-                const SizedBox(width: 8),
-                Text(
-                  _isSyncing ? '正在同步...' : '数据同步',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: context.primaryTextColor,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _SecondaryButton(
+      icon: Icons.sync,
+      label: '数据同步',
+      onTap: () => _syncData(context),
     );
   }
 }

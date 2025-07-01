@@ -1,5 +1,6 @@
 /// curl_helper.dart
 /// 提供 curl 命令生成与相关工具跳转功能
+library;
 import 'dart:convert';
 
 class CurlHelper {
@@ -14,7 +15,7 @@ class CurlHelper {
     // 多行拼接 curl
     return [
       'curl -X POST \\',
-      if (headerStr.isNotEmpty) headerStr + '\\n',
+      if (headerStr.isNotEmpty) '$headerStr\\n',
       "  -d '$body' \\",
       "  '$url'"
     ].join('\n');
@@ -23,6 +24,6 @@ class CurlHelper {
   /// 生成 curlconverter.com 的跳转 URL
   static String? buildCurlUrl(String curlCmd) {
     if (curlCmd.isEmpty || curlCmd == '暂无请求记录' || curlCmd == '解析失败') return null;
-    return 'https://curlconverter.com/#' + Uri.encodeComponent(curlCmd);
+    return 'https://curlconverter.com/#${Uri.encodeComponent(curlCmd)}';
   }
 }

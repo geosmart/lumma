@@ -6,8 +6,10 @@ import '../model/enums.dart';
 class PromptEditPage extends StatefulWidget {
   final FileSystemEntity? file;
   final PromptCategory activeCategory;
+  final bool readOnly;
+  final String? initialContent;
 
-  const PromptEditPage({super.key, this.file, required this.activeCategory});
+  const PromptEditPage({super.key, this.file, required this.activeCategory, this.readOnly = false, this.initialContent});
 
   @override
   State<PromptEditPage> createState() => _PromptEditPageState();
@@ -24,7 +26,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
   void initState() {
     super.initState();
     _isSystem = widget.file?.path.split('/').last == '问答AI日记助手.md';
-    _contentCtrl = TextEditingController();
+    _contentCtrl = TextEditingController(text: widget.initialContent ?? '');
     _nameCtrl = TextEditingController();
     _selectedCategory = widget.activeCategory;
     _isActive = false;
@@ -70,9 +72,10 @@ class _PromptEditPageState extends State<PromptEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isReadOnly = widget.readOnly || _isSystem;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.file == null ? '新建提示词' : _isSystem ? '系统提示词' : '编辑提示词'),
+        title: Text(widget.file == null ? '新建提示词' : _isSystem ? '系统提示词' : (widget.readOnly ? '查看提示词' : '编辑提示词')),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -81,7 +84,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
             TextField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: '角色名称/文件名'),
-              readOnly: _isSystem,
+              readOnly: isReadOnly,
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<PromptCategory>(
@@ -92,7 +95,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
                         child: Text(promptCategoryToDisplayName(category)),
                       ))
                   .toList(),
-              onChanged: _isSystem
+              onChanged: isReadOnly
                   ? null
                   : (v) {
                       if (v != null) setState(() => _selectedCategory = v);
@@ -104,7 +107,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
               children: [
                 Checkbox(
                   value: _isActive,
-                  onChanged: _isSystem
+                  onChanged: isReadOnly
                       ? null
                       : (v) {
                           setState(() => _isActive = v ?? false);
@@ -124,13 +127,13 @@ class _PromptEditPageState extends State<PromptEditPage> {
                   labelText: 'Markdown 内容',
                   border: OutlineInputBorder(),
                 ),
-                readOnly: _isSystem,
+                readOnly: isReadOnly,
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
               child: ElevatedButton.icon(
-                onPressed: _isSystem ? null : _savePrompt,
+                onPressed: isReadOnly ? null : _savePrompt,
                 icon: const Icon(Icons.save),
                 label: const Text('保存'),
                 style: ElevatedButton.styleFrom(

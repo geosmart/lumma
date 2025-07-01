@@ -62,10 +62,15 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     return result;
   }
 
-  void _showPrompt(FileSystemEntity? file) async {
+  void _showPrompt(FileSystemEntity? file, {bool readOnly = false, String? initialContent}) async {
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (context) => PromptEditPage(file: file, activeCategory: _activeCategory),
+        builder: (context) => PromptEditPage(
+          file: file,
+          activeCategory: _activeCategory,
+          readOnly: readOnly,
+          initialContent: initialContent,
+        ),
       ),
     );
 
@@ -205,98 +210,104 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                 child: ListTile(
                                   dense: true,
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                                  leading: IconButton(
-                                    icon: Icon(
-                                      _activePrompt[_activeCategory] == file.path
-                                          ? Icons.check_circle
-                                          : Icons.circle_outlined,
-                                      color: _activePrompt[_activeCategory] == file.path ? Colors.green : context.secondaryTextColor,
-                                      size: 22,
-                                    ),
-                                    onPressed: () async {
-                                      final fileName = file.path.split('/').last;
-                                      print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
-                                      try {
-                                        await PromptService.setActivePrompt(_activeCategory, fileName);
-                                        print('[PromptConfigPage] 设置激活提示词成功');
-                                        await _loadActivePrompt();
-                                        setState(() {});
-                                      } catch (e) {
-                                        print('[PromptConfigPage] 设置激活提示词失败: $e');
-                                        if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('设置激活失败: $e')),
-                                          );
-                                        }
-                                      }
-                                    },
-                                    tooltip: '设为激活',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        promptCategoryToDisplayName(_activeCategory),
-                                        style: TextStyle(
-                                          fontSize: SettingsUiConfig.subtitleFontSize,
-                                          color: context.secondaryTextColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                      // 第一排：激活按钮+提示词名称
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              _activePrompt[_activeCategory] == file.path
+                                                  ? Icons.check_circle
+                                                  : Icons.circle_outlined,
+                                              color: _activePrompt[_activeCategory] == file.path ? Colors.green : context.secondaryTextColor,
+                                              size: 22,
+                                            ),
+                                            onPressed: () async {
+                                              final fileName = file.path.split('/').last;
+                                              print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> $fileName');
+                                              try {
+                                                await PromptService.setActivePrompt(_activeCategory, fileName);
+                                                print('[PromptConfigPage] 设置激活提示词成功');
+                                                await _loadActivePrompt();
+                                                setState(() {});
+                                              } catch (e) {
+                                                print('[PromptConfigPage] 设置激活提示词失败: $e');
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('设置激活失败: $e')),
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            tooltip: '设为激活',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              title,
+                                              style: TextStyle(
+                                                fontSize: SettingsUiConfig.titleFontSize,
+                                                color: context.primaryTextColor,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        title,
-                                        style: TextStyle(
-                                          fontSize: SettingsUiConfig.titleFontSize,
-                                          color: context.primaryTextColor,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                      const SizedBox(height: 6),
+                                      // 第二排：右下角3个操作按钮
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.copy,
+                                              size: 20,
+                                              color: context.secondaryTextColor,
+                                            ),
+                                            onPressed: () async {
+                                              final content = await File(file.path).readAsString();
+                                              _showPrompt(null, initialContent: content);
+                                            },
+                                            tooltip: '复制',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.edit,
+                                              size: 20,
+                                              color: context.secondaryTextColor,
+                                            ),
+                                            onPressed: () => _showPrompt(file),
+                                            tooltip: '编辑',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              size: 20,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () => _deletePrompt(file),
+                                            tooltip: '删除',
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.copy,
-                                          size: 20,
-                                          color: context.secondaryTextColor,
-                                        ),
-                                        onPressed: () => _showPrompt(file),
-                                        tooltip: '复制',
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      const SizedBox(width: 8), // 添加间距
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.edit,
-                                          size: 20,
-                                          color: context.secondaryTextColor,
-                                        ),
-                                        onPressed: () => _showPrompt(file),
-                                        tooltip: '编辑',
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      const SizedBox(width: 8), // 添加间距
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          size: 20,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () => _deletePrompt(file),
-                                        tooltip: '删除',
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                    ],
-                                  ),
+                                  trailing: null,
                                 ), // End of ListTile
                               ), // End of Padding
                             ); // End of Container
@@ -313,8 +324,8 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                           heroTag: 'add-prompt',
                           onPressed: () => _showPrompt(null),
                           backgroundColor: Theme.of(context).colorScheme.primary,
-                          child: const Icon(Icons.add, size: 28),
                           tooltip: '添加提示词',
+                          child: const Icon(Icons.add, size: 28),
                         ),
                       ),
                     ),
