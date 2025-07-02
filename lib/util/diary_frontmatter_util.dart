@@ -1,21 +1,18 @@
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import '../config/config_service.dart';
 import 'storage_service.dart';
 
 /// 解析 frontmatter 获取 created 字段
 Future<DateTime?> getDiaryCreatedTime(String diaryFileName) async {
   try {
-    // 优先使用系统配置中的日记目录
-    String? diaryDirPath;
+    // 使用标准化的日记目录路径
+    String diaryDirPath;
     try {
-      final diaryDir = await StorageService.getUserDiaryDir();
-      if (diaryDir != null && diaryDir.isNotEmpty) {
-        diaryDirPath = diaryDir;
-      }
-    } catch (_) {}
-    if (diaryDirPath == null) {
-      final appDir = await getApplicationDocumentsDirectory();
-      diaryDirPath = '${appDir.path}/data/diary';
+      diaryDirPath = await StorageService.getDiaryDirPath();
+    } catch (_) {
+      // 异常处理，使用基于应用数据目录的日记路径
+      final appDataDir = await AppConfigService.getAppDataDir();
+      diaryDirPath = '${appDataDir.path}/data/diary';
     }
     final file = File('$diaryDirPath/$diaryFileName');
     if (!await file.exists()) return null;

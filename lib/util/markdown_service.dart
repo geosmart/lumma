@@ -1,32 +1,29 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'frontmatter_service.dart';
 import 'storage_service.dart';
+import '../config/config_service.dart';
 
 class MarkdownService {
   static Future<String> getDiaryDir() async {
-    // 优先使用系统配置中的日记目录
+    // 使用标准化的日记目录路径
     try {
-      final diaryDir = await StorageService.getUserDiaryDir();
-      if (diaryDir != null && diaryDir.isNotEmpty) {
-        final diaryDirObj = Directory(diaryDir);
-        if (!await diaryDirObj.exists()) {
-          await diaryDirObj.create(recursive: true);
-        }
-        return diaryDirObj.path;
+      final diaryPath = await StorageService.getDiaryDirPath();
+      final diaryDir = Directory(diaryPath);
+      if (!await diaryDir.exists()) {
+        await diaryDir.create(recursive: true);
       }
+      return diaryPath;
     } catch (e) {
-      // 忽略异常，降级使用默认目录
+      // 异常处理，使用基于应用数据目录的日记路径
+      final appDataDir = await AppConfigService.getAppDataDir();
+      final standardDiaryDir = Directory('${appDataDir.path}/data/diary');
+      if (!await standardDiaryDir.exists()) {
+        await standardDiaryDir.create(recursive: true);
+      }
+      return standardDiaryDir.path;
     }
-    // fallback: 原有逻辑
-    final dir = await getApplicationDocumentsDirectory();
-    final diaryDir = Directory('${dir.path}/data/diary');
-    if (!await diaryDir.exists()) {
-      await diaryDir.create(recursive: true);
-    }
-    return diaryDir.path;
   }
 
   /// 保存日记内容，自动更新 frontmatter 的 updated 字段

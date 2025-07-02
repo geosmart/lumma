@@ -31,17 +31,17 @@ class SyncConfigPage extends StatefulWidget {
 }
 
 class _SyncConfigPageState extends State<SyncConfigPage> {
-  String? _configDir;
-  String? _diaryDir;
+  String? _workDir;
   String? _syncUri;
   // 新增 WebDAV 字段
   String? _webdavUrl;
   String? _webdavUsername;
   String? _webdavPassword;
-  String? _webdavDirectory;
+  String? _webdavRemoteDir;
+  String? _webdavLocalDir;
   bool _isLoading = true;
   SyncType _syncType = SyncType.obsidian;
-  bool _obscureWebdavUrl = false;
+  bool _obscureWebdavUrl = true;
 
   @override
   void initState() {
@@ -53,19 +53,19 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     setState(() {
       _isLoading = true;
     });
-    final configDir = await StorageService.getConfigDir();
-    final diaryDir = await StorageService.getUserDiaryDir();
+    final workDir = await StorageService.getWorkDir();
+    final diaryDir = await StorageService.getDiaryDirPath(); // 只读标准目录
     final syncUri = await StorageService.getSyncUri();
     final appConfig = await AppConfigService.load();
     final sync = appConfig.sync;
     setState(() {
-      _configDir = configDir;
-      _diaryDir = diaryDir;
+      _workDir = workDir;
       _syncUri = syncUri;
       _webdavUrl = sync.webdavUrl;
       _webdavUsername = sync.webdavUsername;
       _webdavPassword = sync.webdavPassword;
-      _webdavDirectory = sync.webdavDirectory;
+      _webdavRemoteDir = sync.webdavRemoteDir;
+      _webdavLocalDir = sync.webdavLocalDir;
       _syncType = sync.syncType;
       _isLoading = false;
     });
@@ -85,14 +85,15 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       config.sync.webdavUrl = _webdavUrl ?? '';
       config.sync.webdavUsername = _webdavUsername ?? '';
       config.sync.webdavPassword = _webdavPassword ?? '';
-      config.sync.webdavDirectory = _webdavDirectory ?? '';
+      config.sync.webdavRemoteDir = _webdavRemoteDir ?? '';
+      config.sync.webdavLocalDir = _webdavLocalDir ?? '';
     });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('WebDAV 配置已保存')));
     }
   }
 
-  Future<void> _selectConfigDirectory() async {
+  Future<void> _selectWorkDirectory() async {
     // 对于 Android，首先检查权限
     if (Platform.isAndroid) {
       final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
@@ -108,49 +109,22 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     }
 
     final directory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: '选择配置文件存储目录',
+      dialogTitle: '选择数据工作目录',
     );
 
     if (directory != null) {
-      await StorageService.setConfigDir(directory);
+      final oldWorkDir = _workDir;
+      await StorageService.setWorkDir(directory);
+      // 迁移数据
+      await StorageService.migrateConfigDir(from: oldWorkDir, to: directory);
+      // 切换工作目录后，重新初始化目录结构
+      await AppConfigService.init();
       setState(() {
-        _configDir = directory;
+        _workDir = directory;
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('配置文件存储目录设置成功'),
-        ));
-      }
-    }
-  }
-
-  Future<void> _selectDiaryDirectory() async {
-    // 对于 Android，首先检查权限
-    if (Platform.isAndroid) {
-      final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
-      if (!hasPermission) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('需要文件访问权限才能选择目录'),
-            duration: Duration(seconds: 3),
-          ));
-        }
-        return;
-      }
-    }
-
-    final directory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: '选择日记文件存储目录',
-    );
-
-    if (directory != null) {
-      await StorageService.setUserDiaryDir(directory);
-      setState(() {
-        _diaryDir = directory;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('日记文件存储目录设置成功'),
+          content: Text('数据工作目录设置成功'),
         ));
       }
     }
@@ -197,12 +171,12 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     }
   }
 
-  Future<void> _clearConfigDirectory() async {
+  Future<void> _clearWorkDirectory() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('确认清除'),
-        content: const Text('确定要清除配置文件存储目录设置吗？'),
+        content: const Text('确定要清除数据工作目录设置吗？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -217,45 +191,16 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     );
 
     if (confirmed == true) {
-      await StorageService.clearConfigDir();
+      final oldWorkDir = _workDir;
+      await StorageService.clearWorkDir();
+      // 迁移数据到默认目录
+      await StorageService.migrateConfigDir(from: oldWorkDir, to: null);
       setState(() {
-        _configDir = null;
+        _workDir = null;
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('已清除配置文件存储目录设置'),
-        ));
-      }
-    }
-  }
-
-  Future<void> _clearDiaryDirectory() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认清除'),
-        content: const Text('确定要清除日记文件存储目录设置吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('确定'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await StorageService.clearUserDiaryDir();
-      setState(() {
-        _diaryDir = null;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('已清除日记文件存储目录设置'),
+          content: Text('已清除数据工作目录设置'),
         ));
       }
     }
@@ -297,8 +242,9 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     final url = _webdavUrl?.trim() ?? '';
     final username = _webdavUsername?.trim() ?? '';
     final password = _webdavPassword ?? '';
-    final directory = _webdavDirectory?.trim() ?? '';
-    if (url.isEmpty || username.isEmpty || password.isEmpty || directory.isEmpty) {
+    final remoteDirectory = _webdavRemoteDir?.trim() ?? '';
+    final localDirectory = _webdavLocalDir?.trim() ?? '';
+    if (url.isEmpty || username.isEmpty || password.isEmpty || remoteDirectory.isEmpty || localDirectory.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请填写完整的 WebDAV 配置信息')));
       return;
     }
@@ -306,7 +252,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       // 拼接完整目录URL
       String dirUrl = url;
       if (!dirUrl.endsWith('/')) dirUrl += '/';
-      String cleanDir = directory.replaceAll(RegExp(r'^/+|/+$'), '');
+      String cleanDir = remoteDirectory.replaceAll(RegExp(r'^/+|/+$'), '');
       String testUrl = dirUrl + cleanDir + '/';
       // 发送 PROPFIND 请求
       final request = http.Request('PROPFIND', Uri.parse(testUrl))
@@ -382,21 +328,14 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           const SizedBox(height: 20),
           _buildConfigCard(
             icon: Icons.settings,
-            title: '配置文件存储目录',
-            description: '设置应用配置文件的存储目录',
-            value: _configDir,
-            onSelect: _selectConfigDirectory,
-            onClear: _clearConfigDirectory,
+            title: '数据工作目录',
+            description: '设置应用的数据工作目录：包括模型，提示词，日记等数据',
+            value: _workDir,
+            onSelect: _selectWorkDirectory,
+            onClear: _clearWorkDirectory,
           ),
           const SizedBox(height: 20),
-          _buildConfigCard(
-            icon: Icons.book,
-            title: '日记文件存储目录',
-            description: '设置日记文件的存储目录',
-            value: _diaryDir,
-            onSelect: _selectDiaryDirectory,
-            onClear: _clearDiaryDirectory,
-          ),
+          // 移除日记目录相关设置
         ],
       ),
     );
@@ -483,7 +422,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
                 ElevatedButton.icon(
                   onPressed: onSelect,
                   icon: const Icon(Icons.folder_open),
-                  label: const Text('选择目录'),
+                  label: const Text('选择'),
                 ),
                 if (value != null)
                   TextButton.icon(
@@ -662,12 +601,34 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           const SizedBox(height: 12),
           TextField(
             decoration: const InputDecoration(
-              labelText: '同步目录',
+              labelText: '远程目录',
               hintText: '/remote/path/',
             ),
-            controller: TextEditingController(text: _webdavDirectory ?? '')
-              ..selection = TextSelection.collapsed(offset: (_webdavDirectory ?? '').length),
-            onChanged: (v) => _webdavDirectory = v,
+            controller: TextEditingController(text: _webdavRemoteDir ?? '')
+              ..selection = TextSelection.collapsed(offset: (_webdavRemoteDir ?? '').length),
+            onChanged: (v) => _webdavRemoteDir = v,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  decoration: const InputDecoration(
+                    labelText: '本地目录',
+                    hintText: '/local/path/',
+                  ),
+                  controller: TextEditingController(text: _webdavLocalDir ?? '')
+                    ..selection = TextSelection.collapsed(offset: (_webdavLocalDir ?? '').length),
+                  onChanged: (v) => _webdavLocalDir = v,
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: _selectWebdavLocalDirectory,
+                icon: const Icon(Icons.folder_open),
+                label: const Text('选择'),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
@@ -676,18 +637,49 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
               ElevatedButton.icon(
                 onPressed: _saveWebdavConfig,
                 icon: const Icon(Icons.save),
-                label: const Text('保存 WebDAV 配置'),
+                label: const Text('保存配置'),
               ),
               const SizedBox(width: 12),
               OutlinedButton.icon(
                 onPressed: _testWebdavConnection,
                 icon: const Icon(Icons.cloud_done),
-                label: const Text('测试 WebDAV 连接'),
+                label: const Text('测试连接'),
               ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _selectWebdavLocalDirectory() async {
+    // 对于 Android，首先检查权限
+    if (Platform.isAndroid) {
+      final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
+      if (!hasPermission) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('需要文件访问权限才能选择目录'),
+            duration: Duration(seconds: 3),
+          ));
+        }
+        return;
+      }
+    }
+
+    final directory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: '选择 WebDAV 本地目录',
+    );
+
+    if (directory != null) {
+      setState(() {
+        _webdavLocalDir = directory;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('WebDAV 本地目录设置成功'),
+        ));
+      }
+    }
   }
 }

@@ -9,6 +9,7 @@ import 'config/theme_service.dart';
 import 'util/sync_service.dart';
 import 'model/enums.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'widgets/sync_progress_dialog.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -303,25 +304,147 @@ class _SyncButton extends StatelessWidget {
   const _SyncButton();
 
   Future<void> _syncData(BuildContext context) async {
-    // 从同步设置获取 URI，假设不会为空
-    final syncUri = await SyncService.getSyncUri();
-    final url = Uri.parse(syncUri!);
-    print('尝试同步数据: $url');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+    final syncMode = await SyncService.getSyncMode();
+    if (syncMode == SyncMode.obsidian) {
+      // Obsidian 同步逻辑
+      final syncUri = await SyncService.getSyncUri();
+      final url = Uri.parse(syncUri!);
+      print('尝试同步数据: $url');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        print('无法启动同步命令，请检查同步设置或 Obsidian 是否安装。');
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('无法启动同步'),
+            content: const Text('未检测到同步配置或 Obsidian 未安装。请在设置中检查同步 URI 并确保 Obsidian 已安装。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        );
+      }
+    } else if (syncMode == SyncMode.webdav) {
+      // 统计本地文件数和远程D:response数-1
+      final localCount = await SyncService.getLocalDiaryFileCount();
+      final remoteCount = await SyncService.getRemoteWebdavFileCount();
+      final total = localCount + remoteCount;
+
+      // 共享状态变量，在弹窗外部定义
+      int current = 0;
+      String currentFile = '';
+      String currentStage = '';
+      List<String> logs = [];
+      bool isDone = false;
+      bool closed = false;
+      bool started = false;
+
+      void addLog(String message) {
+        final now = DateTime.now();
+        final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+        logs.insert(0, '$timeStr $message');
+      }
+
+      void closeDialog() {
+        closed = true;
+      }
+
+      // 启动同步任务
+      if (!started) {
+        started = true;
+        addLog('开始同步任务');
+        SyncService.syncWithWebdavWithProgress(
+          onProgress: (int c, int t, String file) {
+            if (closed) return;
+            current = c;
+            currentFile = file;
+            if (c <= localCount) {
+              currentStage = '上传中';
+              addLog('上传: $file');
+            } else {
+              currentStage = '下载中';
+              addLog('下载: $file');
+            }
+          },
+          onDone: () {
+            isDone = true;
+            addLog('同步任务完成');
+          },
+        ).then((result) {
+          if (closed) return;
+          Navigator.of(context, rootNavigator: true).pop();
+          if (result == true) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('同步成功'),
+                content: const Text('WebDAV 同步已完成.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('确定'),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('同步失败'),
+                content: const Text('WebDAV 同步失败，请检查网络或配置.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('确定'),
+                  ),
+                ],
+              ),
+            );
+          }
+        });
+      }
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          return StatefulBuilder(
+            builder: (ctx, setState) {
+              // 定期刷新UI
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (!closed && ctx.mounted) {
+                  setState(() {});
+                }
+              });
+
+              return SyncProgressDialog(
+                current: current,
+                total: total,
+                currentFile: currentFile,
+                currentStage: currentStage,
+                logs: logs,
+                isDone: isDone,
+                onClose: () {
+                  closeDialog();
+                  Navigator.of(ctx, rootNavigator: true).pop();
+                },
+              );
+            },
+          );
+        },
+      );
     } else {
-      print('无法启动同步命令，请检查同步设置或 Obsidian 是否安装。');
+      // 未知同步模式
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('无法启动同步'),
-          content: const Text('未检测到同步配置或 Obsidian 未安装。请在设置中检查同步 URI 并确保 Obsidian 已安装。'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('确定'),
-            ),
-          ],
+        builder: (context) => const AlertDialog(
+          title: Text('同步未配置'),
+          content: Text('请在设置中配置同步模式。'),
         ),
       );
     }

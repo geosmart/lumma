@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:lumma/model/enums.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 import '../model/prompt_config.dart';
+import '../util/storage_service.dart';
 import 'config_service.dart';
 
 class PromptService {
@@ -13,25 +13,16 @@ class PromptService {
     PromptCategory.summary,
   ];
 
-  static Future<String> get _promptDir async {
-    final dir = await getApplicationDocumentsDirectory();
-    final promptDir = Directory(p.join(dir.path, 'config', 'prompt'));
-    if (!await promptDir.exists()) {
-      await promptDir.create(recursive: true);
-    }
-    return promptDir.path;
-  }
-
+  /// 获取 prompt 目录路径（自动创建）
   static Future<String> getPromptDir() async {
-    return await _promptDir;
+     return await StorageService.getPromptDirPath();
   }
 
   /// 获取所有 prompt 文件（可选按类型过滤）
   static Future<List<FileSystemEntity>> listPrompts({PromptCategory? category}) async {
-    final dir = await _promptDir;
-    final files = Directory(
-      dir,
-    ).listSync().where((f) => f.path.endsWith('.md')).toList();
+    final dir = await StorageService.getPromptDirPath();
+    print('[PromptService-listPrompts] Prompt directory: $dir');
+    final files = Directory(dir).listSync().where((f) => f.path.endsWith('.md')).toList();
     if (category == null) return files;
     // 修正：异步过滤
     List<FileSystemEntity> filtered = [];
@@ -44,7 +35,7 @@ class PromptService {
 
   /// 读取 prompt 文件内容
   static Future<String> readPromptContent(String fileName) async {
-    final dir = await _promptDir;
+    final dir = await getPromptDir();
     final file = File('$dir/$fileName');
     if (await file.exists()) {
       return await file.readAsString();
@@ -59,7 +50,7 @@ class PromptService {
     required PromptCategory type,
     String? oldFileName,
   }) async {
-    final dir = await _promptDir;
+    final dir = await getPromptDir();
     final file = File('$dir/$fileName');
     final now = DateTime.now().toIso8601String();
     Map<String, dynamic> frontmatter = {'type': promptCategoryToString(type), 'updated': now};
@@ -81,7 +72,7 @@ class PromptService {
 
   /// 删除 prompt 文件
   static Future<void> deletePrompt(String fileName) async {
-    final dir = await _promptDir;
+    final dir = await getPromptDir();
     final file = File('$dir/$fileName');
     if (await file.exists()) await file.delete();
   }

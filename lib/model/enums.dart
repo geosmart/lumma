@@ -1,4 +1,3 @@
-
 enum DiaryMode { qa, chat }
 
 String diaryModeToString(DiaryMode mode) {
@@ -78,5 +77,40 @@ ThemeModeType themeModeTypeFromString(String value) {
       return ThemeModeType.dark;
     default:
       return ThemeModeType.light;
+  }
+}
+
+// 同步模式枚举
+enum SyncMode { obsidian, webdav }
+
+// 获取同步模式显示名称
+String syncModeToDisplayName(SyncMode mode) {
+  switch (mode) {
+    case SyncMode.obsidian:
+      return 'Obsidian';
+    case SyncMode.webdav:
+      return 'WebDAV';
+  }
+}
+
+// 将同步模式枚举转换为字符串
+String syncModeToString(SyncMode mode) {
+  switch (mode) {
+    case SyncMode.obsidian:
+      return 'obsidian';
+    case SyncMode.webdav:
+      return 'webdav';
+  }
+}
+
+// 根据字符串获取同步模式枚举
+SyncMode syncModeFromString(String value) {
+  switch (value) {
+    case 'obsidian':
+      return SyncMode.obsidian;
+    case 'webdav':
+      return SyncMode.webdav;
+    default:
+      return SyncMode.obsidian;
   }
 }

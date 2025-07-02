@@ -1,0 +1,158 @@
+import 'package:flutter/material.dart';
+
+class SyncProgressDialog extends StatefulWidget {
+  final int current;
+  final int total;
+  final String currentFile;
+  final String currentStage;
+  final List<String> logs;
+  final bool isDone;
+  final VoidCallback? onClose;
+
+  const SyncProgressDialog({
+    super.key,
+    required this.current,
+    required this.total,
+    required this.currentFile,
+    this.currentStage = '',
+    this.logs = const [],
+    this.isDone = false,
+    this.onClose,
+  });
+
+  @override
+  State<SyncProgressDialog> createState() => _SyncProgressDialogState();
+}
+
+class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  double _lastValue = 0;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _animation = Tween<double>(begin: 0, end: 0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _lastValue = widget.total > 0 ? widget.current / widget.total : 0;
+  }
+
+  @override
+  void didUpdateWidget(covariant SyncProgressDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newValue = widget.total > 0 ? widget.current / widget.total : 0.0;
+    if (newValue != _lastValue) {
+      _animation = Tween<double>(begin: _lastValue, end: newValue.toDouble()).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+      _controller.forward(from: 0);
+      _lastValue = newValue.toDouble();
+    }
+
+    // 新日志添加时自动滚动到顶部
+    if (widget.logs.length > oldWidget.logs.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.7,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '数据同步',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            AnimatedBuilder(
+              animation: _animation,
+              builder: (context, child) {
+                return LinearProgressIndicator(
+                  value: _animation.value,
+                  minHeight: 8,
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('同步进度: ${widget.current} / ${widget.total}'),
+                if (widget.currentStage.isNotEmpty)
+                  Text('${widget.currentStage}', style: const TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('当前文件: ${widget.currentFile}'),
+            const SizedBox(height: 16),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('同步日志:', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: widget.logs.length,
+                  itemBuilder: (context, index) {
+                    final logIndex = widget.logs.length - index;
+                    final log = widget.logs[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      child: Text(
+                        '$logIndex. $log',
+                        style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
+                  child: const Text('关闭'),
+                ),
+                if (widget.isDone) ...[
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('完成'),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
