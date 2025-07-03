@@ -82,7 +82,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建日记失败: ${e.toString()}')),
+          SnackBar(content: Text('创建日记失败: [31m${e.toString()}[0m')),
         );
       }
     }

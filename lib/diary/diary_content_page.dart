@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../util/markdown_service.dart';
 import 'dart:io';
+import '../widgets/enhanced_markdown.dart';
 
 /// 单篇日记详情页，全屏、只读Markdown渲染，带编辑提示
 class DiaryContentPage extends StatefulWidget {
@@ -64,7 +65,21 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.fileName)),
+      appBar: AppBar(
+        title: Text(widget.fileName),
+        actions: [
+          if (!_editMode && !_loading)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: '编辑',
+              onPressed: () {
+                setState(() {
+                  _editMode = true;
+                });
+              },
+            ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _editMode
@@ -113,102 +128,147 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                     ],
                   ),
                 )
-              : Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_frontmatter != null && _frontmatter!.isNotEmpty)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (_filePath != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 2),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: 72,
-                                          child: Text('path:', style: TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-                                        ),
-                                        Expanded(child: Text(_filePath!, style: TextStyle(fontSize: 13, color: Colors.grey))),
-                                      ],
-                                    ),
-                                  ),
-                                ..._frontmatter!.entries.map((e) {
-                                  if (e.key == 'reasoning_context' || e.key == 'reasoning') {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 2),
-                                      child: ExpansionTile(
-                                        tilePadding: EdgeInsets.zero,
-                                        title: Text(
-                                          e.key == 'reasoning_context' ? '推理过程' : 'Reasoning',
-                                          style: const TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.bold),
-                                        ),
-                                        children: [
-                                          Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
-                                            child: Text(
-                                              e.value,
-                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  } else {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 2),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 72,
-                                            child: Text('${e.key}:', style: TextStyle(fontSize: 13, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-                                          ),
-                                          Expanded(child: Text(e.value, style: TextStyle(fontSize: 13, color: Colors.grey))),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                }),
-                              ],
+              : _content == null
+                  ? const Center(child: Text('无内容'))
+                  : _buildChatView(context),
+    );
+  }
+
+  // 新增：只读chat风格展示
+  Widget _buildChatView(BuildContext context) {
+    final history = parseDiaryMarkdownToChatHistory(_content!);
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      itemCount: history.length,
+      itemBuilder: (ctx, i) {
+        final h = history[i];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF23272A) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(color: Colors.grey.withOpacity(0.08)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 左侧：时间+标题
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (h['time'] != null)
+                          Text(
+                            h['time']!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[500],
                             ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: Markdown(
-                              data: _content ?? '',
-                              styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+                          ),
+                        if ((h['title'] ?? '').isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            h['title']!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[300]
+                                  : Colors.grey[600],
+                              fontWeight: FontWeight.bold,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
+                      ],
+                    ),
+                  ),
+                  // 右侧：标签
+                  if (h['category'] != null && h['category']!.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.teal[50],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.teal[200]!),
+                      ),
+                      child: Text(
+                        h['category']!,
+                        style: const TextStyle(fontSize: 11, color: Colors.teal, fontWeight: FontWeight.w500),
                       ),
                     ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 32,
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _editMode = true),
-                          child: Material(
-                            color: Colors.grey.shade200.withOpacity(0.85),
-                            borderRadius: BorderRadius.circular(20),
-                            elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Icon(Icons.edit, color: Colors.black54, size: 24),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (h['q'] != null && h['q']!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: EnhancedMarkdown(data: h['q'] ?? ''),
                 ),
+              if (h['a'] != null && h['a']!.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(top: 8, left: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2F33) : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border(left: BorderSide(color: Colors.blueGrey[200]!, width: 3)),
+                  ),
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      fontSize: 6.5, // 原为13，缩小一倍
+                      color: Colors.grey[600],
+                    ),
+                    child: EnhancedMarkdown(data: h['a'] ?? ''),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  // 新增：解析markdown为对话轮的函数
+  List<Map<String, String>> parseDiaryMarkdownToChatHistory(String content) {
+    final lines = content.split('\n');
+    List<Map<String, String>> history = [];
+    Map<String, String> current = {};
+    String? lastSection;
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.startsWith('## ')) {
+        if (current.isNotEmpty) history.add(current);
+        current = {'title': line.substring(3)};
+        lastSection = null;
+      } else if (line.startsWith('### 时间')) {
+        lastSection = 'time';
+      } else if (line.startsWith('### 分类')) {
+        lastSection = 'category';
+      } else if (line.startsWith('### 日记内容')) {
+        lastSection = 'q';
+      } else if (line.startsWith('### 内容分析')) {
+        lastSection = 'a';
+      } else if (line.trim() == '---') {
+        if (current.isNotEmpty) history.add(current);
+        current = {};
+        lastSection = null;
+      } else if (lastSection != null && line.trim().isNotEmpty) {
+        current[lastSection] = (current[lastSection] ?? '') + (current[lastSection]?.isNotEmpty == true ? '\n' : '') + line.trim();
+      }
+    }
+    if (current.isNotEmpty) history.add(current);
+    return history;
   }
 }

@@ -56,6 +56,175 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     }
   }
 
+  // 自动提取分类和标题并保存对话到日记文件
+  Future<void> _extractCategoryAndSave() async {
+    if (_history.isEmpty) return;
+
+    try {
+      // 只处理最新的一轮对话（如果存在）
+      final lastHistory = _history.last;
+      if (lastHistory['q']?.isNotEmpty == true && lastHistory['a']?.isNotEmpty == true) {
+        // 让AI提取分类和标题
+        final result = await _extractCategoryAndTitle(lastHistory['q']!, lastHistory['a']!);
+        // result: {"分类": "...", "标题": "..."}
+        setState(() {
+          _history[_history.length - 1]['category'] = result['分类'] ?? '想法';
+          _history[_history.length - 1]['title'] = result['标题'] ?? '';
+        });
+        // 分类和标题提取完成后，保存到日记文件
+        final content = _formatDiaryContent(_history.last);
+        await MarkdownService.appendToDailyDiary(content);
+        // 打印保存路径（调试用）
+        final fileName = MarkdownService.getDiaryFileName();
+        final diaryDir = await MarkdownService.getDiaryDir();
+        final filePath = '$diaryDir/$fileName';
+        print('日记已自动追加到: $filePath，分类: [32m${result['分类']}[0m，标题: [34m${result['标题']}[0m');
+      }
+    } catch (e) {
+      print('自动保存失败: [31m${e.toString()}[0m');
+      // 不显示错误提示，避免影响用户体验
+    }
+  }
+
+  // 让AI提取分类和标题
+  Future<Map<String, String>> _extractCategoryAndTitle(String question, String answer) async {
+    try {
+      final prompt = '''
+请从以下对话内容中，提取"分类"和"标题"：
+- "分类"需从下列分类中选择最合适的一个：想法、观察、工作、生活、育儿、学习、健康、情感。
+- "标题"需提炼日记的内容，不超过10个字，不要过于抽象，如果不好抽象就使用关键词表示。
+- 只返回JSON格式，如：{"分类": "xxx", "标题": "xxx"}
+- 不要输出其他内容。
+
+用户问题：$question
+AI回答：$answer
+''';
+      final messages = [
+        {'role': 'user', 'content': prompt}
+      ];
+      Map<String, String> result = {'分类': '想法', '标题': ''};
+      bool completed = false;
+      await AiService.askStream(
+        messages: messages,
+        onDelta: (data) {},
+        onDone: (data) {
+          String content = data['content']?.trim() ?? '';
+          try {
+            // 1. 去除markdown代码块包裹
+            if (content.startsWith('```')) {
+              final idx = content.indexOf('```', 3);
+              if (idx > 0) {
+                content = content.substring(3, idx).trim();
+                // 可能有json标记
+                if (content.startsWith('json')) {
+                  content = content.substring(4).trim();
+                }
+              }
+            }
+            // 2. 去除前后空白
+            content = content.trim();
+            // 3. 尝试直接解析
+            Map<String, dynamic> map = {};
+            try {
+              map = Map<String, dynamic>.from(jsonDecode(content));
+            } catch (_) {
+              // 4. 若失败，尝试提取第一个{...}部分
+              final start = content.indexOf('{');
+              final end = content.lastIndexOf('}');
+              if (start >= 0 && end > start) {
+                final jsonStr = content.substring(start, end + 1);
+                map = Map<String, dynamic>.from(jsonDecode(jsonStr));
+              } else {
+                throw Exception('未找到有效JSON');
+              }
+            }
+            if (map['分类'] is String && map['标题'] is String) {
+              result = {'分类': map['分类'], '标题': map['标题']};
+            }
+          } catch (e) {
+            print('解析AI返回JSON失败: ' + data['content'].toString());
+          }
+          completed = true;
+        },
+        onError: (error) {
+          print('提取分类和标题失败: ${error.toString()}');
+          completed = true;
+        },
+      );
+      while (!completed) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      return result;
+    } catch (e) {
+      print('提取分类和标题失败: ${e.toString()}');
+      return {'分类': '想法', '标题': ''};
+    }
+  }
+
+  // 格式化日记内容
+  String _formatDiaryContent(Map<String, String> historyItem) {
+    final buffer = StringBuffer();
+    // 1. 标题（AI生成）
+    final title = historyItem['title'] ?? '';
+    buffer.writeln('## $title');
+    buffer.writeln();
+    // 2. 时间
+    final time = historyItem['time'] ?? (() {
+      final now = DateTime.now();
+      return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    })();
+    buffer.writeln('### 时间');
+    buffer.writeln(time);
+    buffer.writeln();
+    // 3. 分类
+    final category = historyItem['category'] ?? '想法';
+    buffer.writeln('### 分类');
+    buffer.writeln(category);
+    buffer.writeln();
+    // 4. 日记内容（用户的问题/想法）
+    if (historyItem['q']?.isNotEmpty == true) {
+      buffer.writeln('### 日记内容');
+      buffer.writeln(historyItem['q']!);
+      buffer.writeln();
+    }
+    // 5. AI的辅助内容（AI的回答）
+    if (historyItem['a']?.isNotEmpty == true) {
+      buffer.writeln('### 内容分析');
+      buffer.writeln(historyItem['a']!);
+      buffer.writeln();
+    }
+    // 添加分割线
+    buffer.writeln('---');
+    buffer.writeln();
+    return buffer.toString();
+  }
+
+  // 自动保存对话到日记文件（用户发送消息时使用）
+  Future<void> _autoSaveToDiary() async {
+    if (_history.isEmpty) return;
+
+    try {
+      // 只保存最新的一轮对话（如果存在）
+      final lastHistory = _history.last;
+      if (lastHistory['q']?.isNotEmpty == true || lastHistory['a']?.isNotEmpty == true) {
+        final content = _formatDiaryContent(lastHistory);
+
+        // 追加到当天的日记文件
+        await MarkdownService.appendToDailyDiary(content);
+
+        // 打印保存路径（调试用）
+        final fileName = MarkdownService.getDiaryFileName();
+        final diaryDir = await MarkdownService.getDiaryDir();
+        final filePath = '$diaryDir/$fileName';
+        print('日记已自动追加到: $filePath');
+      }
+
+    } catch (e) {
+      print('自动保存失败: ${e.toString()}');
+      // 不显示错误提示，避免影响用户体验
+    }
+  }
+
   // 显示模型名称的tooltip
   void _showModelTooltip(BuildContext context, Offset position) {
     final overlay = Overlay.of(context);
@@ -193,6 +362,10 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             // 新增日志打印大模型最终返回内容
             print('[LLM] Done: \n${data.toString()}');
             _scrollToBottom();
+
+            // AI回答完成后自动提取分类并保存到日记文件
+            // 注意：这里不立即保存，而是等待分类提取完成后再保存
+            _extractCategoryAndSave();
           }
         }
       },
@@ -231,7 +404,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     });
   }
 
-  void _sendAnswer() {
+  void _sendAnswer() async {
     final userInput = _ctrl.text.trim();
     if (userInput.isEmpty) return;
     setState(() {
@@ -240,6 +413,9 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     });
     _askNext();
     _scrollToBottom();
+
+    // 用户发送消息时不立即保存，等待AI回答完成后再保存
+    // 保存逻辑在 _extractCategoryAndSave() 中处理
   }
 
   @override
@@ -496,66 +672,6 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                     ],
                                   ),
                                 );
-                              }
-                            },
-                          ),
-                          const SizedBox(width: 4),
-                          // 保存按钮
-                          IconButton(
-                            icon: const Icon(Icons.save, color: Colors.blue),
-                            tooltip: '保存当前对话为日记',
-                            onPressed: () async {
-                              // 构建结构化的日记内容
-                              final buffer = StringBuffer();
-
-                              // 添加summary部分（可以后续扩展为AI生成的摘要）
-                              buffer.writeln('#${DateTime.now().toString().split(' ')[0]}');
-                              buffer.writeln();
-
-                              // 添加每轮对话
-                              for (int i = 0; i < _history.length; i++) {
-                                final h = _history[i];
-                                if (h['q']?.isNotEmpty == true || h['a']?.isNotEmpty == true) {
-                                  buffer.writeln('## Round${i + 1}');
-                                  buffer.writeln();
-
-                                  if (h['q']?.isNotEmpty == true) {
-                                    buffer.writeln('### Q');
-                                    buffer.writeln(h['q']!);
-                                    buffer.writeln();
-                                  }
-
-                                  if (h['a']?.isNotEmpty == true) {
-                                    buffer.writeln('### A');
-                                    buffer.writeln(h['a']!);
-                                    buffer.writeln();
-                                  }
-                                }
-                              }
-
-                              final content = buffer.toString();
-                              try {
-                                // 覆盖当天的日记文件
-                                await MarkdownService.overwriteDailyDiary(content);
-                                final fileName = MarkdownService.getDiaryFileName();
-                                final diaryDir = await MarkdownService.getDiaryDir();
-                                final filePath = '$diaryDir/$fileName';
-                                // 打印保存路径
-                                // ignore: avoid_print
-                                print('日记已保存到: $filePath');
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('日记已保存到: $filePath')));
-                                  // 跳转到日记列表页面
-                                  Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                                  );
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('保存失败: \n${e.toString()}')),
-                                  );
-                                }
                               }
                             },
                           ),
