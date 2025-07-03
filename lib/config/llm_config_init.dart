@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../model/llm_config.dart';
 import 'config_service.dart';
+import '../model/prompt_config.dart';
+import '../model/prompt_constants.dart';
+import '../model/enums.dart';
 
 /// 初始化 LLM 和 Prompt 配置，如果没有则从 .env 读取并写入
 Future<void> ensureConfig() async {
@@ -21,6 +24,20 @@ Future<void> ensureConfig() async {
     config.model = [llm];
     updated = true;
     debugPrint('[ensureLlmAndPromptConfigFromEnv] 已根据 .env 初始化 LLM 配置');
+  }
+
+  // 系统提示词初始化（不可删除）
+  final existingPromptNames = config.prompt.map((p) => p.name).toSet();
+  final missingPrompts = PromptConstants.systemPrompts.where((e) => !existingPromptNames.contains(e['name']!)).toList();
+  if (missingPrompts.isNotEmpty) {
+    config.prompt.addAll(missingPrompts.map((e) => PromptConfig(
+      name: e['name']!,
+      type: PromptCategory.qa,
+      active: false,
+      content: e['content']!,
+    )));
+    updated = true;
+    debugPrint('[ensureLlmAndPromptConfigFromEnv] 已补全缺失的系统提示词');
   }
 
   if (updated) {

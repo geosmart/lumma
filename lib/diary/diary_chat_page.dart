@@ -10,6 +10,7 @@ import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
 import '../model/enums.dart';
 import '../util/prompt_util.dart';
+import '../model/prompt_constants.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -83,16 +84,9 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   // 让AI提取分类和标题
   Future<Map<String, String>> _extractCategoryAndTitle(String question, String answer) async {
     try {
-      final prompt = '''
-请从以下对话内容中，提取"分类"和"标题"：
-- "分类"需从下列分类中选择最合适的一个：想法、观察、工作、生活、育儿、学习、健康、情感。
-- "标题"需提炼日记的内容，不超过10个字，不要过于抽象，如果不好抽象就使用关键词表示。
-- 只返回JSON格式，如：{"分类": "xxx", "标题": "xxx"}
-- 不要输出其他内容。
-
-用户问题：$question
-AI回答：$answer
-''';
+      final prompt = PromptConstants.extractCategoryAndTitlePrompt
+        .replaceAll(r'{{question}}', question)
+        .replaceAll(r'{{answer}}', answer);
       final messages = [
         {'role': 'user', 'content': prompt}
       ];
