@@ -15,7 +15,7 @@ class SyncService {
       final syncUri = await StorageService.getSyncUri();
 
       // 至少需要配置日记目录和同步URI之一才算配置完成
-      return (diaryDir?.isNotEmpty == true) || (syncUri?.isNotEmpty == true);
+      return (diaryDir.isNotEmpty == true) || (syncUri?.isNotEmpty == true);
     } catch (e) {
       return false;
     }
@@ -225,14 +225,14 @@ class SyncService {
     final dir = Directory(diaryDir);
     if (!await dir.exists()) return 0;
     final allEntities = await dir.list(recursive: true, followLinks: false).toList();
-    final files = allEntities.where((entity) => entity is File).toList();
+    final files = allEntities.whereType<File>().toList();
     return files.length;
   }
 
   static Future<int> getRemoteWebdavFileCount() async {
     final config = await AppConfigService.load();
     final syncConfig = config.sync;
-    final uri = Uri.parse(syncConfig.webdavUrl + (syncConfig.webdavRemoteDir.isEmpty ? '/' : syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : syncConfig.webdavRemoteDir + '/'));
+    final uri = Uri.parse(syncConfig.webdavUrl + (syncConfig.webdavRemoteDir.isEmpty ? '/' : syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : '${syncConfig.webdavRemoteDir}/'));
     final auth = base64Encode(utf8.encode('${syncConfig.webdavUsername}:${syncConfig.webdavPassword}'));
     final request = http.Request('PROPFIND', uri)
       ..headers.addAll({

@@ -253,12 +253,12 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       String dirUrl = url;
       if (!dirUrl.endsWith('/')) dirUrl += '/';
       String cleanDir = remoteDirectory.replaceAll(RegExp(r'^/+|/+$'), '');
-      String testUrl = dirUrl + cleanDir + '/';
+      String testUrl = '$dirUrl$cleanDir/';
       // 发送 PROPFIND 请求
       final request = http.Request('PROPFIND', Uri.parse(testUrl))
         ..headers.addAll({
           'Depth': '0',
-          'Authorization': 'Basic ' + base64Encode(utf8.encode('$username:$password')),
+          'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$password'))}',
         });
       final streamed = await request.send();
       if (streamed.statusCode == 207 || streamed.statusCode == 200) {

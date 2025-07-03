@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'prompt_service.dart';
 import '../model/enums.dart';
+import '../util/prompt_util.dart';
+import '../model/prompt_config.dart';
+import '../config/config_service.dart';
 
 class PromptEditPage extends StatefulWidget {
   final FileSystemEntity? file;
@@ -37,13 +39,25 @@ class _PromptEditPageState extends State<PromptEditPage> {
   }
 
   Future<void> _loadPromptData() async {
-    final content = await File(widget.file!.path).readAsString();
-    final meta = await PromptService.getPromptFrontmatter(File(widget.file!.path));
+    final config = await AppConfigService.load();
+    final type = widget.activeCategory;
+    // 优先找active的
+    final activePrompt = config.prompt.firstWhere(
+      (p) => p.type == type && p.active,
+      orElse: () => config.prompt.firstWhere(
+        (p) => p.type == type,
+        orElse: () => PromptConfig(
+          name: '',
+          type: type,
+          content: '',
+        ),
+      ),
+    );
     setState(() {
-      _contentCtrl.text = content;
-      _nameCtrl.text = widget.file!.path.split('/').last.replaceAll('.md', '');
-      _selectedCategory = promptCategoryFromString(meta['type'] ?? widget.activeCategory);
-      _isActive = meta['active'] == true || meta['active'] == 'true';
+      _contentCtrl.text = activePrompt.content;
+      _nameCtrl.text = activePrompt.name;
+      _selectedCategory = activePrompt.type;
+      _isActive = activePrompt.active;
     });
   }
 
@@ -56,14 +70,16 @@ class _PromptEditPageState extends State<PromptEditPage> {
 
   Future<void> _savePrompt() async {
     final name = _nameCtrl.text.trim().isEmpty ? 'prompt_${DateTime.now().millisecondsSinceEpoch}' : _nameCtrl.text.trim();
-    await PromptService.savePrompt(
-      fileName: '$name.md',
-      content: _contentCtrl.text,
+    final prompt = PromptConfig(
+      name: name,
       type: _selectedCategory,
-      oldFileName: widget.file?.path.split('/').last,
+      active: _isActive,
+      content: _contentCtrl.text,
+      updated: DateTime.now(),
     );
+    await savePrompt(prompt, oldName: widget.file?.path.split('/').last.replaceAll('.md', ''));
     if (_isActive) {
-      await PromptService.setActivePrompt(_selectedCategory, '$name.md');
+      await setActivePrompt(_selectedCategory, name);
     }
     if (mounted) {
        Navigator.of(context).pop(true); // Return true to indicate save

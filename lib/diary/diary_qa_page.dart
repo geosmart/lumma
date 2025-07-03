@@ -4,7 +4,7 @@ import '../util/markdown_service.dart';
 import 'diary_qa_title_service.dart';
 import '../util/ai_service.dart';
 import '../config/config_service.dart';
-import '../config/prompt_service.dart';
+import '../util/prompt_util.dart';
 import '../config/theme_service.dart';
 import '../model/enums.dart';
 
@@ -124,7 +124,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       final file = File('$diaryDir/$_diaryFileName');
       final content = await file.readAsString();
 
-      final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.summary);
+      final systemPrompt = await getActivePromptContent(PromptCategory.summary);
       final messages = AiService.buildMessages(
         systemPrompt: systemPrompt,
         history: [],

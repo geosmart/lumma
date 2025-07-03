@@ -13,7 +13,7 @@ DiaryMode diaryModeFromString(String value) {
   switch (value) {
     case 'qa':
       return DiaryMode.qa;
-    case 'summary':
+    case 'chat':
       return DiaryMode.chat;
     default:
       return DiaryMode.qa;

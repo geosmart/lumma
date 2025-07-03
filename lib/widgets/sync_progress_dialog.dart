@@ -99,7 +99,7 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
               children: [
                 Text('同步进度: ${widget.current} / ${widget.total}'),
                 if (widget.currentStage.isNotEmpty)
-                  Text('${widget.currentStage}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(widget.currentStage, style: const TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 8),

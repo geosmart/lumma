@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import '../util/markdown_service.dart';
 import 'dart:io';
 import '../widgets/enhanced_markdown.dart';
@@ -269,6 +268,12 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       }
     }
     if (current.isNotEmpty) history.add(current);
+    // 按时间降序排序（最近的在前面）
+    history.sort((a, b) {
+      final t1 = a['time'] ?? '';
+      final t2 = b['time'] ?? '';
+      return t2.compareTo(t1);
+    });
     return history;
   }
 }

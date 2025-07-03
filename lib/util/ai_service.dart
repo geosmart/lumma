@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/config_service.dart';
-import '../config/prompt_service.dart';
+import '../util/prompt_util.dart';
 import '../model/enums.dart';
 
 class AiService {
@@ -213,9 +213,11 @@ class AiService {
     required void Function(Object error)? onError,
   }) async {
     try {
-      final systemPrompt = await PromptService.getActivePromptContent(
-        PromptCategory.values.firstWhere((e) => promptCategoryToString(e) == promptType, orElse: () => PromptCategory.qa),
+      final promptCategory = PromptCategory.values.firstWhere(
+        (e) => promptCategoryToString(e) == promptType,
+        orElse: () => PromptCategory.qa,
       );
+      final systemPrompt = await getActivePromptContent(promptCategory);
       final messages = buildMessages(
         systemPrompt: systemPrompt,
         history: [],

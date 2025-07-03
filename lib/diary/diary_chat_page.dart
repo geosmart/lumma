@@ -4,12 +4,12 @@ import '../util/ai_service.dart';
 import '../util/markdown_service.dart';
 import '../diary/chat_history_service.dart';
 import '../diary/diary_qa_title_service.dart';
-import '../config/prompt_service.dart';
 import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
 import '../model/enums.dart';
+import '../util/prompt_util.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -33,13 +33,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   @override
   void initState() {
     super.initState();
-    _ctrl.text = '现在开始我们的对话';
     _loadCurrentModelName(); // 加载当前模型名称
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_history.isEmpty) {
-        _sendAnswer();
-      }
-    });
   }
 
   // 加载当前模型名称
@@ -142,7 +136,7 @@ AI回答：$answer
               result = {'分类': map['分类'], '标题': map['标题']};
             }
           } catch (e) {
-            print('解析AI返回JSON失败: ' + data['content'].toString());
+            print('解析AI返回JSON失败: ${data['content']}');
           }
           completed = true;
         },
@@ -288,7 +282,7 @@ AI回答：$answer
     final userInput = _history.isNotEmpty ? _history.last['q'] ?? '' : _ctrl.text.trim();
     final historyWindow = ChatHistoryService.getRecent(_history);
 
-    final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.qa);
+    final systemPrompt = await getActivePromptContent(PromptCategory.qa);
     final messages = AiService.buildMessages(
       systemPrompt: systemPrompt,
       history: historyWindow,
@@ -345,7 +339,7 @@ AI回答：$answer
             }
           });
           if (errorMsg == null) {
-            final systemPrompt = await PromptService.getActivePromptContent(PromptCategory.qa);
+            final systemPrompt = await getActivePromptContent(PromptCategory.qa);
             final messages = AiService.buildMessages(
               systemPrompt: systemPrompt,
               history: ChatHistoryService.getRecent(_history),
@@ -360,7 +354,7 @@ AI回答：$answer
               _lastRequestJson = '```bash\n$prettyJson\n```';
             });
             // 新增日志打印大模型最终返回内容
-            print('[LLM] Done: \n${data.toString()}');
+            print('[LLM] Done: \n' + data.toString());
             _scrollToBottom();
 
             // AI回答完成后自动提取分类并保存到日记文件

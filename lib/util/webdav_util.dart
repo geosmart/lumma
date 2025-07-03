@@ -155,7 +155,7 @@ class WebdavUtil {
         return false;
       }
       final allEntities = await dir.list(recursive: true, followLinks: false).toList();
-      final files = allEntities.where((entity) => entity is File).cast<File>().toList();
+      final files = allEntities.whereType<File>().cast<File>().toList();
       int current = 0;
       final total = files.length;
       for (final entity in files) {
@@ -283,7 +283,7 @@ class WebdavUtil {
         return false;
       }
       final allEntities = await dir.list(recursive: true, followLinks: false).toList();
-      final files = allEntities.where((entity) => entity is File).cast<File>().toList();
+      final files = allEntities.whereType<File>().cast<File>().toList();
 
       // 筛选需要上传的文件
       List<File> filesToUpload = [];
