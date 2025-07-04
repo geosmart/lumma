@@ -10,8 +10,16 @@ class PromptEditPage extends StatefulWidget {
   final PromptCategory activeCategory;
   final bool readOnly;
   final String? initialContent;
+  final String? initialName; // 新增
 
-  const PromptEditPage({super.key, this.file, required this.activeCategory, this.readOnly = false, this.initialContent});
+  const PromptEditPage({
+    super.key,
+    this.file,
+    required this.activeCategory,
+    this.readOnly = false,
+    this.initialContent,
+    this.initialName, // 新增
+  });
 
   @override
   State<PromptEditPage> createState() => _PromptEditPageState();
@@ -29,7 +37,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
     super.initState();
     _isSystem = widget.file?.path.split('/').last == '问答AI日记助手.md';
     _contentCtrl = TextEditingController(text: widget.initialContent ?? '');
-    _nameCtrl = TextEditingController();
+    _nameCtrl = TextEditingController(text: widget.initialName ?? ''); // 优先用 initialName
     _selectedCategory = widget.activeCategory;
     _isActive = false;
 

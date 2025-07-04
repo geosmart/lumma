@@ -76,7 +76,7 @@ ThemeModeType themeModeTypeFromString(String value) {
     case 'dark':
       return ThemeModeType.dark;
     default:
-      return ThemeModeType.light;
+      return ThemeModeType.dark;
   }
 }
 

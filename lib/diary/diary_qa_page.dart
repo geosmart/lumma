@@ -7,6 +7,7 @@ import '../config/config_service.dart';
 import '../util/prompt_util.dart';
 import '../config/theme_service.dart';
 import '../model/enums.dart';
+import '../dao/diary_dao.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});
@@ -57,7 +58,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载问题列表失败: e.toString()}')),
+          SnackBar(content: Text('加载问题列表失败:  e.toString()}')),
         );
       }
     }
@@ -82,30 +83,35 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建日记失败: [31m${e.toString()}[0m')),
+          SnackBar(content: Text('创建日记失败:  [31m${e.toString()} [0m')),
         );
       }
     }
   }
 
-  Future<void> _appendToDialog() async {
+
+
+  // 新增：自动保存问答到日记文件
+  Future<void> _autoSaveToDiary(String question, String answer) async {
     if (!_diaryCreated || _diaryFileName == null) return;
 
     try {
-      final diaryDir = await MarkdownService.getDiaryDir();
-      final file = File('$diaryDir/$_diaryFileName');
+      final content = DiaryDao.formatDiaryContent(
+        title: question,
+        content: answer,
+        analysis: '',
+        category: '',
+      );
+      await MarkdownService.appendToDailyDiary(content);
 
-      if (await file.exists()) {
-        final currentContent = await file.readAsString();
-        final newEntry = '\n**Q${_answers.length}: ${_questions[_answers.length - 1]}**\n\n${_answers.last}\n\n---\n';
-        await file.writeAsString(currentContent + newEntry);
-      }
+      // 打印保存路径（调试用）
+      final fileName = MarkdownService.getDiaryFileName();
+      final diaryDir = await MarkdownService.getDiaryDir();
+      final filePath = '$diaryDir/$fileName';
+      print('问答日记已自动追加到: $filePath');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('追加内容失败: ${e.toString()}')),
-        );
-      }
+      print('自动保存失败: ${e.toString()}');
+      // 不显示错误提示，避免影响用户体验
     }
   }
 
@@ -356,11 +362,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                 tooltip: 'AI 总结',
                                 onPressed: _isProcessing ? null : _startSummaryStream,
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.save, color: Colors.blue),
-                                tooltip: '完成日记',
-                                onPressed: () => Navigator.of(context).pop(true),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -524,7 +525,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     );
   }
 
-  void _onSubmit() async {
+  void _onSubmit() {
     // 检查是否还有问题可回答
     if (_current >= _questions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -533,15 +534,30 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       return;
     }
 
-    final answer = _ctrl.text.trim().isEmpty ? '无' : _ctrl.text.trim();
+    final answer = _ctrl.text.trim();
+
+    if (answer.isEmpty) {
+      // 没有输入内容，直接跳过该问题（删除当前问题，_current不变）
+      setState(() {
+        _questions.removeAt(_current);
+        _ctrl.clear();
+      });
+      // 如果所有问题都被跳过
+      if (_questions.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('已完成所有问题')),
+        );
+      }
+      return;
+    }
+
+    final question = _questions[_current];
     setState(() {
       _answers.add(answer);
       _ctrl.clear();
       _current++;
     });
-
-    await _appendToDialog();
-
+    _autoSaveToDiary(question, answer);
     _scrollToBottom();
   }
 }

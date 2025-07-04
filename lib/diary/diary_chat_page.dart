@@ -11,6 +11,7 @@ import '../widgets/enhanced_markdown.dart';
 import '../model/enums.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_constants.dart';
+import '../dao/diary_dao.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -67,16 +68,22 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
           _history[_history.length - 1]['title'] = result['标题'] ?? '';
         });
         // 分类和标题提取完成后，保存到日记文件
-        final content = _formatDiaryContent(_history.last);
+        final content = DiaryDao.formatDiaryContent(
+          title: _history.last['title'] ?? '',
+          content: _history.last['q'] ?? '',
+          analysis: _history.last['a'] ?? '',
+          category: _history.last['category'] ?? '',
+          time: _history.last['time'],
+        );
         await MarkdownService.appendToDailyDiary(content);
         // 打印保存路径（调试用）
         final fileName = MarkdownService.getDiaryFileName();
         final diaryDir = await MarkdownService.getDiaryDir();
         final filePath = '$diaryDir/$fileName';
-        print('日记已自动追加到: $filePath，分类: [32m${result['分类']}[0m，标题: [34m${result['标题']}[0m');
+        print('日记已自动追加到: $filePath，分类: \u001b[32m${result['分类']}\u001b[0m，标题: \u001b[34m${result['标题']}\u001b[0m');
       }
     } catch (e) {
-      print('自动保存失败: [31m${e.toString()}[0m');
+      print('自动保存失败: \u001b[31m${e.toString()}\u001b[0m');
       // 不显示错误提示，避免影响用户体验
     }
   }
@@ -149,44 +156,6 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     }
   }
 
-  // 格式化日记内容
-  String _formatDiaryContent(Map<String, String> historyItem) {
-    final buffer = StringBuffer();
-    // 1. 标题（AI生成）
-    final title = historyItem['title'] ?? '';
-    buffer.writeln('## $title');
-    buffer.writeln();
-    // 2. 时间
-    final time = historyItem['time'] ?? (() {
-      final now = DateTime.now();
-      return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    })();
-    buffer.writeln('### 时间');
-    buffer.writeln(time);
-    buffer.writeln();
-    // 3. 分类
-    final category = historyItem['category'] ?? '想法';
-    buffer.writeln('### 分类');
-    buffer.writeln(category);
-    buffer.writeln();
-    // 4. 日记内容（用户的问题/想法）
-    if (historyItem['q']?.isNotEmpty == true) {
-      buffer.writeln('### 日记内容');
-      buffer.writeln(historyItem['q']!);
-      buffer.writeln();
-    }
-    // 5. AI的辅助内容（AI的回答）
-    if (historyItem['a']?.isNotEmpty == true) {
-      buffer.writeln('### 内容分析');
-      buffer.writeln(historyItem['a']!);
-      buffer.writeln();
-    }
-    // 添加分割线
-    buffer.writeln('---');
-    buffer.writeln();
-    return buffer.toString();
-  }
-
   // 自动保存对话到日记文件（用户发送消息时使用）
   Future<void> _autoSaveToDiary() async {
     if (_history.isEmpty) return;
@@ -195,7 +164,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       // 只保存最新的一轮对话（如果存在）
       final lastHistory = _history.last;
       if (lastHistory['q']?.isNotEmpty == true || lastHistory['a']?.isNotEmpty == true) {
-        final content = _formatDiaryContent(lastHistory);
+        final content = DiaryDao.formatDiaryContent(
+          title: lastHistory['title'] ?? '',
+          content: lastHistory['q'] ?? '',
+          analysis: lastHistory['a'] ?? '',
+          category: lastHistory['category'] ?? '',
+          time: lastHistory['time'],
+        );
 
         // 追加到当天的日记文件
         await MarkdownService.appendToDailyDiary(content);

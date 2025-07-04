@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../util/markdown_service.dart';
 import 'dart:io';
 import '../widgets/enhanced_markdown.dart';
+import '../dao/diary_dao.dart';
 
 /// 单篇日记详情页，全屏、只读Markdown渲染，带编辑提示
 class DiaryContentPage extends StatefulWidget {
@@ -135,7 +136,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
 
   // 新增：只读chat风格展示
   Widget _buildChatView(BuildContext context) {
-    final history = parseDiaryMarkdownToChatHistory(_content!);
+    final history = DiaryDao.parseDiaryMarkdownToChatHistory(_content!);
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       itemCount: history.length,
@@ -237,43 +238,5 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
         );
       },
     );
-  }
-
-  // 新增：解析markdown为对话轮的函数
-  List<Map<String, String>> parseDiaryMarkdownToChatHistory(String content) {
-    final lines = content.split('\n');
-    List<Map<String, String>> history = [];
-    Map<String, String> current = {};
-    String? lastSection;
-    for (var i = 0; i < lines.length; i++) {
-      final line = lines[i];
-      if (line.startsWith('## ')) {
-        if (current.isNotEmpty) history.add(current);
-        current = {'title': line.substring(3)};
-        lastSection = null;
-      } else if (line.startsWith('### 时间')) {
-        lastSection = 'time';
-      } else if (line.startsWith('### 分类')) {
-        lastSection = 'category';
-      } else if (line.startsWith('### 日记内容')) {
-        lastSection = 'q';
-      } else if (line.startsWith('### 内容分析')) {
-        lastSection = 'a';
-      } else if (line.trim() == '---') {
-        if (current.isNotEmpty) history.add(current);
-        current = {};
-        lastSection = null;
-      } else if (lastSection != null && line.trim().isNotEmpty) {
-        current[lastSection] = (current[lastSection] ?? '') + (current[lastSection]?.isNotEmpty == true ? '\n' : '') + line.trim();
-      }
-    }
-    if (current.isNotEmpty) history.add(current);
-    // 按时间降序排序（最近的在前面）
-    history.sort((a, b) {
-      final t1 = a['time'] ?? '';
-      final t2 = b['time'] ?? '';
-      return t2.compareTo(t1);
-    });
-    return history;
   }
 }

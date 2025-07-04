@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lumma/config/prompt_config_service.dart';
 import 'package:lumma/model/enums.dart';
-import 'prompt_service.dart';
 import 'theme_service.dart';
 import 'prompt_edit_page.dart';
 import 'settings_ui_config.dart';
@@ -30,11 +29,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
   Future<void> _loadActivePrompt() async {
     // 获取当前激活 prompt 文件名
     try {
-      final content = await getActivePromptContent(_activeCategory);
+      final name = await getActivePromptName(_activeCategory); // 用名称
       setState(() {
-        _activePrompt = {_activeCategory: content};
+        _activePrompt = {_activeCategory: name};
       });
-      print('[PromptConfigPage] 当前 ${promptCategoryToString(_activeCategory)} 类型的激活文件: [38;5;2m${content ?? 'null'}[0m');
+      print('[PromptConfigPage] 当前 \\${promptCategoryToString(_activeCategory)} 类型的激活文件: \\${name ?? 'null'}');
     } catch (e) {
       print('[PromptConfigPage] 加载激活提示词失败: $e');
     }
@@ -62,6 +61,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
           activeCategory: _activeCategory,
           readOnly: readOnly,
           initialContent: prompt?.content ?? initialContent,
+          initialName: prompt?.name, // 新增，传递名称
         ),
       ),
     );
@@ -192,10 +192,10 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                     children: [
                                       IconButton(
                                         icon: Icon(
-                                          _activePrompt[_activeCategory] == prompt.content
+                                          _activePrompt[_activeCategory] == prompt.name // 用名称判断激活
                                               ? Icons.check_circle
                                               : Icons.circle_outlined,
-                                          color: _activePrompt[_activeCategory] == prompt.content ? Colors.green : context.secondaryTextColor,
+                                          color: _activePrompt[_activeCategory] == prompt.name ? Colors.green : context.secondaryTextColor,
                                           size: 22,
                                         ),
                                         onPressed: () async {

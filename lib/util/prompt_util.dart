@@ -15,6 +15,19 @@ Future<String?> getActivePromptContent(PromptCategory category) async {
   return prompt.content;
 }
 
+/// 获取指定类型的激活prompt名称
+Future<String?> getActivePromptName(PromptCategory category) async {
+  final config = await AppConfigService.load();
+  final prompt = config.prompt.firstWhere(
+    (p) => p.type == category && p.active,
+    orElse: () => config.prompt.firstWhere(
+      (p) => p.type == category,
+      orElse: () => PromptConfig.qaDefault(),
+    ),
+  );
+  return prompt.name;
+}
+
 /// 设置指定类型的激活prompt（只允许一个active）
 Future<void> setActivePrompt(PromptCategory category, String name) async {
   await AppConfigService.update((config) {
