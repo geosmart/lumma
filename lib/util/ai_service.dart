@@ -46,10 +46,25 @@ class AiService {
     final appConfig = await AppConfigService.load();
     final configs = appConfig.model;
     if (configs.isEmpty) {
-      onError?.call(Exception('没有可用的模型配置'));
+      onError?.call(Exception('没有可用的大模型配置，请先配置大模型服务'));
       return;
     }
     final active = configs.firstWhere((e) => e.active, orElse: () => configs.first);
+    
+    // 验证配置完整性
+    if (active.baseUrl.isEmpty) {
+      onError?.call(Exception('大模型服务地址未配置，请检查配置'));
+      return;
+    }
+    if (active.apiKey.isEmpty) {
+      onError?.call(Exception('大模型API密钥未配置，请检查配置'));
+      return;
+    }
+    if (active.model.isEmpty) {
+      onError?.call(Exception('大模型名称未配置，请检查配置'));
+      return;
+    }
+    
     final url = Uri.parse('${active.baseUrl}/chat/completions');
     final body = jsonEncode({
       'model': active.model,
@@ -76,6 +91,22 @@ class AiService {
       String? reasoning;
 
       client.send(request).then((streamedResponse) {
+        // 检查HTTP状态码
+        if (streamedResponse.statusCode != 200) {
+          print('[AI-ERROR] HTTP错误: ${streamedResponse.statusCode}');
+          String errorMessage = '大模型服务响应错误 (${streamedResponse.statusCode})';
+          if (streamedResponse.statusCode == 401) {
+            errorMessage = '大模型API密钥无效，请检查配置';
+          } else if (streamedResponse.statusCode == 403) {
+            errorMessage = '大模型API访问被拒绝，请检查配置';
+          } else if (streamedResponse.statusCode == 404) {
+            errorMessage = '大模型服务地址不存在，请检查配置';
+          } else if (streamedResponse.statusCode >= 500) {
+            errorMessage = '大模型服务器内部错误，请稍后重试或检查配置';
+          }
+          onError?.call(Exception(errorMessage));
+          return;
+        }
         streamedResponse.stream.transform(utf8.decoder).listen(
           (chunk) {
             buffer += chunk;
@@ -187,20 +218,46 @@ class AiService {
             onDone(finalData);
           },
           onError: (error) {
-            if (onError != null) {
-              onError(error);
+            print('[AI-ERROR] 流式响应处理异常: $error');
+            String errorMessage = '大模型响应处理失败';
+            if (error.toString().contains('Connection') || 
+                error.toString().contains('timeout') ||
+                error.toString().contains('refused')) {
+              errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
+            } else if (error.toString().contains('certificate') ||
+                      error.toString().contains('SSL') ||
+                      error.toString().contains('TLS')) {
+              errorMessage = '大模型服务SSL证书验证失败，请检查服务配置';
             }
+            onError?.call(Exception(errorMessage));
           },
           cancelOnError: true,
         );
       }).catchError((error) {
-        if (onError != null) {
-          onError(error);
+        print('[AI-ERROR] 请求发送异常: $error');
+        String errorMessage = '大模型请求发送失败';
+        if (error.toString().contains('Connection') || 
+            error.toString().contains('timeout') ||
+            error.toString().contains('refused')) {
+          errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
+        } else if (error.toString().contains('certificate') ||
+                  error.toString().contains('SSL') ||
+                  error.toString().contains('TLS')) {
+          errorMessage = '大模型服务SSL证书验证失败，请检查服务配置';
+        } else if (error.toString().contains('format')) {
+          errorMessage = '大模型服务地址格式错误，请检查配置';
         }
+        onError?.call(Exception(errorMessage));
       });
     } catch (e) {
       print('[AI-ERROR] Request exception: $e');
-      onError?.call(e);
+      String errorMessage = '大模型服务调用异常';
+      if (e.toString().contains('Uri') || e.toString().contains('format')) {
+        errorMessage = '大模型服务地址格式错误，请检查配置';
+      } else if (e.toString().contains('encode') || e.toString().contains('json')) {
+        errorMessage = '请求参数编码异常，请检查配置';
+      }
+      onError?.call(Exception(errorMessage));
     }
   }
 
@@ -228,10 +285,29 @@ class AiService {
         messages: messages,
         onDelta: (data) => onDelta(data['content'] ?? ''),
         onDone: (data) => onDone(data['content'] ?? ''),
-        onError: onError,
+        onError: (error) {
+          print('[AI-ERROR] 文本处理流异常: $error');
+          String errorMessage = '文本处理失败';
+          if (error.toString().contains('模型配置') || 
+              error.toString().contains('API') ||
+              error.toString().contains('连接') ||
+              error.toString().contains('配置')) {
+            errorMessage = error.toString();
+          } else {
+            errorMessage = '大模型处理文本时发生异常，请检查大模型配置';
+          }
+          onError?.call(Exception(errorMessage));
+        },
       );
     } catch (e) {
-      onError?.call(e);
+      print('[AI-ERROR] 文本处理异常: $e');
+      String errorMessage = '文本处理初始化失败';
+      if (e.toString().contains('prompt') || e.toString().contains('Prompt')) {
+        errorMessage = '提示词配置异常，请检查配置';
+      } else {
+        errorMessage = '大模型文本处理异常，请检查大模型配置';
+      }
+      onError?.call(Exception(errorMessage));
     }
   }
 
@@ -240,27 +316,47 @@ class AiService {
     required List<Map<String, String>> messages,
     bool stream = true,
   }) async {
-    final appConfig = await AppConfigService.load();
-    final configs = appConfig.model;
-    final active = configs.firstWhere((e) => e.active,
-        orElse: () => configs.first);
-    final url = Uri.parse('${active.baseUrl}/chat/completions');
+    try {
+      final appConfig = await AppConfigService.load();
+      final configs = appConfig.model;
+      if (configs.isEmpty) {
+        throw Exception('没有可用的大模型配置，请先配置大模型服务');
+      }
+      final active = configs.firstWhere((e) => e.active,
+          orElse: () => configs.first);
+      
+      // 验证配置完整性
+      if (active.baseUrl.isEmpty) {
+        throw Exception('大模型服务地址未配置，请检查配置');
+      }
+      if (active.apiKey.isEmpty) {
+        throw Exception('大模型API密钥未配置，请检查配置');
+      }
+      if (active.model.isEmpty) {
+        throw Exception('大模型名称未配置，请检查配置');
+      }
+      
+      final url = Uri.parse('${active.baseUrl}/chat/completions');
 
-    final body = {
-      'model': active.model,
-      'messages': messages,
-      'stream': stream,
-    };
-    final headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${active.apiKey}',
-    };
-    // 日志打印
-    print('[AI-DEBUG] 请求参数: ${jsonEncode(body)}');
-    return {
-      'url': url.toString(),
-      'headers': headers,
-      'body': body,
-    };
+      final body = {
+        'model': active.model,
+        'messages': messages,
+        'stream': stream,
+      };
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${active.apiKey}',
+      };
+      // 日志打印
+      print('[AI-DEBUG] 请求参数: ${jsonEncode(body)}');
+      return {
+        'url': url.toString(),
+        'headers': headers,
+        'body': body,
+      };
+    } catch (e) {
+      print('[AI-ERROR] 构造请求参数异常: $e');
+      rethrow;
+    }
   }
 }

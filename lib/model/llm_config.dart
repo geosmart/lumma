@@ -21,8 +21,8 @@ class LLMConfig extends Timestamped {
   factory LLMConfig.openAIDefault() => LLMConfig(
         provider: 'openrouter',
         baseUrl: 'https://openrouter.ai/api/v1',
-        apiKey: 'sk-or-v1-83ccf61c5dba0cd6aca513a898f35ee0a18603157cb1400de28d1697c8b7e',
-        model: 'deepseek/deepseek-chat-v3-0324:free',
+        apiKey: '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',
+        model: 'google/gemini-2.0-flash-exp:free',
         active: true,
       );
 
