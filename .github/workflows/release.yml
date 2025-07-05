@@ -67,13 +67,29 @@ jobs:
           USE_LOCAL_CONFIG=false
           EOF
 
+      - name: Setup Android Signing
+        run: |
+          # 使用调试签名进行GitHub Actions构建
+          # 在android目录下创建调试keystore的符号链接
+          cd android
+          if [ ! -f "app/debug.keystore" ]; then
+            # 如果debug.keystore不存在，创建一个
+            keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+          # 创建临时的release keystore指向debug keystore
+          if [ ! -f "my-release-key.jks" ]; then
+            cp app/debug.keystore my-release-key.jks
+          fi
+
       - name: Build Android Release APK
         run: |
           flutter build apk \
             --release \
             --build-name="${{ steps.version.outputs.version }}" \
             --build-number="${{ steps.version.outputs.build_number }}" \
-            --split-per-abi
+            --split-per-abi \
+            --no-shrink
 
       - name: Prepare Release Files
         run: |
@@ -167,7 +183,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y ninja-build libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libunwind-dev
+          sudo apt install -y ninja-build libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libunwind-dev imagemagick
 
       - name: Install Flutter Dependencies
         run: flutter pub get
@@ -206,26 +222,53 @@ jobs:
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
 
-          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
-
           # Create AppDir structure
           mkdir -p AppDir/usr/bin
-          mkdir -p AppDir/usr/lib
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
 
           # Copy application
           cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
 
-          # Create desktop entry
-          cat > AppDir/${{ env.APP_NAME }}.desktop << EOF
+          # Create a simple icon
+          if [ -f "assets/icon/icon.jpg" ]; then
+            # Convert existing icon to PNG
+            convert assets/icon/icon.jpg -resize 256x256 AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png
+          else
+            # Create a simple placeholder icon
+            convert -size 256x256 xc:'#4A90E2' -fill white -pointsize 72 -gravity center -annotate +0+0 'L' AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png
+          fi
+
+          # Copy icon to AppDir root (required for AppImage)
+          cp AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png AppDir/${{ env.APP_NAME }}.png
+
+          # Create desktop entry in standard location
+          cat > AppDir/usr/share/applications/${{ env.APP_NAME }}.desktop << 'DESKTOPEOF'
           [Desktop Entry]
           Type=Application
-          Name=${{ env.APP_NAME }}
+          Name=Lumma
           Comment=AI驱动的智能问答日记应用
-          Exec=${{ env.APP_NAME }}
-          Icon=${{ env.APP_NAME }}
-          Categories=Office;Education;
-          EOF
+          Exec=lumma
+          Icon=lumma
+          Categories=Office;
+          Terminal=false
+          DESKTOPEOF
+
+          # Copy desktop file to AppDir root (required for AppImage)
+          cp AppDir/usr/share/applications/${{ env.APP_NAME }}.desktop AppDir/${{ env.APP_NAME }}.desktop
+
+          # Create AppRun executable
+          cat > AppDir/AppRun << 'APPRUNEOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/lumma" "$@"
+          APPRUNEOF
+          chmod +x AppDir/AppRun
+
+          # List structure for debugging
+          echo "AppDir structure:"
+          find AppDir -type f | head -20
 
           # Create AppImage
           ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage

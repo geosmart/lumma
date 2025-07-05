@@ -32,10 +32,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("../my-release-key.jks") // 请将此路径替换为你的keystore实际路径
-            storePassword = "your_keystore_password" // 请替换为你的keystore密码
-            keyAlias = "my-key-alias" // 请替换为你的key alias
-            keyPassword = "your_key_password" // 请替换为你的key密码
+            storeFile = file("../my-release-key.jks")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
