@@ -110,12 +110,12 @@ class MarkdownService {
 
     if (!await file.exists()) {
       // 如果文件不存在，创建并写入初始内容
-      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n---\n\n$contentToAppend\n\n';
+      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n$contentToAppend';
       await saveDiaryMarkdown(initialContent, fileName: fileName);
     } else {
-      // 如果文件存在，追加内容
+      // 如果文件存在，追加内容（不添加额外的分割线，因为formatDiaryContent已经包含了）
       final currentContent = await file.readAsString();
-      final newContent = '$currentContent\n---\n\n$contentToAppend\n\n';
+      final newContent = '$currentContent$contentToAppend';
       await saveDiaryMarkdown(newContent, fileName: fileName);
     }
   }
@@ -129,7 +129,7 @@ class MarkdownService {
 
     if (!await file.exists()) {
       // 如果文件不存在，创建并写入初始内容
-      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n---\n\n$summaryContent\n\n';
+      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n$summaryContent';
       await saveDiaryMarkdown(initialContent, fileName: fileName);
     } else {
       // 如果文件存在，检查是否已有日总结
@@ -142,11 +142,11 @@ class MarkdownService {
         // 如果已存在日总结，则删除整个章节
         final newContent = currentContent.replaceFirst(summaryRegex, '');
         // 然后追加新的日总结
-        final finalContent = '$newContent\n---\n\n$summaryContent\n\n';
+        final finalContent = '$newContent$summaryContent';
         await saveDiaryMarkdown(finalContent, fileName: fileName);
       } else {
         // 如果不存在日总结，则追加
-        final newContent = '$currentContent\n---\n\n$summaryContent\n\n';
+        final newContent = '$currentContent$summaryContent';
         await saveDiaryMarkdown(newContent, fileName: fileName);
       }
     }
