@@ -176,39 +176,35 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   }
 
   Future<void> _handleAiResultAction(String action) async {
-    if (_aiResult == null || _diaryFileName == null) return;
-    final editedResult = _aiResultController.text;
+    if (_diaryFileName == null) return;
 
     try {
       switch (action) {
-        case 'replace':
-          await MarkdownService.saveDiaryMarkdown(editedResult, fileName: _diaryFileName);
+        case 'regenerate':
+          // 重新生成：重新调用AI接口
+          await _startSummaryStream();
           break;
-        case 'append':
-          final diaryDir = await MarkdownService.getDiaryDir();
-          final file = File('$diaryDir/$_diaryFileName');
-          if (await file.exists()) {
-            final currentContent = await file.readAsString();
-            await file.writeAsString('$currentContent\n\n---\n\n$editedResult');
+        case 'save':
+          // 保存：使用formatDiaryContent格式化后追加到日记
+          final editedResult = _aiResultController.text;
+          final content = DiaryDao.formatDiaryContent(
+            title: '日总结',
+            content: editedResult,
+            analysis: '',
+            category: '',
+          );
+          await MarkdownService.appendToDailyDiary(content);
+
+          setState(() {
+            _aiResult = null;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('日总结已保存到日记')),
+            );
           }
           break;
-        case 'new':
-          final now = DateTime.now();
-          final newFileName =
-              '${now.toIso8601String().split('.')[0].replaceAll(':', '-')}.md';
-          await MarkdownService.saveDiaryMarkdown(editedResult,
-              fileName: newFileName);
-          break;
-      }
-
-      setState(() {
-        _aiResult = null;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('操作完成: $action')),
-        );
       }
     } catch (e) {
       if (mounted) {
@@ -459,19 +455,14 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.swap_horiz),
-                  label: const Text('替换'),
-                  onPressed: _isProcessing ? null : () => _handleAiResultAction('replace'),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('重新生成'),
+                  onPressed: _isProcessing ? null : () => _handleAiResultAction('regenerate'),
                 ),
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('追加'),
-                  onPressed: _isProcessing ? null : () => _handleAiResultAction('append'),
-                ),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.note_add),
-                  label: const Text('新增'),
-                  onPressed: _isProcessing ? null : () => _handleAiResultAction('new'),
+                  icon: const Icon(Icons.save),
+                  label: const Text('保存'),
+                  onPressed: _isProcessing ? null : () => _handleAiResultAction('save'),
                 ),
               ],
             ),
@@ -535,28 +526,22 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     }
 
     final answer = _ctrl.text.trim();
+    final question = _questions[_current];
 
     if (answer.isEmpty) {
-      // 没有输入内容，直接跳过该问题（删除当前问题，_current不变）
-      setState(() {
-        _questions.removeAt(_current);
-        _ctrl.clear();
-      });
-      // 如果所有问题都被跳过
-      if (_questions.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已完成所有问题')),
-        );
-      }
+      // 没有输入内容，不推进问题，也不保存
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入内容后再提交')),
+      );
       return;
     }
 
-    final question = _questions[_current];
     setState(() {
       _answers.add(answer);
       _ctrl.clear();
       _current++;
     });
+
     _autoSaveToDiary(question, answer);
     _scrollToBottom();
   }
