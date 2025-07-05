@@ -120,8 +120,8 @@ class MarkdownService {
     }
   }
 
-  /// 覆盖当天的日记内容（不追加，直接覆盖）
-  static Future<void> overwriteDailyDiary(String contentToWrite) async {
+  /// 保存或覆盖日总结内容
+  static Future<void> saveOrUpdateDailySummary(String summaryContent) async {
     final now = DateTime.now();
     final fileName = getDiaryFileName();
     final diaryDir = await getDiaryDir();
@@ -129,11 +129,26 @@ class MarkdownService {
 
     if (!await file.exists()) {
       // 如果文件不存在，创建并写入初始内容
-      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n---\n\n$contentToWrite\n\n';
+      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n---\n\n$summaryContent\n\n';
       await saveDiaryMarkdown(initialContent, fileName: fileName);
     } else {
-      // 如果文件存在，直接覆盖内容
-      await saveDiaryMarkdown(contentToWrite, fileName: fileName);
+      // 如果文件存在，检查是否已有日总结
+      final currentContent = await file.readAsString();
+
+      // 查找并删除现有的 ## 日总结 章节（包括其下的所有内容）
+      final summaryRegex = RegExp(r'^---\s*\n\n## 日总结\s*\n.*?(?=^---|\Z)', multiLine: true, dotAll: true);
+
+      if (summaryRegex.hasMatch(currentContent)) {
+        // 如果已存在日总结，则删除整个章节
+        final newContent = currentContent.replaceFirst(summaryRegex, '');
+        // 然后追加新的日总结
+        final finalContent = '$newContent\n---\n\n$summaryContent\n\n';
+        await saveDiaryMarkdown(finalContent, fileName: fileName);
+      } else {
+        // 如果不存在日总结，则追加
+        final newContent = '$currentContent\n---\n\n$summaryContent\n\n';
+        await saveDiaryMarkdown(newContent, fileName: fileName);
+      }
     }
   }
 

@@ -21,9 +21,9 @@ class SettingsPage extends StatelessWidget {
             labelPadding: EdgeInsets.symmetric(horizontal: 4),
             tabs: [
               Tab(icon: Icon(Icons.auto_stories, size: 20)),
-              Tab(icon: Icon(Icons.question_answer, size: 20)),
               Tab(icon: Icon(Icons.chat, size: 20)),
               Tab(icon: Icon(Icons.memory, size: 20)),
+              Tab(icon: Icon(Icons.question_answer, size: 20)),
               Tab(icon: Icon(Icons.sync, size: 20)),
               Tab(icon: Icon(Icons.palette, size: 20)),
             ],
@@ -32,9 +32,9 @@ class SettingsPage extends StatelessWidget {
         body: TabBarView(
           children: [
             DiaryModeConfigPage(),
-            QaQuestionConfigPage(),
             PromptConfigPage(),
             LLMConfigPage(),
+            QaQuestionConfigPage(),
             SyncConfigPage(),
             _ThemeSettingsPage(),
           ],

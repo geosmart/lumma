@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../util/markdown_service.dart';
 import 'diary_qa_title_service.dart';
-import '../util/ai_service.dart';
 import '../config/config_service.dart';
-import '../util/prompt_util.dart';
 import '../config/theme_service.dart';
-import '../model/enums.dart';
 import '../dao/diary_dao.dart';
+import '../widgets/ai_result_page.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});
@@ -28,7 +26,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   bool _diaryCreated = false; // 是否已创建日记
 
   // AI相关状态
-  bool _isProcessing = false;
   String? _aiResult; // 非null时表示进入AI结果页
 
   @override
@@ -115,106 +112,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     }
   }
 
-  Future<void> _startSummaryStream() async {
-    if (!_diaryCreated || _diaryFileName == null) return;
-
-    // 立即进入AI结果页并显示加载状态
-    setState(() {
-      _aiResult = ''; // 触发构建AI结果页
-      _isProcessing = true;
-      _aiResultController.text = '';
-    });
-
-    try {
-      final diaryDir = await MarkdownService.getDiaryDir();
-      final file = File('$diaryDir/$_diaryFileName');
-      final content = await file.readAsString();
-
-      final systemPrompt = await getActivePromptContent(PromptCategory.summary);
-      final messages = AiService.buildMessages(
-        systemPrompt: systemPrompt,
-        history: [],
-        userInput: content,
-      );
-
-      await AiService.askStream(
-        messages: messages,
-        onDelta: (data) {
-          if (mounted) {
-            _aiResultController.text = data['content'] ?? '';
-          }
-        },
-        onDone: (finalResult) {
-          if (mounted) {
-            setState(() {
-              _aiResult = finalResult['content'] ?? '';
-              _isProcessing = false;
-            });
-          }
-        },
-        onError: (error) {
-          if (mounted) {
-            setState(() {
-              _isProcessing = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('AI 总结失败: ${error.toString()}')),
-            );
-          }
-        },
-      );
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('AI 总结失败: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  Future<void> _handleAiResultAction(String action) async {
-    if (_diaryFileName == null) return;
-
-    try {
-      switch (action) {
-        case 'regenerate':
-          // 重新生成：重新调用AI接口
-          await _startSummaryStream();
-          break;
-        case 'save':
-          // 保存：使用formatDiaryContent格式化后追加到日记
-          final editedResult = _aiResultController.text;
-          final content = DiaryDao.formatDiaryContent(
-            title: '日总结',
-            content: editedResult,
-            analysis: '',
-            category: '',
-          );
-          await MarkdownService.appendToDailyDiary(content);
-
-          setState(() {
-            _aiResult = null;
-          });
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('日总结已保存到日记')),
-            );
-          }
-          break;
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('操作失败: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -230,7 +127,20 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   @override
   Widget build(BuildContext context) {
     if (_aiResult != null) {
-      return _buildAiResultPage();
+      return AiResultPage(
+        title: 'AI 总结结果',
+        onBack: () {
+          setState(() {
+            _aiResult = null;
+          });
+        },
+        getContent: () async {
+          if (!_diaryCreated || _diaryFileName == null) return null;
+          final diaryDir = await MarkdownService.getDiaryDir();
+          final file = File('$diaryDir/$_diaryFileName');
+          return await file.readAsString();
+        },
+      );
     }
     return FutureBuilder<String>(
       future: getDiaryQaTitle(),
@@ -352,11 +262,13 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               IconButton(
-                                icon: _isProcessing
-                                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                                    : const Icon(Icons.smart_toy, color: Colors.deepOrange),
+                                icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
                                 tooltip: 'AI 总结',
-                                onPressed: _isProcessing ? null : _startSummaryStream,
+                                onPressed: () {
+                                  setState(() {
+                                    _aiResult = ''; // 触发显示AI结果页
+                                  });
+                                },
                               ),
                             ],
                           ),
@@ -427,92 +339,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildAiResultPage() {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: context.cardBackgroundColor,
-        title: Text('AI 总结结果', style: TextStyle(color: context.primaryTextColor)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.primaryTextColor),
-          onPressed: () {
-            setState(() {
-              _aiResult = null;
-            });
-          },
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // 操作按钮区，放在输入框上方
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('重新生成'),
-                  onPressed: _isProcessing ? null : () => _handleAiResultAction('regenerate'),
-                ),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: const Text('保存'),
-                  onPressed: _isProcessing ? null : () => _handleAiResultAction('save'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_isProcessing)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                    const SizedBox(width: 8),
-                    Text('AI 正在生成中...', style: TextStyle(color: context.secondaryTextColor)),
-                  ],
-                ),
-              ),
-            Expanded(
-              child: TextField(
-                controller: _aiResultController,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                style: TextStyle(color: context.primaryTextColor),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: context.borderColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: context.borderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                  ),
-                  hintText: 'AI 生成的内容将显示在这里...',
-                  hintStyle: TextStyle(color: context.secondaryTextColor),
-                  fillColor: context.cardBackgroundColor,
-                  filled: true,
-                  contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                  isDense: true,
-                  alignLabelWithHint: true,
-                ),
-                strutStyle: const StrutStyle(
-                  height: 1.0,
-                  forceStrutHeight: true,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

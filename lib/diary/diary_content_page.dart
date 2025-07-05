@@ -3,6 +3,7 @@ import '../util/markdown_service.dart';
 import 'dart:io';
 import '../widgets/enhanced_markdown.dart';
 import '../dao/diary_dao.dart';
+import '../widgets/ai_result_page.dart';
 
 /// 单篇日记详情页，全屏、只读Markdown渲染，带编辑提示
 class DiaryContentPage extends StatefulWidget {
@@ -21,10 +22,21 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
   bool _editMode = false;
   final TextEditingController _controller = TextEditingController();
 
+  // AI总结相关状态
+  String? _aiResult; // 非null时表示进入AI结果页
+  final TextEditingController _aiResultController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _loadContent();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _aiResultController.dispose();
+    super.dispose();
   }
 
   // 根据标签类型返回对应的颜色配置
@@ -408,10 +420,33 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_aiResult != null) {
+      return AiResultPage(
+        title: 'AI 总结结果',
+        onBack: () {
+          setState(() {
+            _aiResult = null;
+          });
+        },
+        getContent: () async {
+          return _content;
+        },
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.fileName),
         actions: [
+          if (!_editMode && !_loading)
+            IconButton(
+              icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
+              tooltip: 'AI 总结',
+              onPressed: () {
+                setState(() {
+                  _aiResult = ''; // 触发显示AI结果页
+                });
+              },
+            ),
           if (!_editMode && !_loading)
             IconButton(
               icon: const Icon(Icons.edit),

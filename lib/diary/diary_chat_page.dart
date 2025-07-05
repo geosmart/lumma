@@ -1,17 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../util/ai_service.dart';
-import '../util/markdown_service.dart';
 import '../diary/chat_history_service.dart';
 import '../diary/diary_qa_title_service.dart';
-import '../config/config_service.dart';
+import '../diary/diary_chat_service.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
-import '../model/enums.dart';
-import '../util/prompt_util.dart';
-import '../model/prompt_constants.dart';
-import '../dao/diary_dao.dart';
+import '../widgets/debug_request_dialog.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -40,152 +34,17 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
 
   // 加载当前模型名称
   void _loadCurrentModelName() async {
-    try {
-      final config = await AppConfigService.load();
-      setState(() {
-        _currentModelName = config.model.isNotEmpty ? config.model.first.model : '未知模型';
-      });
-    } catch (e) {
-      setState(() {
-        _currentModelName = '未知模型';
-      });
-    }
+    final modelName = await DiaryChatService.loadCurrentModelName();
+    setState(() {
+      _currentModelName = modelName;
+    });
   }
 
   // 自动提取分类和标题并保存对话到日记文件
   Future<void> _extractCategoryAndSave() async {
-    if (_history.isEmpty) return;
-
-    try {
-      // 只处理最新的一轮对话（如果存在）
-      final lastHistory = _history.last;
-      if (lastHistory['q']?.isNotEmpty == true && lastHistory['a']?.isNotEmpty == true) {
-        // 让AI提取分类和标题
-        final result = await _extractCategoryAndTitle(lastHistory['q']!, lastHistory['a']!);
-        // result: {"分类": "...", "标题": "..."}
-        setState(() {
-          _history[_history.length - 1]['category'] = result['分类'] ?? '想法';
-          _history[_history.length - 1]['title'] = result['标题'] ?? '';
-        });
-        // 分类和标题提取完成后，保存到日记文件
-        final content = DiaryDao.formatDiaryContent(
-          title: _history.last['title'] ?? '',
-          content: _history.last['q'] ?? '',
-          analysis: _history.last['a'] ?? '',
-          category: _history.last['category'] ?? '',
-          time: _history.last['time'],
-        );
-        await MarkdownService.appendToDailyDiary(content);
-        // 打印保存路径（调试用）
-        final fileName = MarkdownService.getDiaryFileName();
-        final diaryDir = await MarkdownService.getDiaryDir();
-        final filePath = '$diaryDir/$fileName';
-        print('日记已自动追加到: $filePath，分类: \u001b[32m${result['分类']}\u001b[0m，标题: \u001b[34m${result['标题']}\u001b[0m');
-      }
-    } catch (e) {
-      print('自动保存失败: \u001b[31m${e.toString()}\u001b[0m');
-      // 不显示错误提示，避免影响用户体验
-    }
-  }
-
-  // 让AI提取分类和标题
-  Future<Map<String, String>> _extractCategoryAndTitle(String question, String answer) async {
-    try {
-      final prompt = PromptConstants.extractCategoryAndTitlePrompt
-        .replaceAll(r'{{question}}', question)
-        .replaceAll(r'{{answer}}', answer);
-      final messages = [
-        {'role': 'user', 'content': prompt}
-      ];
-      Map<String, String> result = {'分类': '想法', '标题': ''};
-      bool completed = false;
-      await AiService.askStream(
-        messages: messages,
-        onDelta: (data) {},
-        onDone: (data) {
-          String content = data['content']?.trim() ?? '';
-          try {
-            // 1. 去除markdown代码块包裹
-            if (content.startsWith('```')) {
-              final idx = content.indexOf('```', 3);
-              if (idx > 0) {
-                content = content.substring(3, idx).trim();
-                // 可能有json标记
-                if (content.startsWith('json')) {
-                  content = content.substring(4).trim();
-                }
-              }
-            }
-            // 2. 去除前后空白
-            content = content.trim();
-            // 3. 尝试直接解析
-            Map<String, dynamic> map = {};
-            try {
-              map = Map<String, dynamic>.from(jsonDecode(content));
-            } catch (_) {
-              // 4. 若失败，尝试提取第一个{...}部分
-              final start = content.indexOf('{');
-              final end = content.lastIndexOf('}');
-              if (start >= 0 && end > start) {
-                final jsonStr = content.substring(start, end + 1);
-                map = Map<String, dynamic>.from(jsonDecode(jsonStr));
-              } else {
-                throw Exception('未找到有效JSON');
-              }
-            }
-            if (map['分类'] is String && map['标题'] is String) {
-              result = {'分类': map['分类'], '标题': map['标题']};
-            }
-          } catch (e) {
-            print('解析AI返回JSON失败: ${data['content']}');
-          }
-          completed = true;
-        },
-        onError: (error) {
-          print('提取分类和标题失败: ${error.toString()}');
-          completed = true;
-        },
-      );
-      while (!completed) {
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-      return result;
-    } catch (e) {
-      print('提取分类和标题失败: ${e.toString()}');
-      return {'分类': '想法', '标题': ''};
-    }
-  }
-
-  // 自动保存对话到日记文件（用户发送消息时使用）
-  Future<void> _autoSaveToDiary() async {
-    if (_history.isEmpty) return;
-
-    try {
-      // 只保存最新的一轮对话（如果存在）
-      final lastHistory = _history.last;
-      if (lastHistory['q']?.isNotEmpty == true || lastHistory['a']?.isNotEmpty == true) {
-        final content = DiaryDao.formatDiaryContent(
-          title: lastHistory['title'] ?? '',
-          content: lastHistory['q'] ?? '',
-          analysis: lastHistory['a'] ?? '',
-          category: lastHistory['category'] ?? '',
-          time: lastHistory['time'],
-        );
-
-        // 追加到当天的日记文件
-        await MarkdownService.appendToDailyDiary(content);
-
-        // 打印保存路径（调试用）
-        final fileName = MarkdownService.getDiaryFileName();
-        final diaryDir = await MarkdownService.getDiaryDir();
-        final filePath = '$diaryDir/$fileName';
-        print('日记已自动追加到: $filePath');
-      }
-
-    } catch (e) {
-      print('自动保存失败: ${e.toString()}');
-      // 不显示错误提示，避免影响用户体验
-    }
+    await DiaryChatService.extractCategoryAndSave(_history);
+    // 触发UI更新
+    setState(() {});
   }
 
   // 显示模型名称的tooltip
@@ -248,26 +107,20 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       _askStreaming = '';
       _askStreamingReasoning = '';
     });
+
     final userInput = _history.isNotEmpty ? _history.last['q'] ?? '' : _ctrl.text.trim();
-    final historyWindow = ChatHistoryService.getRecent(_history);
 
-    final systemPrompt = await getActivePromptContent(PromptCategory.qa);
-    final messages = AiService.buildMessages(
-      systemPrompt: systemPrompt,
-      history: historyWindow,
-      userInput: userInput,
-    );
-
-    final raw = await AiService.buildChatRequestRaw(
-      messages: messages,
-      stream: true,
-    );
-    final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
+    // 构建请求并获取调试信息
+    final raw = await DiaryChatService.buildChatRequest(_history, userInput);
+    final prettyJson = DiaryChatService.formatRequestJson(raw);
     setState(() {
-      _lastRequestJson = '```bash\n$prettyJson\n```';
+      _lastRequestJson = prettyJson;
     });
-    await AiService.askStream(
-      messages: messages,
+
+    // 发送AI请求
+    await DiaryChatService.sendAiRequest(
+      history: _history,
+      userInput: userInput,
       onDelta: (data) {
         if (!_askInterrupted) {
           setState(() {
@@ -289,15 +142,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       },
       onDone: (data) async {
         // 检查是否为API返回的JSON错误（如401等）
-        String? errorMsg;
-        try {
-          if (data['content'] != null && data['content']!.trim().startsWith('{')) {
-            final errJson = jsonDecode(data['content']!);
-            if (errJson is Map && errJson['error'] != null && errJson['error']['message'] != null) {
-              errorMsg = 'AI接口错误: ${errJson['error']['message']}';
-            }
-          }
-        } catch (_) {}
+        final errorMsg = DiaryChatService.checkApiError(data);
         if (!_askInterrupted) {
           setState(() {
             _asking = false;
@@ -308,42 +153,24 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             }
           });
           if (errorMsg == null) {
-            final systemPrompt = await getActivePromptContent(PromptCategory.qa);
-            final messages = AiService.buildMessages(
-              systemPrompt: systemPrompt,
-              history: ChatHistoryService.getRecent(_history),
-              userInput: '',
-            );
-            final raw = await AiService.buildChatRequestRaw(
-              messages: messages,
-              stream: true,
-            );
-            final prettyJson = const JsonEncoder.withIndent('  ').convert(raw);
+            // 更新调试信息
+            final raw = await DiaryChatService.buildChatRequest(_history, '');
+            final prettyJson = DiaryChatService.formatRequestJson(raw);
             setState(() {
-              _lastRequestJson = '```bash\n$prettyJson\n```';
+              _lastRequestJson = prettyJson;
             });
             // 新增日志打印大模型最终返回内容
             print('[LLM] Done: \n' + data.toString());
             _scrollToBottom();
 
             // AI回答完成后自动提取分类并保存到日记文件
-            // 注意：这里不立即保存，而是等待分类提取完成后再保存
             _extractCategoryAndSave();
           }
         }
       },
       onError: (err) {
         if (!_askInterrupted) {
-          String errorMsg = 'AI接口错误: $err';
-          // 检查是否为API返回的JSON错误
-          try {
-            if (err is String && err.trim().startsWith('{')) {
-              final errJson = jsonDecode(err);
-              if (errJson is Map && errJson['error'] != null && errJson['error']['message'] != null) {
-                errorMsg = 'AI接口错误: ${errJson['error']['message']}';
-              }
-            }
-          } catch (_) {}
+          final errorMsg = DiaryChatService.parseErrorMessage(err);
           setState(() {
             _asking = false;
             _askStreaming = errorMsg;
@@ -617,24 +444,10 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                           // 调试按钮
                           IconButton(
                             icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
-                            tooltip: '调试/查看请求JSON',
+                            tooltip: '调试/查看大模型请求参数',
                             onPressed: () {
                               if (_lastRequestJson != null) {
-                                showDialog(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('请求 JSON'),
-                                    content: SingleChildScrollView(
-                                      child: SelectableText(_lastRequestJson!),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(ctx).pop(),
-                                        child: const Text('关闭'),
-                                      ),
-                                    ],
-                                  ),
-                                );
+                                DebugRequestDialog.show(context, _lastRequestJson!);
                               }
                             },
                           ),
