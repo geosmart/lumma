@@ -88,35 +88,21 @@ jobs:
             --release \
             --build-name="${{ steps.version.outputs.version }}" \
             --build-number="${{ steps.version.outputs.build_number }}" \
-            --split-per-abi \
+            --target-platform android-arm64 \
             --no-shrink
 
       - name: Prepare Release Files
         run: |
           mkdir -p release-files
 
-          # Copy APK files with better naming
-          if [ -f "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" ]; then
-            cp "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" \
+          # Copy ARM64 APK file
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            cp "build/app/outputs/flutter-apk/app-release.apk" \
                "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_arm64.apk"
-          fi
-
-          if [ -f "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" ]; then
-            cp "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" \
-               "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_arm.apk"
-          fi
-
-          if [ -f "build/app/outputs/flutter-apk/app-x86_64-release.apk" ]; then
-            cp "build/app/outputs/flutter-apk/app-x86_64-release.apk" \
-               "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_amd64.apk"
-          fi
-
-          # Fallback: if split APKs don't exist, use universal APK
-          if [ ! -f "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_arm64.apk" ]; then
-            if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-              cp "build/app/outputs/flutter-apk/app-release.apk" \
-                 "release-files/${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_universal.apk"
-            fi
+            echo "✅ ARM64 APK ready"
+          else
+            echo "❌ ARM64 APK not found"
+            exit 1
           fi
 
           echo "📦 Release files:"
@@ -133,27 +119,6 @@ jobs:
 
             **AI驱动的智能问答日记应用**
 
-            ## 📱 下载安装
-
-            ### APK文件说明
-            - **arm64.apk**: 64位ARM处理器版本（推荐，适用于大多数现代Android设备）
-            - **arm.apk**: 32位ARM处理器版本（兼容旧设备）
-            - **amd64.apk**: x86_64处理器版本（适用于模拟器或x86设备）
-            - **universal.apk**: 通用版本（如果上述版本不可用）
-
-            ### 安装步骤
-            1. 根据设备处理器架构下载对应的APK文件
-            2. 在Android设备上启用"未知来源"安装
-            3. 安装APK文件
-            4. 首次使用时配置AI模型API
-
-            ## ✨ 主要功能
-            - 🤖 AI问答式日记记录
-            - 🎨 淡雅/深色主题切换
-            - 📝 多种日记模式
-            - 💬 智能问题生成
-            - 📱 现代化UI设计
-
             ## 🔧 技术信息
             - **版本**: ${{ steps.version.outputs.version }}
             - **构建号**: ${{ steps.version.outputs.build_number }}
@@ -163,123 +128,5 @@ jobs:
             ---
 
             > 💡 如果遇到安装或使用问题，请在Issues中反馈
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  releaseLinux:
-    name: Release Linux
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.5'
-          channel: 'stable'
-          cache: true
-
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y ninja-build libgtk-3-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libunwind-dev imagemagick
-
-      - name: Install Flutter Dependencies
-        run: flutter pub get
-
-      - name: Extract Version Info
-        id: version
-        run: |
-          TAG="${{ github.ref_name }}"
-          VERSION=$(echo $TAG | sed 's/^v//')
-          BUILD_NUM="${{ github.run_number }}"
-
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
-
-      - name: Create Environment File
-        run: |
-          cat > .env.release << EOF
-          MODEL_PROVIDER=openrouter
-          MODEL_BASE_URL=https://openrouter.ai/api/v1
-          MODEL_API_KEY=sk-or-v1
-          MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
-          USE_LOCAL_CONFIG=false
-          EOF
-
-      - name: Build Linux
-        run: |
-          flutter build linux \
-            --release \
-            --build-name="${{ steps.version.outputs.version }}" \
-            --build-number="${{ steps.version.outputs.build_number }}"
-
-      - name: Create Linux AppImage
-        run: |
-          # Install linuxdeploy and appimagetool
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
-
-          # Create AppDir structure
-          mkdir -p AppDir/usr/bin
-          mkdir -p AppDir/usr/share/applications
-          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-
-          # Copy application
-          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
-
-          # Create a simple icon
-          if [ -f "assets/icon/icon.jpg" ]; then
-            # Convert existing icon to PNG
-            convert assets/icon/icon.jpg -resize 256x256 AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png
-          else
-            # Create a simple placeholder icon
-            convert -size 256x256 xc:'#4A90E2' -fill white -pointsize 72 -gravity center -annotate +0+0 'L' AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png
-          fi
-
-          # Copy icon to AppDir root (required for AppImage)
-          cp AppDir/usr/share/icons/hicolor/256x256/apps/${{ env.APP_NAME }}.png AppDir/${{ env.APP_NAME }}.png
-
-          # Create desktop entry in standard location
-          cat > AppDir/usr/share/applications/${{ env.APP_NAME }}.desktop << 'DESKTOPEOF'
-          [Desktop Entry]
-          Type=Application
-          Name=Lumma
-          Comment=AI驱动的智能问答日记应用
-          Exec=lumma
-          Icon=lumma
-          Categories=Office;
-          Terminal=false
-          DESKTOPEOF
-
-          # Copy desktop file to AppDir root (required for AppImage)
-          cp AppDir/usr/share/applications/${{ env.APP_NAME }}.desktop AppDir/${{ env.APP_NAME }}.desktop
-
-          # Create AppRun executable
-          cat > AppDir/AppRun << 'APPRUNEOF'
-          #!/bin/bash
-          HERE="$(dirname "$(readlink -f "${0}")")"
-          export PATH="${HERE}/usr/bin:${PATH}"
-          exec "${HERE}/usr/bin/lumma" "$@"
-          APPRUNEOF
-          chmod +x AppDir/AppRun
-
-          # List structure for debugging
-          echo "AppDir structure:"
-          find AppDir -type f | head -20
-
-          # Create AppImage
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
-
-          # Rename AppImage
-          mv *.AppImage ${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_amd64.AppImage
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_amd64.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
