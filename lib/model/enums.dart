@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import '../generated/l10n/app_localizations.dart';
+
 enum DiaryMode { qa, chat }
 
 String diaryModeToString(DiaryMode mode) {
@@ -22,27 +25,28 @@ DiaryMode diaryModeFromString(String value) {
 
 // 提示词分类枚举
 enum PromptCategory {
-  qa,
-  summary
+  chat,
+  qa
 }
 
-// 获取提示词分类显示名称
-String promptCategoryToDisplayName(PromptCategory category) {
+// 获取提示词分类显示名称（国际化）
+String promptCategoryToDisplayName(PromptCategory category, BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
   switch (category) {
+    case PromptCategory.chat:
+      return l10n.promptCategoryQa;
     case PromptCategory.qa:
-      return '问答';
-    case PromptCategory.summary:
-      return '总结';
+      return l10n.promptCategorySummary;
   }
 }
 
 // 将提示词分类枚举转换为字符串
 String promptCategoryToString(PromptCategory category) {
   switch (category) {
+    case PromptCategory.chat:
+      return 'chat';
     case PromptCategory.qa:
       return 'qa';
-    case PromptCategory.summary:
-      return 'summary';
   }
 }
 
@@ -50,11 +54,11 @@ String promptCategoryToString(PromptCategory category) {
 PromptCategory promptCategoryFromString(String value) {
   switch (value) {
     case 'qa':
-      return PromptCategory.qa;
+      return PromptCategory.chat;
     case 'summary':
-      return PromptCategory.summary;
-    default:
       return PromptCategory.qa;
+    default:
+      return PromptCategory.chat;
   }
 }
 
@@ -112,5 +116,30 @@ SyncMode syncModeFromString(String value) {
       return SyncMode.webdav;
     default:
       return SyncMode.obsidian;
+  }
+}
+
+// 语言枚举
+enum LanguageType { zh, en }
+
+// 将语言枚举转换为字符串
+String languageTypeToString(LanguageType language) {
+  switch (language) {
+    case LanguageType.zh:
+      return 'zh';
+    case LanguageType.en:
+      return 'en';
+  }
+}
+
+// 根据字符串获取语言枚举
+LanguageType languageTypeFromString(String value) {
+  switch (value) {
+    case 'zh':
+      return LanguageType.zh;
+    case 'en':
+      return LanguageType.en;
+    default:
+      return LanguageType.zh;
   }
 }

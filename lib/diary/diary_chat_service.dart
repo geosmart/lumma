@@ -157,7 +157,7 @@ class DiaryChatService {
   // 构建聊天请求
   static Future<Map<String, dynamic>> buildChatRequest(List<Map<String, String>> history, String userInput) async {
     final historyWindow = ChatHistoryService.getRecent(history);
-    final systemPrompt = await getActivePromptContent(PromptCategory.qa);
+    final systemPrompt = await getActivePromptContent(PromptCategory.chat);
     final messages = AiService.buildMessages(
       systemPrompt: systemPrompt,
       history: historyWindow,
@@ -185,7 +185,7 @@ class DiaryChatService {
     required Function(dynamic) onError,
   }) async {
     final historyWindow = ChatHistoryService.getRecent(history);
-    final systemPrompt = await getActivePromptContent(PromptCategory.qa);
+    final systemPrompt = await getActivePromptContent(PromptCategory.chat);
     final messages = AiService.buildMessages(
       systemPrompt: systemPrompt,
       history: historyWindow,

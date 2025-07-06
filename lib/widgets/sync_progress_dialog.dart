@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class SyncProgressDialog extends StatefulWidget {
   final int current;
@@ -71,6 +72,7 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
@@ -79,9 +81,9 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '数据同步',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              l10n.syncDialogTitle,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             AnimatedBuilder(
@@ -97,17 +99,17 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('同步进度: ${widget.current} / ${widget.total}'),
+                Text(l10n.syncDialogProgress(widget.current, widget.total)),
                 if (widget.currentStage.isNotEmpty)
                   Text(widget.currentStage, style: const TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 8),
-            Text('当前文件: ${widget.currentFile}'),
+            Text(l10n.syncDialogCurrentFile(widget.currentFile)),
             const SizedBox(height: 16),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text('同步日志:', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(l10n.syncDialogLogs, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 8),
             Expanded(
@@ -139,13 +141,13 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
               children: [
                 TextButton(
                   onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
-                  child: const Text('关闭'),
+                  child: Text(l10n.commonClose),
                 ),
                 if (widget.isDone) ...[
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('完成'),
+                    child: Text(l10n.commonDone),
                   ),
                 ],
               ],

@@ -50,7 +50,7 @@ class AiService {
       return;
     }
     final active = configs.firstWhere((e) => e.active, orElse: () => configs.first);
-    
+
     // 验证配置完整性
     if (active.baseUrl.isEmpty) {
       onError?.call(Exception('大模型服务地址未配置，请检查配置'));
@@ -64,7 +64,7 @@ class AiService {
       onError?.call(Exception('大模型名称未配置，请检查配置'));
       return;
     }
-    
+
     final url = Uri.parse('${active.baseUrl}/chat/completions');
     final body = jsonEncode({
       'model': active.model,
@@ -220,7 +220,7 @@ class AiService {
           onError: (error) {
             print('[AI-ERROR] 流式响应处理异常: $error');
             String errorMessage = '大模型响应处理失败';
-            if (error.toString().contains('Connection') || 
+            if (error.toString().contains('Connection') ||
                 error.toString().contains('timeout') ||
                 error.toString().contains('refused')) {
               errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
@@ -236,7 +236,7 @@ class AiService {
       }).catchError((error) {
         print('[AI-ERROR] 请求发送异常: $error');
         String errorMessage = '大模型请求发送失败';
-        if (error.toString().contains('Connection') || 
+        if (error.toString().contains('Connection') ||
             error.toString().contains('timeout') ||
             error.toString().contains('refused')) {
           errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
@@ -272,7 +272,7 @@ class AiService {
     try {
       final promptCategory = PromptCategory.values.firstWhere(
         (e) => promptCategoryToString(e) == promptType,
-        orElse: () => PromptCategory.qa,
+        orElse: () => PromptCategory.chat,
       );
       final systemPrompt = await getActivePromptContent(promptCategory);
       final messages = buildMessages(
@@ -288,7 +288,7 @@ class AiService {
         onError: (error) {
           print('[AI-ERROR] 文本处理流异常: $error');
           String errorMessage = '文本处理失败';
-          if (error.toString().contains('模型配置') || 
+          if (error.toString().contains('模型配置') ||
               error.toString().contains('API') ||
               error.toString().contains('连接') ||
               error.toString().contains('配置')) {
@@ -324,7 +324,7 @@ class AiService {
       }
       final active = configs.firstWhere((e) => e.active,
           orElse: () => configs.first);
-      
+
       // 验证配置完整性
       if (active.baseUrl.isEmpty) {
         throw Exception('大模型服务地址未配置，请检查配置');
@@ -335,7 +335,7 @@ class AiService {
       if (active.model.isEmpty) {
         throw Exception('大模型名称未配置，请检查配置');
       }
-      
+
       final url = Uri.parse('${active.baseUrl}/chat/completions');
 
       final body = {

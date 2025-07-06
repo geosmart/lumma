@@ -4,6 +4,7 @@ import 'config_service.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
 import 'llm_edit_page.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class LLMConfigPage extends StatefulWidget {
   const LLMConfigPage({super.key});
@@ -53,16 +54,16 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除该模型吗？'),
+        title: Text(AppLocalizations.of(context)!.llmDeleteConfirmTitle),
+        content: Text(AppLocalizations.of(context)!.llmDeleteConfirmContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.llmCancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('删除'),
+            child: Text(AppLocalizations.of(context)!.llmDelete),
           ),
         ],
       ),
@@ -125,7 +126,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            '模型管理',
+                            AppLocalizations.of(context)!.llmManage,
                             style: TextStyle(
                               fontSize: SettingsUiConfig.titleFontSize,
                               fontWeight: SettingsUiConfig.titleFontWeight,
@@ -139,7 +140,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                       child: _configs.isEmpty
                           ? Center(
                               child: Text(
-                                '暂无模型',
+                                AppLocalizations.of(context)!.llmNone,
                                 style: TextStyle(
                                   color: context.secondaryTextColor,
                                   fontSize: 16,
@@ -173,7 +174,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                           size: 22,
                                         ),
                                         onPressed: () => _setActive(i),
-                                        tooltip: '设为激活',
+                                        tooltip: AppLocalizations.of(context)!.llmSetActive,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -222,7 +223,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                   );
                                                   _showEditDialog(config: copy);
                                                 },
-                                                tooltip: '复制',
+                                                tooltip: AppLocalizations.of(context)!.llmCopy,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
@@ -234,7 +235,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                   color: context.secondaryTextColor,
                                                 ),
                                                 onPressed: () => _showEditDialog(config: c, index: i),
-                                                tooltip: '编辑',
+                                                tooltip: AppLocalizations.of(context)!.llmEdit,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
@@ -246,7 +247,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                   color: Colors.red,
                                                 ),
                                                 onPressed: () => _deleteConfig(i),
-                                                tooltip: '删除',
+                                                tooltip: AppLocalizations.of(context)!.llmDelete,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
@@ -272,7 +273,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                       heroTag: 'add-model',
                       onPressed: () => _showEditDialog(),
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      tooltip: '添加模型',
+                      tooltip: AppLocalizations.of(context)!.llmAdd,
                       child: const Icon(Icons.add, size: 28),
                     ),
                   ),

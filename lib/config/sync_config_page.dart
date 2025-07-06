@@ -9,6 +9,7 @@ import '../config/config_service.dart';
 import '../model/sync_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../generated/l10n/app_localizations.dart';
 
 class SyncConfigService {
   static Future<Map?> loadSyncConfig() async {
@@ -54,7 +55,6 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       _isLoading = true;
     });
     final workDir = await StorageService.getWorkDir();
-    final diaryDir = await StorageService.getDiaryDirPath(); // 只读标准目录
     final syncUri = await StorageService.getSyncUri();
     final appConfig = await AppConfigService.load();
     final sync = appConfig.sync;
@@ -89,7 +89,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       config.sync.webdavLocalDir = _webdavLocalDir ?? '';
     });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('WebDAV 配置已保存')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.webdavConfigSaved)));
     }
   }
 
@@ -99,8 +99,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
       if (!hasPermission) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('需要文件访问权限才能选择目录'),
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.storagePermissionRequired),
             duration: Duration(seconds: 3),
           ));
         }
@@ -109,7 +109,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     }
 
     final directory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: '选择数据工作目录',
+      dialogTitle: AppLocalizations.of(context)!.selectDataWorkDirectory,
     );
 
     if (directory != null) {
@@ -123,8 +123,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         _workDir = directory;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('数据工作目录设置成功'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.dataWorkDirectorySetSuccess),
         ));
       }
     }
@@ -136,23 +136,23 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('设置同步地址'),
+        title: Text(AppLocalizations.of(context)!.enterSyncAddress),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: '同步URI',
-            hintText: '请输入同步地址',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.syncAddress,
+            hintText: AppLocalizations.of(context)!.syncAddressPlaceholder,
           ),
           maxLines: 1,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('保存'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -164,8 +164,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         _syncUri = result.isEmpty ? null : result;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('同步地址设置成功'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.syncAddressSetSuccess),
         ));
       }
     }
@@ -175,16 +175,16 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认清除'),
-        content: const Text('确定要清除数据工作目录设置吗？'),
+        title: Text(AppLocalizations.of(context)!.confirmClear),
+        content: Text(AppLocalizations.of(context)!.confirmClearDataWorkDirectory),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('确定'),
+            child: Text(AppLocalizations.of(context)!.confirm),
           ),
         ],
       ),
@@ -199,8 +199,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         _workDir = null;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('已清除数据工作目录设置'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.dataWorkDirectoryCleared),
         ));
       }
     }
@@ -210,16 +210,16 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认清除'),
-        content: const Text('确定要清除同步地址设置吗？'),
+        title: Text(AppLocalizations.of(context)!.confirmClear),
+        content: Text(AppLocalizations.of(context)!.confirmClearSyncAddress),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('确定'),
+            child: Text(AppLocalizations.of(context)!.confirm),
           ),
         ],
       ),
@@ -231,8 +231,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         _syncUri = null;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('已清除同步地址设置'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.syncAddressCleared),
         ));
       }
     }
@@ -245,7 +245,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     final remoteDirectory = _webdavRemoteDir?.trim() ?? '';
     final localDirectory = _webdavLocalDir?.trim() ?? '';
     if (url.isEmpty || username.isEmpty || password.isEmpty || remoteDirectory.isEmpty || localDirectory.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请填写完整的 WebDAV 配置信息')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.pleaseCompleteWebdavConfig)));
       return;
     }
     try {
@@ -262,16 +262,16 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         });
       final streamed = await request.send();
       if (streamed.statusCode == 207 || streamed.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('WebDAV 连接成功，目录存在！')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.webdavConnectionSuccess)));
       } else if (streamed.statusCode == 401) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('认证失败，请检查用户名和密码')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.authenticationFailed)));
       } else if (streamed.statusCode == 404) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('目录不存在')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.directoryNotFound)));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('连接失败，状态码: ${streamed.statusCode}')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.connectionFailed(streamed.statusCode))));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('连接异常: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.connectionError(e.toString()))));
     }
   }
 
@@ -300,18 +300,18 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('同步方式', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.primaryTextColor)),
+                Text(AppLocalizations.of(context)!.syncMethod, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.primaryTextColor)),
                 RadioListTile<SyncType>(
                   value: SyncType.obsidian,
                   groupValue: _syncType,
                   onChanged: (v) => v != null ? _saveSyncType(v) : null,
-                  title: const Text('Obsidian 同步（基于URI唤起Obsidian插件进行同步）'),
+                  title: Text(AppLocalizations.of(context)!.obsidianSync),
                 ),
                 RadioListTile<SyncType>(
                   value: SyncType.webdav,
                   groupValue: _syncType,
                   onChanged: (v) => v != null ? _saveSyncType(v) : null,
-                  title: const Text('WebDAV 同步（同步到远程 WebDAV 服务器）'),
+                  title: Text(AppLocalizations.of(context)!.webdavSync),
                 ),
               ],
             ),
@@ -328,8 +328,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           const SizedBox(height: 20),
           _buildConfigCard(
             icon: Icons.settings,
-            title: '数据工作目录',
-            description: '设置应用的数据工作目录：包括模型，提示词，日记等数据',
+            title: AppLocalizations.of(context)!.dataWorkDirectory,
+            description: AppLocalizations.of(context)!.dataWorkDirectoryDescription,
             value: _workDir,
             onSelect: _selectWorkDirectory,
             onClear: _clearWorkDirectory,
@@ -422,13 +422,13 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
                 ElevatedButton.icon(
                   onPressed: onSelect,
                   icon: const Icon(Icons.folder_open),
-                  label: const Text('选择'),
+                  label: Text(AppLocalizations.of(context)!.select),
                 ),
                 if (value != null)
                   TextButton.icon(
                     onPressed: onClear,
                     icon: const Icon(Icons.clear),
-                    label: const Text('清除'),
+                    label: Text(AppLocalizations.of(context)!.clear),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.red,
                     ),
@@ -465,7 +465,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '同步地址',
+                  AppLocalizations.of(context)!.syncAddress,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -478,7 +478,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
-              '设置Obsidian同步的指令对应的AdvanceUri',
+              AppLocalizations.of(context)!.syncAddressDescription,
               style: TextStyle(
                 color: context.secondaryTextColor,
                 fontSize: 14,
@@ -515,13 +515,13 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
                 ElevatedButton.icon(
                   onPressed: _editSyncUri,
                   icon: const Icon(Icons.edit),
-                  label: const Text('设置地址'),
+                  label: Text(AppLocalizations.of(context)!.setSyncAddress),
                 ),
                 if (_syncUri != null)
                   TextButton.icon(
                     onPressed: _clearSyncUri,
                     icon: const Icon(Icons.clear),
-                    label: const Text('清除'),
+                    label: Text(AppLocalizations.of(context)!.clear),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.red,
                     ),
@@ -552,7 +552,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
             children: [
               Icon(Icons.cloud, color: context.primaryTextColor, size: 24),
               const SizedBox(width: 12),
-              Text('WebDAV 配置',
+              Text(AppLocalizations.of(context)!.webdavConfig,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -563,8 +563,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           const SizedBox(height: 12),
           TextField(
             decoration: InputDecoration(
-              labelText: 'WebDAV 地址',
-              hintText: 'https://your-webdav-server.com',
+              labelText: AppLocalizations.of(context)!.webdavUrl,
+              hintText: AppLocalizations.of(context)!.webdavUrlPlaceholder,
               suffixIcon: IconButton(
                 icon: Icon(_obscureWebdavUrl ? Icons.visibility_off : Icons.visibility),
                 onPressed: () {
@@ -581,8 +581,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(
-              labelText: '用户名',
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.username,
             ),
             controller: TextEditingController(text: _webdavUsername ?? '')
               ..selection = TextSelection.collapsed(offset: (_webdavUsername ?? '').length),
@@ -590,8 +590,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(
-              labelText: '密码',
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.password,
             ),
             obscureText: true,
             controller: TextEditingController(text: _webdavPassword ?? '')
@@ -600,9 +600,9 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(
-              labelText: '远程目录',
-              hintText: '/remote/path/',
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.remoteDirectory,
+              hintText: AppLocalizations.of(context)!.remoteDirectoryPlaceholder,
             ),
             controller: TextEditingController(text: _webdavRemoteDir ?? '')
               ..selection = TextSelection.collapsed(offset: (_webdavRemoteDir ?? '').length),
@@ -613,9 +613,9 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
             children: [
               Expanded(
                 child: TextField(
-                  decoration: const InputDecoration(
-                    labelText: '本地目录',
-                    hintText: '/local/path/',
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.localDirectory,
+                    hintText: AppLocalizations.of(context)!.localDirectoryPlaceholder,
                   ),
                   controller: TextEditingController(text: _webdavLocalDir ?? '')
                     ..selection = TextSelection.collapsed(offset: (_webdavLocalDir ?? '').length),
@@ -626,7 +626,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
               ElevatedButton.icon(
                 onPressed: _selectWebdavLocalDirectory,
                 icon: const Icon(Icons.folder_open),
-                label: const Text('选择'),
+                label: Text(AppLocalizations.of(context)!.select),
               ),
             ],
           ),
@@ -637,13 +637,13 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
               ElevatedButton.icon(
                 onPressed: _saveWebdavConfig,
                 icon: const Icon(Icons.save),
-                label: const Text('保存配置'),
+                label: Text(AppLocalizations.of(context)!.saveConfig),
               ),
               const SizedBox(width: 12),
               OutlinedButton.icon(
                 onPressed: _testWebdavConnection,
                 icon: const Icon(Icons.cloud_done),
-                label: const Text('测试连接'),
+                label: Text(AppLocalizations.of(context)!.testConnection),
               ),
             ],
           ),
@@ -658,8 +658,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
       if (!hasPermission) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('需要文件访问权限才能选择目录'),
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.storagePermissionRequired),
             duration: Duration(seconds: 3),
           ));
         }
@@ -668,7 +668,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     }
 
     final directory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: '选择 WebDAV 本地目录',
+      dialogTitle: AppLocalizations.of(context)!.selectWebdavLocalDirectory,
     );
 
     if (directory != null) {
@@ -676,8 +676,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         _webdavLocalDir = directory;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('WebDAV 本地目录设置成功'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.webdavLocalDirectorySetSuccess),
         ));
       }
     }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import '../model/app_config.dart';
 import 'theme_service.dart';
+import 'language_service.dart';
 import 'llm_config_service.dart';
 import 'prompt_config_service.dart';
 import '../diary/qa_questions_service.dart';
@@ -165,6 +166,7 @@ class AppConfigService {
     await PromptConfigService.init();
     await QaQuestionsService.init();
     await ThemeService.instance.init();
+    await LanguageService.instance.init();
     await DiaryModeConfigService.init();
     // 可扩展：如有其它配置类，继续调用其 init
     // 例如：await SyncConfigService.init?.call();

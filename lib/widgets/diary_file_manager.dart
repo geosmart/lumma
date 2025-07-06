@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import '../generated/l10n/app_localizations.dart';
 import '../util/markdown_service.dart';
 import '../util/diary_frontmatter_util.dart';
-import '../util/storage_permission_handler.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_content_page.dart';
 
@@ -55,7 +54,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
         _loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('加载日记文件失败: ${e.toString()}')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.loading}${AppLocalizations.of(context)!.noFilesFound}: ${e.toString()}')),
       );
     }
   }
@@ -64,11 +63,11 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除日记文件 "$file" 吗？'),
+        title: Text(AppLocalizations.of(context)!.deleteConfirmTitle),
+        content: Text('${AppLocalizations.of(context)!.deleteConfirmMessage} "$file"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('删除', style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -76,7 +75,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
       await MarkdownService.deleteDiaryFile(file);
       await _loadFiles();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('删除成功')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.ok}')));
       }
     }
   }
@@ -86,14 +85,14 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     final fileName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新建日记'),
+        title: Text(AppLocalizations.of(context)!.newDiary),
         content: TextField(
           controller: nameCtrl,
-          decoration: const InputDecoration(hintText: '请输入新日记文件名'),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterFileName),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(nameCtrl.text.trim()), child: const Text('创建')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(nameCtrl.text.trim()), child: Text(AppLocalizations.of(context)!.create)),
         ],
       ),
     );

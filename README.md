@@ -1,50 +1,53 @@
 # Lumma — Hear. Heal. Hold.
 
-一个基于AI的智能日记应用，帮助用户通过问答或聊天的方式记录生活，获得内心的倾听、治愈和陪伴。
+[中文说明 (Chinese Version)](./README.zh.md)
 
-## 🌟 主要功能
+A free AI-native journal for your inner reflections.
 
-### 📝 智能日记模式
-- **问答模式 (Q&A)**: 通过预设问题引导用户深入思考和记录
-- **聊天模式 (Chat)**: 与AI进行自由对话，像朋友一样倾诉心声
+Journal freely. Reflect deeply. Powered by AI.
 
-### 🤖 AI 集成
-- 支持多种大语言模型 (LLM) 配置
-- 智能问答生成和对话理解
-- 自动提取日记分类和标题
-- 可自定义提示词模板
+## 🌟 Main Features
 
-### 📱 用户体验
-- 现代化的渐变UI设计
-- 支持明暗主题切换
-- 流畅的聊天界面和markdown渲染
-- 响应式布局适配
+### 📝 Smart Diary Modes
+- **Q&A Mode**: Guide users to reflect and record through preset questions
+- **Chat Mode**: Freely talk with AI, confide as with a friend
 
-### 💾 数据管理
-- 本地存储日记内容
-- 支持WebDAV云端同步
-- 日记文件列表管理
-- 前言元数据支持
+### 🤖 AI Integration
+- Supports multiple large language model (LLM) configurations
+- Intelligent Q&A generation and conversation understanding
+- Automatic extraction of diary categories and titles
+- Customizable prompt templates
 
-### ⚙️ 配置系统
-- 灵活的LLM模型配置
-- 自定义提示词管理
-- 问答题目配置
-- 同步设置管理
+### 📱 User Experience
+- Modern gradient UI design
+- Light and dark theme switching
+- Smooth chat interface with markdown rendering
+- Responsive layout adaptation
 
-## 🏗️ 技术架构
+### 💾 Data Management
+- Local storage of diary content
+- WebDAV cloud sync support
+- Diary file list management
+- Front-matter metadata support
 
-### 开发框架
-- **Flutter**: 跨平台移动应用开发
-- **Dart**: 编程语言
+### ⚙️ Configuration System
+- Flexible LLM model configuration
+- Custom prompt management
+- Q&A question configuration
+- Sync settings management
 
-## 🎨 特色亮点
+## 🏗️ Tech Stack
 
-1. **情感化设计**: "Hear. Heal. Hold." 体现了倾听、治愈、陪伴的理念
-2. **AI增强体验**: 不仅是记录工具，更是智能对话伙伴
-3. **灵活的记录方式**: 问答和聊天两种模式满足不同需求
-4. **隐私保护**: 本地存储为主，可选云端同步
-5. **高度可定制**: 从界面主题到AI提示词都可个性化配置
+### Framework
+- **Flutter**: Cross-platform mobile app development
+- **Dart**: Programming language
 
+## 🎨 Highlights
 
-*Lumma - 用AI的温度，记录生活的点滴* 💝
+1. **Emotional Design**: "Hear. Heal. Hold." embodies the ideas of listening, healing, and companionship
+2. **AI-Enhanced Experience**: More than a recording tool, it's an intelligent conversation partner
+3. **Flexible Recording**: Q&A and chat modes for different needs
+4. **Privacy Protection**: Local storage by default, optional cloud sync
+5. **Highly Customizable**: From UI themes to AI prompts, everything is configurable
+
+*Lumma - Record every moment of life with the warmth of AI* 💝

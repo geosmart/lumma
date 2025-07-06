@@ -1,0 +1,439 @@
+{
+  "appTitle": "Lumma",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "appSubtitle": "AI-Driven Q&A Diary",
+  "@appSubtitle": {
+    "description": "The subtitle description of the application"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+  "syncNotConfigured": "Sync Not Configured",
+  "@syncNotConfigured": {
+    "description": "Dialog title when sync is not configured"
+  },
+  "syncNotConfiguredMessage": "Please configure sync mode in settings.",
+  "@syncNotConfiguredMessage": {
+    "description": "Dialog message when sync is not configured"
+  },
+  "syncFailed": "Sync Failed",
+  "@syncFailed": {
+    "description": "Dialog title when sync fails"
+  },
+  "syncFailedMessage": "WebDAV sync failed, please check network or configuration.",
+  "@syncFailedMessage": {
+    "description": "Dialog message when sync fails"
+  },
+  "syncSuccess": "Sync Success",
+  "@syncSuccess": {
+    "description": "Dialog title when sync succeeds"
+  },
+  "syncSuccessMessage": "WebDAV sync completed.",
+  "@syncSuccessMessage": {
+    "description": "Dialog message when sync succeeds"
+  },
+  "cannotStartSync": "Cannot Start Sync",
+  "@cannotStartSync": {
+    "description": "Dialog title when sync cannot be started"
+  },
+  "cannotStartSyncMessage": "No sync configuration detected or Obsidian not installed. Please check sync URI in settings and ensure Obsidian is installed.",
+  "@cannotStartSyncMessage": {
+    "description": "Dialog message when sync cannot be started"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "diary": "Diary",
+  "@diary": {
+    "description": "Diary tab title"
+  },
+  "diaryFiles": "Diary Files",
+  "@diaryFiles": {
+    "description": "Diary files page title"
+  },
+  "newDiary": "New Diary",
+  "@newDiary": {
+    "description": "New diary button text"
+  },
+  "enterFileName": "Enter file name",
+  "@enterFileName": {
+    "description": "Placeholder for file name input"
+  },
+  "create": "Create",
+  "@create": {
+    "description": "Create button text"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "rename": "Rename",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button text"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+  "noFilesFound": "No files found",
+  "@noFilesFound": {
+    "description": "Message when no diary files are found"
+  },
+  "deleteConfirmTitle": "Delete Confirmation",
+  "@deleteConfirmTitle": {
+    "description": "Delete confirmation dialog title"
+  },
+  "deleteConfirmMessage": "Are you sure you want to delete this file?",
+  "@deleteConfirmMessage": {
+    "description": "Delete confirmation dialog message"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme setting label"
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Light theme option"
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Dark theme option"
+  },
+  "themeSystem": "System",
+  "@themeSystem": {
+    "description": "System theme option"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "English language option"
+  },
+  "languageChinese": "简体中文",
+  "@languageChinese": {
+    "description": "Chinese language option"
+  },
+  "syncMethod": "Sync Method",
+  "@syncMethod": {
+    "description": "Sync method section title"
+  },
+  "obsidianSync": "Obsidian Sync (URI-based sync via Obsidian plugin)",
+  "@obsidianSync": {
+    "description": "Obsidian sync option description"
+  },
+  "webdavSync": "WebDAV Sync (Sync to remote WebDAV server)",
+  "@webdavSync": {
+    "description": "WebDAV sync option description"
+  },
+  "syncAddress": "Sync Address",
+  "@syncAddress": {
+    "description": "Sync address section title"
+  },
+  "syncAddressDescription": "Set the AdvanceUri for Obsidian sync command",
+  "@syncAddressDescription": {
+    "description": "Sync address description"
+  },
+  "setSyncAddress": "Set Address",
+  "@setSyncAddress": {
+    "description": "Set sync address button text"
+  },
+  "enterSyncAddress": "Enter sync address",
+  "@enterSyncAddress": {
+    "description": "Sync address input hint"
+  },
+  "syncAddressPlaceholder": "Please enter sync address",
+  "@syncAddressPlaceholder": {
+    "description": "Sync address input placeholder"
+  },
+  "syncAddressSetSuccess": "Sync address set successfully",
+  "@syncAddressSetSuccess": {
+    "description": "Sync address set success message"
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Clear button text"
+  },
+  "confirmClear": "Confirm Clear",
+  "@confirmClear": {
+    "description": "Confirm clear dialog title"
+  },
+  "confirmClearSyncAddress": "Are you sure you want to clear the sync address setting?",
+  "@confirmClearSyncAddress": {
+    "description": "Confirm clear sync address message"
+  },
+  "syncAddressCleared": "Sync address setting cleared",
+  "@syncAddressCleared": {
+    "description": "Sync address cleared message"
+  },
+  "webdavConfig": "WebDAV Configuration",
+  "@webdavConfig": {
+    "description": "WebDAV configuration section title"
+  },
+  "webdavUrl": "WebDAV URL",
+  "@webdavUrl": {
+    "description": "WebDAV URL field label"
+  },
+  "webdavUrlPlaceholder": "https://your-webdav-server.com",
+  "@webdavUrlPlaceholder": {
+    "description": "WebDAV URL placeholder"
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Username field label"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "remoteDirectory": "Remote Directory",
+  "@remoteDirectory": {
+    "description": "Remote directory field label"
+  },
+  "remoteDirectoryPlaceholder": "/remote/path/",
+  "@remoteDirectoryPlaceholder": {
+    "description": "Remote directory placeholder"
+  },
+  "localDirectory": "Local Directory",
+  "@localDirectory": {
+    "description": "Local directory field label"
+  },
+  "localDirectoryPlaceholder": "/local/path/",
+  "@localDirectoryPlaceholder": {
+    "description": "Local directory placeholder"
+  },
+  "select": "Select",
+  "@select": {
+    "description": "Select button text"
+  },
+  "saveConfig": "Save Config",
+  "@saveConfig": {
+    "description": "Save config button text"
+  },
+  "testConnection": "Test Connection",
+  "@testConnection": {
+    "description": "Test connection button text"
+  },
+  "webdavConfigSaved": "WebDAV configuration saved",
+  "@webdavConfigSaved": {
+    "description": "WebDAV config saved message"
+  },
+  "pleaseCompleteWebdavConfig": "Please fill in complete WebDAV configuration",
+  "@pleaseCompleteWebdavConfig": {
+    "description": "Incomplete WebDAV config error message"
+  },
+  "webdavConnectionSuccess": "WebDAV connection successful, directory exists!",
+  "@webdavConnectionSuccess": {
+    "description": "WebDAV connection success message"
+  },
+  "authenticationFailed": "Authentication failed, please check username and password",
+  "@authenticationFailed": {
+    "description": "Authentication failed error message"
+  },
+  "directoryNotFound": "Directory not found",
+  "@directoryNotFound": {
+    "description": "Directory not found error message"
+  },
+  "connectionFailed": "Connection failed, status code: {statusCode}",
+  "@connectionFailed": {
+    "description": "Connection failed error message",
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "connectionError": "Connection error: {error}",
+  "@connectionError": {
+    "description": "Connection error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dataWorkDirectory": "Work Directory",
+  "@dataWorkDirectory": {
+    "description": "Data work directory section title"
+  },
+  "dataWorkDirectoryDescription": "Set the application's data work directory: including models, prompts, diary and other data",
+  "@dataWorkDirectoryDescription": {
+    "description": "Data work directory description"
+  },
+  "selectDataWorkDirectory": "Select data work directory",
+  "@selectDataWorkDirectory": {
+    "description": "Select data work directory dialog title"
+  },
+  "dataWorkDirectorySetSuccess": "Data work directory set successfully",
+  "@dataWorkDirectorySetSuccess": {
+    "description": "Data work directory set success message"
+  },
+  "confirmClearDataWorkDirectory": "Are you sure you want to clear the data work directory setting?",
+  "@confirmClearDataWorkDirectory": {
+    "description": "Confirm clear data work directory message"
+  },
+  "dataWorkDirectoryCleared": "Data work directory setting cleared",
+  "@dataWorkDirectoryCleared": {
+    "description": "Data work directory cleared message"
+  },
+  "storagePermissionRequired": "File access permission required to select directory",
+  "@storagePermissionRequired": {
+    "description": "Storage permission required message"
+  },
+  "selectWebdavLocalDirectory": "Select WebDAV local directory",
+  "@selectWebdavLocalDirectory": {
+    "description": "Select WebDAV local directory dialog title"
+  },
+  "webdavLocalDirectorySetSuccess": "WebDAV local directory set successfully",
+  "@webdavLocalDirectorySetSuccess": {
+    "description": "WebDAV local directory set success message"
+  },
+  "diaryMode": "Diary Mode",
+  "@diaryMode": {
+    "description": "Diary mode page title"
+  },
+  "fixedQA": "Fixed Q&A",
+  "@fixedQA": {
+    "description": "Fixed Q&A mode title"
+  },
+  "fixedQADescription": "Answer preset questions one by one to generate structured diary",
+  "@fixedQADescription": {
+    "description": "Fixed Q&A mode description"
+  },
+  "aiChat": "AI Chat",
+  "@aiChat": {
+    "description": "AI chat mode title"
+  },
+  "aiChatDescription": "Chat with AI using Q&A prompts to generate custom diary",
+  "@aiChatDescription": {
+    "description": "AI chat mode description"
+  },
+  "startWritingDiary": "Start Writing Diary",
+  "@startWritingDiary": {
+    "description": "Main action button text"
+  },
+  "diaryList": "Diary List",
+  "@diaryList": {
+    "description": "Diary list button text"
+  },
+  "sync": "Sync",
+  "@sync": {
+    "description": "Sync button text"
+  },
+  "chatDiaryTitle": "AI Q&A Diary",
+  "back": "Back",
+  "debugTooltip": "Debug/View Model Request",
+  "viewDiaryList": "View Diary List",
+  "llmManage": "LLM Model",
+  "llmNone": "No models yet",
+  "llmSetActive": "Set Active",
+  "llmCopy": "Copy",
+  "llmEdit": "Edit",
+  "llmDelete": "Delete",
+  "llmAdd": "Add Model",
+  "llmDeleteConfirmTitle": "Confirm Delete",
+  "llmDeleteConfirmContent": "Are you sure you want to delete this model?",
+  "llmCancel": "Cancel",
+  "promptManage": "Prompts",
+  "promptSystemNotDeletable": "System prompt cannot be deleted",
+  "promptSetActive": "Set Active",
+  "promptCopy": "Copy",
+  "promptEdit": "Edit",
+  "promptDelete": "Delete",
+  "promptAdd": "Add Prompt",
+  "promptNone": "No prompts yet",
+  "promptSetActiveFailed": "Failed to set active: {error}",
+  "promptAddSuccess": "Prompt added successfully",
+  "promptDeleteConfirm": "Are you sure you want to delete this prompt?",
+  "promptCancel": "Cancel",
+  "qaQuestionList": "Question List",
+  "qaNone": "No questions yet",
+  "qaQuestionLabel": "Question {number}",
+  "qaDelete": "Delete",
+  "qaAdd": "Add Question",
+  "qaSave": "Save Settings",
+  "promptCategoryQa": "Chat",
+  "promptCategorySummary": "Summary",
+  "appearanceSettings": "Appearance Settings",
+  "themePreview": "Theme Preview",
+  "themeLightMode": "Light Mode",
+  "themeLightDesc": "A warm and elegant light theme",
+  "themeDarkMode": "Dark Mode",
+  "themeDarkDesc": "Eye-friendly deep dark theme",
+  "llmEditPage": "Model Edit Page",
+  "llmEditAddTitle": "Add Model",
+  "llmEditEditTitle": "Edit Model",
+  "llmEditProvider": "Provider",
+  "llmEditBaseUrl": "Base URL",
+  "llmEditApiKey": "API Key",
+  "llmEditModel": "Model",
+  "llmEditSave": "Save",
+  "promptEditPage": "Prompt Edit Page",
+  "promptEditAddTitle": "Add Prompt",
+  "promptEditEditTitle": "Edit Prompt",
+  "promptEditViewTitle": "View Prompt",
+  "promptEditSystemTitle": "System Prompt",
+  "promptEditRoleName": "Role Name",
+  "promptEditCategory": "Category",
+  "promptEditSetActive": "Set Active",
+  "promptEditContent": "Markdown Content",
+  "promptEditSave": "Save",
+  "diaryFileListTitle": "Diary Files",
+  "syncDialogTitle": "Sync Progress",
+  "syncDialogProgress": "Progress: {current}/{total}",
+  "@syncDialogProgress": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "syncDialogCurrentFile": "Current file: {file}",
+  "@syncDialogCurrentFile": {
+    "placeholders": {
+      "file": {"type": "String"}
+    }
+  },
+  "syncDialogLogs": "Logs",
+  "commonClose": "Close",
+  "commonDone": "Done",
+  "dataSync": "Data Sync",
+  "startSyncTask": "Starting sync task",
+  "uploading": "Uploading",
+  "downloading": "Downloading",
+  "uploadFile": "Upload: {file}",
+  "@uploadFile": {
+    "placeholders": {
+      "file": {"type": "String"}
+    }
+  },
+  "downloadFile": "Download: {file}",
+  "@downloadFile": {
+    "placeholders": {
+      "file": {"type": "String"}
+    }
+  },
+  "syncTaskComplete": "Sync task completed",
+  "startWritingDiary": "Start Writing Diary",
+  "diaryList": "Diary List"
+}

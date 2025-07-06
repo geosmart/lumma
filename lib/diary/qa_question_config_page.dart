@@ -3,6 +3,7 @@ import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../config/settings_ui_config.dart';
 import 'qa_questions_service.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class QaQuestionConfigPage extends StatefulWidget {
   const QaQuestionConfigPage({super.key});
@@ -96,7 +97,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '问题列表',
+                  AppLocalizations.of(context)!.qaQuestionList,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -142,7 +143,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                     : _controllers.isEmpty
                         ? Center(
                             child: Text(
-                              '暂无问题',
+                              AppLocalizations.of(context)!.qaNone,
                               style: TextStyle(
                                 color: context.secondaryTextColor,
                                 fontSize: SettingsUiConfig.titleFontSize,
@@ -175,7 +176,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                                             fontSize: SettingsUiConfig.titleFontSize,
                                           ),
                                           decoration: InputDecoration(
-                                            labelText: '问题 ${index + 1}',
+                                            labelText: AppLocalizations.of(context)!.qaQuestionLabel(index + 1),
                                             labelStyle: TextStyle(
                                               color: context.secondaryTextColor,
                                               fontSize: SettingsUiConfig.subtitleFontSize,
@@ -210,7 +211,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                                           size: 20,
                                         ),
                                         onPressed: () => _removeQuestion(index),
-                                        tooltip: '删除',
+                                        tooltip: AppLocalizations.of(context)!.qaDelete,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -230,7 +231,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add),
-                    label: const Text('添加问题'),
+                    label: Text(AppLocalizations.of(context)!.qaAdd),
                     onPressed: _addQuestion,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -245,7 +246,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.save),
-                    label: const Text('保存设置'),
+                    label: Text(AppLocalizations.of(context)!.qaSave),
                     onPressed: _isLoading ? null : _saveQuestions,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),

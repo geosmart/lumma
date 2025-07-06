@@ -1,7 +1,5 @@
-import '../model/prompt_config.dart';
 import '../model/enums.dart';
 import 'config_service.dart';
-import 'prompt_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import '../util/storage_service.dart';

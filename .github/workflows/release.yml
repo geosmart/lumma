@@ -117,16 +117,17 @@ jobs:
           body: |
             # 🌟 ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
 
-            **AI驱动的智能问答日记应用**
+            **AI-powered Q&A Diary App / AI驱动的智能问答日记应用**
 
-            ## 🔧 技术信息
-            - **版本**: ${{ steps.version.outputs.version }}
-            - **构建号**: ${{ steps.version.outputs.build_number }}
-            - **提交**: ${{ github.sha }}
-            - **Flutter版本**: 3.32.5
+            ## 🔧 Technical Info / 技术信息
+            - **Version / 版本**: ${{ steps.version.outputs.version }}
+            - **Build Number / 构建号**: ${{ steps.version.outputs.build_number }}
+            - **Commit / 提交**: ${{ github.sha }}
+            - **Flutter Version / Flutter版本**: 3.32.5
 
             ---
 
+            > 💡 If you encounter installation or usage issues, please report them in Issues.
             > 💡 如果遇到安装或使用问题，请在Issues中反馈
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

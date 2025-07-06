@@ -53,7 +53,7 @@ class _AiResultPageState extends State<AiResultPage> {
     });
 
     try {
-      final systemPrompt = await getActivePromptContent(PromptCategory.summary);
+      final systemPrompt = await getActivePromptContent(PromptCategory.qa);
       final messages = AiService.buildMessages(
         systemPrompt: systemPrompt,
         history: [],

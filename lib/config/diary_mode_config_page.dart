@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../generated/l10n/app_localizations.dart';
 import 'diary_mode_config_service.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
@@ -71,7 +72,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '日记模式',
+                  AppLocalizations.of(context)!.diaryMode,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -96,15 +97,15 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
             ),
             child: ListTile(
               leading: Icon(
-                _mode == model_enums.DiaryMode.qa ? Icons.check_circle : Icons.circle_outlined,
-                color: _mode == model_enums.DiaryMode.qa ? Colors.green : context.secondaryTextColor,
+                _mode == model_enums.DiaryMode.chat ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == model_enums.DiaryMode.chat ? Colors.green : context.secondaryTextColor,
                 size: 22,
               ),
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '固定问答',
+                    AppLocalizations.of(context)!.aiChat,
                     style: TextStyle(
                       fontSize: SettingsUiConfig.titleFontSize,
                       color: context.primaryTextColor,
@@ -115,13 +116,13 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 ],
               ),
               subtitle: Text(
-                '逐条回答预设问题，生成结构化日记',
+                AppLocalizations.of(context)!.aiChatDescription,
                 style: TextStyle(
                   color: context.secondaryTextColor,
                   fontSize: SettingsUiConfig.subtitleFontSize,
                 ),
               ),
-              onTap: () => _setMode(model_enums.DiaryMode.qa),
+              onTap: () => _setMode(model_enums.DiaryMode.chat),
             ),
           ),
           Container(
@@ -136,15 +137,15 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
             ),
             child: ListTile(
               leading: Icon(
-                _mode == model_enums.DiaryMode.chat ? Icons.check_circle : Icons.circle_outlined,
-                color: _mode == model_enums.DiaryMode.chat ? Colors.green : context.secondaryTextColor,
+                _mode == model_enums.DiaryMode.qa ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == model_enums.DiaryMode.qa ? Colors.green : context.secondaryTextColor,
                 size: 22,
               ),
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'AI问答',
+                    AppLocalizations.of(context)!.fixedQA,
                     style: TextStyle(
                       fontSize: SettingsUiConfig.titleFontSize,
                       color: context.primaryTextColor,
@@ -155,13 +156,13 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 ],
               ),
               subtitle: Text(
-                '按问答提示词与AI对话，生成自定义日记',
+                AppLocalizations.of(context)!.fixedQADescription,
                 style: TextStyle(
                   color: context.secondaryTextColor,
                   fontSize: SettingsUiConfig.subtitleFontSize,
                 ),
               ),
-              onTap: () => _setMode(model_enums.DiaryMode.chat),
+              onTap: () => _setMode(model_enums.DiaryMode.qa),
             ),
           ),
         ],

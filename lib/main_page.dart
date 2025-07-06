@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+import 'generated/l10n/app_localizations.dart';
 import 'diary/diary_chat_page.dart';
 import 'diary/diary_qa_page.dart';
 import 'config/settings_page.dart';
@@ -130,7 +131,7 @@ class _MainTabPageState extends State<MainTabPage> {
 
                     // 副标题
                     Text(
-                      'AI驱动的问答日记',
+                      AppLocalizations.of(context)!.appSubtitle,
                       style: TextStyle(
                         fontSize: 18,
                         color: context.secondaryTextColor,
@@ -177,19 +178,19 @@ class _MainTabPageState extends State<MainTabPage> {
                               );
                             }
                           },
-                          child: const Center(
+                          child: Center(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.edit_note,
                                   color: Colors.white,
                                   size: 28,
                                 ),
-                                SizedBox(width: 12),
+                                const SizedBox(width: 12),
                                 Text(
-                                  '开始写日记',
-                                  style: TextStyle(
+                                  AppLocalizations.of(context)!.startWritingDiary,
+                                  style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -212,7 +213,7 @@ class _MainTabPageState extends State<MainTabPage> {
                         Expanded(
                           child: _SecondaryButton(
                             icon: Icons.list_alt,
-                            label: '日记列表',
+                            label: AppLocalizations.of(context)!.diaryList,
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
@@ -229,7 +230,7 @@ class _MainTabPageState extends State<MainTabPage> {
                         Expanded(
                           child: _SecondaryButton(
                             icon: Icons.settings,
-                            label: '设置',
+                            label: AppLocalizations.of(context)!.settings,
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(builder: (_) => const SettingsPage()),
@@ -304,6 +305,7 @@ class _SyncButton extends StatelessWidget {
   const _SyncButton();
 
   Future<void> _syncData(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final syncMode = await SyncService.getSyncMode();
     if (syncMode == SyncMode.obsidian) {
       // Obsidian 同步逻辑
@@ -317,12 +319,12 @@ class _SyncButton extends StatelessWidget {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('无法启动同步'),
-            content: const Text('未检测到同步配置或 Obsidian 未安装。请在设置中检查同步 URI 并确保 Obsidian 已安装。'),
+            title: Text(l10n.cannotStartSync),
+            content: Text(l10n.cannotStartSyncMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('确定'),
+                child: Text(l10n.ok),
               ),
             ],
           ),
@@ -356,23 +358,23 @@ class _SyncButton extends StatelessWidget {
       // 启动同步任务
       if (!started) {
         started = true;
-        addLog('开始同步任务');
+        addLog(l10n.startSyncTask);
         SyncService.syncWithWebdavWithProgress(
           onProgress: (int c, int t, String file) {
             if (closed) return;
             current = c;
             currentFile = file;
             if (c <= localCount) {
-              currentStage = '上传中';
-              addLog('上传: $file');
+              currentStage = l10n.uploading;
+              addLog(l10n.uploadFile(file));
             } else {
-              currentStage = '下载中';
-              addLog('下载: $file');
+              currentStage = l10n.downloading;
+              addLog(l10n.downloadFile(file));
             }
           },
           onDone: () {
             isDone = true;
-            addLog('同步任务完成');
+            addLog(l10n.syncTaskComplete);
           },
         ).then((result) {
           if (closed) return;
@@ -381,12 +383,12 @@ class _SyncButton extends StatelessWidget {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('同步成功'),
-                content: const Text('WebDAV 同步已完成.'),
+                title: Text(l10n.syncSuccess),
+                content: Text(l10n.syncSuccessMessage),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('确定'),
+                    child: Text(l10n.ok),
                   ),
                 ],
               ),
@@ -395,12 +397,12 @@ class _SyncButton extends StatelessWidget {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('同步失败'),
-                content: const Text('WebDAV 同步失败，请检查网络或配置.'),
+                title: Text(l10n.syncFailed),
+                content: Text(l10n.syncFailedMessage),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('确定'),
+                    child: Text(l10n.ok),
                   ),
                 ],
               ),
@@ -442,9 +444,9 @@ class _SyncButton extends StatelessWidget {
       // 未知同步模式
       showDialog(
         context: context,
-        builder: (context) => const AlertDialog(
-          title: Text('同步未配置'),
-          content: Text('请在设置中配置同步模式。'),
+        builder: (context) => AlertDialog(
+          title: Text(l10n.syncNotConfigured),
+          content: Text(l10n.syncNotConfiguredMessage),
         ),
       );
     }
@@ -452,9 +454,10 @@ class _SyncButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _SecondaryButton(
       icon: Icons.sync,
-      label: '数据同步',
+      label: l10n.dataSync,
       onTap: () => _syncData(context),
     );
   }

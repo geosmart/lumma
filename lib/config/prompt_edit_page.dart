@@ -4,6 +4,7 @@ import '../model/enums.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_config.dart';
 import '../config/config_service.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class PromptEditPage extends StatefulWidget {
   final FileSystemEntity? file;
@@ -99,7 +100,13 @@ class _PromptEditPageState extends State<PromptEditPage> {
     final bool isReadOnly = widget.readOnly || _isSystem;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.file == null ? '新建提示词' : _isSystem ? '系统提示词' : (widget.readOnly ? '查看提示词' : '编辑提示词')),
+        title: Text(widget.file == null
+            ? AppLocalizations.of(context)!.promptEditAddTitle
+            : _isSystem
+                ? AppLocalizations.of(context)!.promptEditSystemTitle
+                : (widget.readOnly
+                    ? AppLocalizations.of(context)!.promptEditViewTitle
+                    : AppLocalizations.of(context)!.promptEditEditTitle)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -107,7 +114,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
           children: [
             TextField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: '角色名称/文件名'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditRoleName),
               readOnly: isReadOnly,
             ),
             const SizedBox(height: 8),
@@ -116,7 +123,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
               items: PromptCategory.values
                   .map((category) => DropdownMenuItem<PromptCategory>(
                         value: category,
-                        child: Text(promptCategoryToDisplayName(category)),
+                        child: Text(promptCategoryToDisplayName(category,context)),
                       ))
                   .toList(),
               onChanged: isReadOnly
@@ -124,7 +131,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
                   : (v) {
                       if (v != null) setState(() => _selectedCategory = v);
                     },
-              decoration: const InputDecoration(labelText: '分类'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditCategory),
             ),
             const SizedBox(height: 8),
             Row(
@@ -137,7 +144,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
                           setState(() => _isActive = v ?? false);
                         },
                 ),
-                const Text('设为激活'),
+                Text(AppLocalizations.of(context)!.promptEditSetActive),
               ],
             ),
             const SizedBox(height: 8),
@@ -147,8 +154,8 @@ class _PromptEditPageState extends State<PromptEditPage> {
                 maxLines: null,
                 expands: true,
                 textAlignVertical: TextAlignVertical.top,
-                decoration: const InputDecoration(
-                  labelText: 'Markdown 内容',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.promptEditContent,
                   border: OutlineInputBorder(),
                 ),
                 readOnly: isReadOnly,
@@ -159,7 +166,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
               child: ElevatedButton.icon(
                 onPressed: isReadOnly ? null : _savePrompt,
                 icon: const Icon(Icons.save),
-                label: const Text('保存'),
+                label: Text(AppLocalizations.of(context)!.promptEditSave),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                 ),

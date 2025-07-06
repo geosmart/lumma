@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../generated/l10n/app_localizations.dart';
 import '../widgets/diary_file_manager.dart';
 import '../config/theme_service.dart';
 
@@ -8,11 +9,12 @@ class DiaryFileListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          '我的日记',
+          l10n.diaryFileListTitle,
           style: TextStyle(
             color: context.primaryTextColor,
             fontSize: 20,

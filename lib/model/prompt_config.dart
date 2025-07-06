@@ -20,26 +20,26 @@ class PromptConfig extends Timestamped {
 
   /// 问答提示词默认配置
   factory PromptConfig.qaDefault() => PromptConfig(
-        name: getDefaultFileName(PromptCategory.qa),
-        type: PromptCategory.qa,
+        name: getDefaultFileName(PromptCategory.chat),
+        type: PromptCategory.chat,
         active: true,
-        content: PromptConstants.qaPrompt,
+        content: PromptConstants.defaultChatPrompt,
       );
 
   /// 总结提示词默认配置
   factory PromptConfig.summaryDefault() => PromptConfig(
-        name: getDefaultFileName(PromptCategory.summary),
-        type: PromptCategory.summary,
+        name: getDefaultFileName(PromptCategory.qa),
+        type: PromptCategory.qa,
         active: false,
-        content: PromptConstants.summaryPrompt,
+        content: PromptConstants.defaultSummaryPrompt,
       );
 
   /// 获取提示词类型对应的默认文件名
   static String getDefaultFileName(PromptCategory type) {
     switch (type) {
-      case PromptCategory.qa:
+      case PromptCategory.chat:
         return '问答AI日记助手.md';
-      case PromptCategory.summary:
+      case PromptCategory.qa:
         return '总结AI日记助手.md';
     }
   }

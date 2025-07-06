@@ -6,6 +6,7 @@ import 'prompt_edit_page.dart';
 import 'settings_ui_config.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_config.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class PromptConfigPage extends StatefulWidget {
   const PromptConfigPage({super.key});
@@ -16,7 +17,7 @@ class PromptConfigPage extends StatefulWidget {
 
 class _PromptConfigPageState extends State<PromptConfigPage> {
   List<PromptConfig> _allPrompts = [];
-  PromptCategory _activeCategory = PromptCategory.qa;
+  PromptCategory _activeCategory = PromptCategory.chat;
   Map<PromptCategory, String?> _activePrompt = {};
 
   @override
@@ -74,7 +75,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
   void _deletePrompt(PromptConfig prompt) async {
     // 系统默认提示词不可删除
     if (prompt.name == '问答AI日记助手.md' || prompt.name == '总结AI日记助手.md') {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('系统提示词不可删除')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.promptSystemNotDeletable)));
       return;
     }
     // 检查是否为激活中的提示词
@@ -121,7 +122,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '提示词管理',
+                  AppLocalizations.of(context)!.promptManage,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -141,7 +142,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                     children: [
                       for (final category in PromptCategory.values)
                         ChoiceChip(
-                          label: Text(promptCategoryToDisplayName(category)),
+                          label: Text(promptCategoryToDisplayName(category,context)),
                           selected: _activeCategory == category,
                           onSelected: (v) {
                             setState(() {
@@ -209,12 +210,12 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                             print('[PromptConfigPage] 设置激活提示词失败: $e');
                                             if (mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('设置激活失败: $e')),
+                                                SnackBar(content: Text(AppLocalizations.of(context)!.promptSetActiveFailed(e))),
                                               );
                                             }
                                           }
                                         },
-                                        tooltip: '设为激活',
+                                        tooltip: AppLocalizations.of(context)!.promptSetActive,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -247,7 +248,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                         onPressed: () async {
                                           _showPrompt(prompt);
                                         },
-                                        tooltip: '复制',
+                                        tooltip: AppLocalizations.of(context)!.promptCopy,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -259,7 +260,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           color: context.secondaryTextColor,
                                         ),
                                         onPressed: () => _showPrompt(prompt),
-                                        tooltip: '编辑',
+                                        tooltip: AppLocalizations.of(context)!.promptEdit,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -271,7 +272,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           color: Colors.red,
                                         ),
                                         onPressed: () => _deletePrompt(prompt),
-                                        tooltip: '删除',
+                                        tooltip: AppLocalizations.of(context)!.promptDelete,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -294,7 +295,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                           heroTag: 'add-prompt',
                           onPressed: () => _showPrompt(null),
                           backgroundColor: Theme.of(context).colorScheme.primary,
-                          tooltip: '添加提示词',
+                          tooltip: AppLocalizations.of(context)!.promptAdd,
                           child: const Icon(Icons.add, size: 28),
                         ),
                       ),

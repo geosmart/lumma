@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'generated/l10n/app_localizations.dart';
 import 'main_page.dart';
 import 'config/theme_service.dart';
+import 'config/language_service.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/llm_config_init.dart';
@@ -13,6 +16,9 @@ void main() async {
 
   // 初始化主题服务
   await ThemeService.instance.init();
+
+  // 初始化语言服务
+  await LanguageService.instance.init();
 
   print('[lumma] App init...');
   // 优雅加载环境变量，优先 .env.local，找不到则只加载 .env.release
@@ -57,7 +63,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: ThemeService.instance,
+      listenable: Listenable.merge([
+        ThemeService.instance,
+        LanguageService.instance,
+      ]),
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -65,6 +74,14 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeService.instance.themeMode,
+          locale: LanguageService.instance.currentLocale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: LanguageService.supportedLocales,
           home: const MainTabPage(),
         );
       },

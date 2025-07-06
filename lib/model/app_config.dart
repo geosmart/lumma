@@ -6,6 +6,7 @@ import 'sync_config.dart';
 class AppConfig {
   DiaryMode diaryMode;
   ThemeModeType theme;
+  LanguageType language;
   List<LLMConfig> model;
   List<PromptConfig> prompt;
   SyncConfig sync;
@@ -16,6 +17,7 @@ class AppConfig {
     this.model = const [],
     List<PromptConfig>? prompt,
     this.theme = ThemeModeType.light,
+    this.language = LanguageType.zh,
     SyncConfig? sync,
     List<String>? qaQuestions,
   })  : prompt = prompt ?? const [],
@@ -41,6 +43,7 @@ class AppConfig {
     return AppConfig(
       diaryMode: DiaryMode.qa,
       theme: ThemeModeType.light,
+      language: LanguageType.zh,
       model: defaultModels,
       prompt: defaultPrompts,
       sync: defaultSync,
@@ -53,6 +56,7 @@ class AppConfig {
         model: (map['model'] as List? ?? []).map((e) => LLMConfig.fromMap(e)).toList(),
         prompt: (map['prompt'] as List? ?? []).map((e) => PromptConfig.fromMap(e)).toList(),
         theme: themeModeTypeFromString(map['theme'] ?? 'light'),
+        language: languageTypeFromString(map['language'] ?? 'zh'),
         sync: map['sync'] != null ? SyncConfig.fromMap(map['sync']) : SyncConfig.defaultConfig(),
         qaQuestions: (map['qa_questions'] as List? ?? []).map((e) => e.toString()).toList(),
       );
@@ -61,6 +65,7 @@ class AppConfig {
         'model': model.map((e) => e.toMap()).toList(),
         'prompt': prompt.map((e) => e.toMap()).toList(),
         'theme': themeModeTypeToString(theme),
+        'language': languageTypeToString(language),
         'sync': sync.toMap(),
         'qa_questions': qaQuestions,
       };

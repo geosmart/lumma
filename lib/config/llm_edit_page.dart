@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/llm_config.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class LLMEditPage extends StatefulWidget {
   final LLMConfig? config;
@@ -55,7 +56,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.config == null ? '添加模型' : '编辑模型'),
+        title: Text(widget.config == null ? AppLocalizations.of(context)!.llmEditAddTitle : AppLocalizations.of(context)!.llmEditEditTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -67,18 +68,18 @@ class _LLMEditPageState extends State<LLMEditPage> {
                   children: [
                     TextField(
                       controller: _providerCtrl,
-                      decoration: const InputDecoration(labelText: 'Provider'),
+                      decoration: InputDecoration(labelText: AppLocalizations.of(context)!.llmEditProvider),
                       readOnly: _isDefault,
                     ),
                     TextField(
                       controller: _baseUrlCtrl,
-                      decoration: const InputDecoration(labelText: 'Base URL'),
+                      decoration: InputDecoration(labelText: AppLocalizations.of(context)!.llmEditBaseUrl),
                       readOnly: _isDefault,
                     ),
                     TextField(
                       controller: _apiKeyCtrl,
                       decoration: InputDecoration(
-                        labelText: 'API Key',
+                        labelText: AppLocalizations.of(context)!.llmEditApiKey,
                         suffixIcon: IconButton(
                           icon: Icon(_obscureApiKey ? Icons.visibility_off : Icons.visibility),
                           onPressed: () {
@@ -93,7 +94,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
                     ),
                     TextField(
                       controller: _modelCtrl,
-                      decoration: const InputDecoration(labelText: 'Model'),
+                      decoration: InputDecoration(labelText: AppLocalizations.of(context)!.llmEditModel),
                       readOnly: _isDefault,
                     ),
                   ],
@@ -105,7 +106,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
               child: ElevatedButton.icon(
                 onPressed: _isDefault ? null : _saveConfig,
                 icon: const Icon(Icons.save),
-                label: const Text('保存'),
+                label: Text(AppLocalizations.of(context)!.llmEditSave),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                 ),

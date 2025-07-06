@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../generated/l10n/app_localizations.dart';
+import 'language_service.dart';
 import 'llm_config_page.dart';
 import 'prompt_config_page.dart';
 import 'diary_mode_config_page.dart';
@@ -16,7 +18,7 @@ class SettingsPage extends StatelessWidget {
       length: 6,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('设置', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+          title: Text(AppLocalizations.of(context)!.settings, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
           bottom: const TabBar(
             labelPadding: EdgeInsets.symmetric(horizontal: 4),
             tabs: [
@@ -36,7 +38,7 @@ class SettingsPage extends StatelessWidget {
             LLMConfigPage(),
             QaQuestionConfigPage(),
             SyncConfigPage(),
-            _ThemeSettingsPage(),
+            _AppearanceSettingsPage(),
           ],
         ),
       ),
@@ -44,28 +46,31 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-// 主题设置页面
-class _ThemeSettingsPage extends StatefulWidget {
-  const _ThemeSettingsPage();
+// 外观设置页面（包含主题和语言）
+class _AppearanceSettingsPage extends StatefulWidget {
+  const _AppearanceSettingsPage();
 
   @override
-  State<_ThemeSettingsPage> createState() => _ThemeSettingsPageState();
+  State<_AppearanceSettingsPage> createState() => _AppearanceSettingsPageState();
 }
 
-class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
+class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: context.backgroundGradient,
-        ),
-      ),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+    return ListenableBuilder(
+      listenable: LanguageService.instance,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: context.backgroundGradient,
+            ),
+          ),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
           // 页面标题
           Container(
             width: double.infinity,
@@ -79,7 +84,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  '外观设置',
+                  AppLocalizations.of(context)!.appearanceSettings,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -89,6 +94,144 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
               ],
             ),
           ),
+
+          // 语言设置
+          Container(
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: context.borderColor,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.language,
+                        color: context.primaryTextColor,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.of(context)!.language,
+                        style: TextStyle(
+                          fontSize: SettingsUiConfig.titleFontSize,
+                          fontWeight: SettingsUiConfig.titleFontWeight,
+                          color: context.primaryTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 中文
+                Container(
+                  decoration: BoxDecoration(
+                    color: LanguageService.instance.currentLocale.languageCode == 'zh'
+                        ? const Color(0xFFF3E5AB).withOpacity(0.3)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: LanguageService.instance.currentLocale.languageCode == 'zh'
+                        ? Border.all(color: const Color(0xFFD4A574), width: 1.5)
+                        : null,
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDE2910),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '中',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      AppLocalizations.of(context)!.languageChinese,
+                      style: TextStyle(
+                        fontSize: SettingsUiConfig.subtitleFontSize,
+                        fontWeight: LanguageService.instance.currentLocale.languageCode == 'zh'
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                    trailing: LanguageService.instance.currentLocale.languageCode == 'zh'
+                        ? const Icon(Icons.check_circle, color: Color(0xFFD4A574), size: 20)
+                        : null,
+                    onTap: () {
+                      LanguageService.instance.setLanguage(const Locale('zh', 'CN'));
+                    },
+                  ),
+                ),
+
+                // 英语
+                Container(
+                  decoration: BoxDecoration(
+                    color: LanguageService.instance.currentLocale.languageCode == 'en'
+                        ? const Color(0xFFF3E5AB).withOpacity(0.3)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: LanguageService.instance.currentLocale.languageCode == 'en'
+                        ? Border.all(color: const Color(0xFFD4A574), width: 1.5)
+                        : null,
+                  ),
+                  child: ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F4C75),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'EN',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      AppLocalizations.of(context)!.languageEnglish,
+                      style: TextStyle(
+                        fontSize: SettingsUiConfig.subtitleFontSize,
+                        fontWeight: LanguageService.instance.currentLocale.languageCode == 'en'
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                    trailing: LanguageService.instance.currentLocale.languageCode == 'en'
+                        ? const Icon(Icons.check_circle, color: Color(0xFFD4A574), size: 20)
+                        : null,
+                    onTap: () {
+                      LanguageService.instance.setLanguage(const Locale('en', 'US'));
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
 
           // 主题切换卡片
           Container(
@@ -114,7 +257,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        '主题外观',
+                        AppLocalizations.of(context)!.theme,
                         style: TextStyle(
                           fontSize: SettingsUiConfig.titleFontSize,
                           fontWeight: SettingsUiConfig.titleFontWeight,
@@ -162,7 +305,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                       ),
                     ),
                     title: Text(
-                      '浅色模式',
+                      AppLocalizations.of(context)!.themeLightMode,
                       style: TextStyle(
                         fontWeight: ThemeService.instance.themeMode == ThemeMode.light
                             ? FontWeight.w600  // 选中时字体加粗
@@ -171,7 +314,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                       ),
                     ),
                     subtitle: Text(
-                      '温暖淡雅的浅色主题',
+                      AppLocalizations.of(context)!.themeLightDesc,
                       style: TextStyle(
                         color: context.secondaryTextColor,
                       ),
@@ -233,7 +376,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                       ),
                     ),
                     title: Text(
-                      '暗色模式',
+                      AppLocalizations.of(context)!.themeDarkMode,
                       style: TextStyle(
                         fontWeight: ThemeService.instance.themeMode == ThemeMode.dark
                             ? FontWeight.w600  // 选中时字体加粗
@@ -242,7 +385,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                       ),
                     ),
                     subtitle: Text(
-                      '护眼深邃的暗色主题',
+                      AppLocalizations.of(context)!.themeDarkDesc,
                       style: TextStyle(
                         color: context.secondaryTextColor,
                       ),
@@ -285,7 +428,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '主题预览',
+                  AppLocalizations.of(context)!.themePreview,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -324,7 +467,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Lumma',
+                          AppLocalizations.of(context)!.appTitle,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -332,7 +475,7 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
                           ),
                         ),
                         Text(
-                          'AI驱动的问答日记',
+                          AppLocalizations.of(context)!.appSubtitle,
                           style: TextStyle(
                             fontSize: 12,
                             color: context.secondaryTextColor,
@@ -347,6 +490,8 @@ class _ThemeSettingsPageState extends State<_ThemeSettingsPage> {
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

@@ -28,11 +28,11 @@ Future<void> ensureConfig() async {
 
   // 系统提示词初始化（不可删除）
   final existingPromptNames = config.prompt.map((p) => p.name).toSet();
-  final missingPrompts = PromptConstants.systemPrompts.where((e) => !existingPromptNames.contains(e['name']!)).toList();
+  final missingPrompts = PromptConstants.systemChatPrompts.where((e) => !existingPromptNames.contains(e['name']!)).toList();
   if (missingPrompts.isNotEmpty) {
     config.prompt.addAll(missingPrompts.map((e) => PromptConfig(
       name: e['name']!,
-      type: PromptCategory.qa,
+      type: PromptCategory.chat,
       active: false,
       content: e['content']!,
     )));

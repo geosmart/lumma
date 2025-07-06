@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../generated/l10n/app_localizations.dart';
 import '../diary/chat_history_service.dart';
 import '../diary/diary_qa_title_service.dart';
 import '../diary/diary_chat_service.dart';
@@ -72,7 +73,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
               ],
             ),
             child: Text(
-              _currentModelName.isEmpty ? '加载中...' : _currentModelName,
+              _currentModelName.isEmpty ? AppLocalizations.of(context)!.loading : _currentModelName,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -160,7 +161,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
               _lastRequestJson = prettyJson;
             });
             // 新增日志打印大模型最终返回内容
-            print('[LLM] Done: \n' + data.toString());
+            print('[LLM] Done: \n$data');
             _scrollToBottom();
 
             // AI回答完成后自动提取分类并保存到日记文件
@@ -213,7 +214,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     return FutureBuilder<String>(
       future: getDiaryQaTitle(),
       builder: (context, snapshot) {
-        final title = snapshot.data ?? 'AI 问答式日记';
+        final title = snapshot.data ?? AppLocalizations.of(context)!.chatDiaryTitle;
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
@@ -247,7 +248,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 color: context.primaryTextColor,
                               ),
                               onPressed: () => Navigator.of(context).maybePop(),
-                              tooltip: '返回',
+                              tooltip: AppLocalizations.of(context)!.back,
                               padding: const EdgeInsets.all(8),
                               constraints: const BoxConstraints(),
                             ),
@@ -444,7 +445,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                           // 调试按钮
                           IconButton(
                             icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
-                            tooltip: '调试/查看大模型请求参数',
+                            tooltip: AppLocalizations.of(context)!.debugTooltip,
                             onPressed: () {
                               if (_lastRequestJson != null) {
                                 DebugRequestDialog.show(context, _lastRequestJson!);
@@ -455,7 +456,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                           // 日记列表按钮
                           IconButton(
                             icon: const Icon(Icons.menu_book, color: Colors.teal),
-                            tooltip: '查看日记列表',
+                            tooltip: AppLocalizations.of(context)!.viewDiaryList,
                             onPressed: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
