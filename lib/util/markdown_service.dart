@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import '../generated/l10n/app_localizations.dart';
 import 'frontmatter_service.dart';
 import 'storage_service.dart';
 import '../config/config_service.dart';
@@ -26,7 +27,7 @@ class MarkdownService {
     }
   }
 
-  /// 保存日记内容，自动更新 frontmatter 的 updated 字段
+  /// Save diary content, automatically update the updated field in frontmatter
   static Future<File> saveDiaryMarkdown(String content, {BuildContext? context, String? fileName}) async {
     try {
       final diaryDir = await getDiaryDir();
@@ -62,7 +63,7 @@ class MarkdownService {
     return await file.readAsString();
   }
 
-  /// 获取所有日记文件名（不含路径），按创建时间desc排列（文件名自带时间戳）
+  /// Get all diary filenames (without path), sorted by creation time desc (filenames contain timestamps)
   static Future<List<String>> listDiaryFiles() async {
     final diaryDir = await getDiaryDir();
     final files = Directory(diaryDir)
@@ -73,7 +74,7 @@ class MarkdownService {
     return files.map((f) => f.uri.pathSegments.last).toList();
   }
 
-  /// 删除指定日记文件
+  /// Delete the specified diary file
   static Future<void> deleteDiaryFile(String fileName) async {
     final diaryDir = await getDiaryDir();
     final file = File('$diaryDir/$fileName');
@@ -82,7 +83,7 @@ class MarkdownService {
     }
   }
 
-  /// 新建空日记文件，写入 frontmatter（created/updated）
+  /// Create empty diary file, write frontmatter (created/updated)
   static Future<void> createDiaryFile(String fileName) async {
     final diaryDir = await getDiaryDir();
     final file = File('$diaryDir/$fileName');
@@ -101,7 +102,7 @@ class MarkdownService {
     }
   }
 
-  /// 追加内容到当天的日记文件
+  /// Append content to today's diary file
   static Future<void> appendToDailyDiary(String contentToAppend) async {
     final now = DateTime.now();
     final fileName = getDiaryFileName();
@@ -120,23 +121,24 @@ class MarkdownService {
     }
   }
 
-  /// 保存或覆盖日总结内容
-  static Future<void> saveOrUpdateDailySummary(String summaryContent) async {
+  /// Save or overwrite daily summary content
+  static Future<void> saveOrUpdateDailySummary(BuildContext context, String summaryContent) async {
     final now = DateTime.now();
     final fileName = getDiaryFileName();
     final diaryDir = await getDiaryDir();
     final file = File('$diaryDir/$fileName');
+    final dailySummaryTitle = AppLocalizations.of(context)!.dailySummary;
 
     if (!await file.exists()) {
       // 如果文件不存在，创建并写入初始内容
-      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n$summaryContent';
+      final initialContent = '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}\n\n$summaryContent';
       await saveDiaryMarkdown(initialContent, fileName: fileName);
     } else {
       // 如果文件存在，检查是否已有日总结
       final currentContent = await file.readAsString();
 
       // 查找并删除现有的 ## 日总结 章节（包括其下的所有内容）
-      final summaryRegex = RegExp(r'^---\s*\n\n## 日总结\s*\n.*?(?=^---|\Z)', multiLine: true, dotAll: true);
+      final summaryRegex = RegExp('^---\\s*\n\n## ' + RegExp.escape(dailySummaryTitle) + '\\s*\n.*?(?=^---|\\Z)', multiLine: true, dotAll: true);
 
       if (summaryRegex.hasMatch(currentContent)) {
         // 如果已存在日总结，则删除整个章节
@@ -152,7 +154,7 @@ class MarkdownService {
     }
   }
 
-  /// 将所有日记导出为Markdown文件到指定目录
+  /// Export all diaries as Markdown files to the specified directory
   static Future<int> exportDiaries(String targetDir) async {
     try {
       final diaryDir = await getDiaryDir();
@@ -180,7 +182,7 @@ class MarkdownService {
     } catch (e) {
       rethrow;
     }
-  }  /// 导出指定日记文件为字节数组，用于下载/保存
+  }  /// Export specified diary file as byte array for download/save
   static Future<Uint8List> exportDiaryFile(String fileName) async {
     try {
       final diaryDir = await getDiaryDir();

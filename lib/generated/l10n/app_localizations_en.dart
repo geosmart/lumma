@@ -522,7 +522,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Click the + button in the upper right corner to start writing your first diary';
 
   @override
-  String get createSuccess => 'Created successfully';
+  String get createSuccess => 'Create successful';
 
   @override
   String get createFailedFileNotCreated => 'Creation failed, file not created';
@@ -586,4 +586,115 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiContentPlaceholder =>
       'AI generated content will be displayed here...';
+
+  @override
+  String get diaryDetail => 'Diary Detail';
+
+  @override
+  String get llmRequestParameters => 'LLM Request Parameters';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get requestParametersCopied =>
+      'Request parameters copied to clipboard';
+
+  @override
+  String get mermaidMobileOnly =>
+      'Mermaid is only supported on mobile, current platform does not support rendering';
+
+  @override
+  String get mermaidRenderError => 'Mermaid rendering error';
+
+  @override
+  String get fileName => 'File Name';
+
+  @override
+  String get editDiaryContent => 'Edit diary content';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get confirmDelete => 'Confirm Delete';
+
+  @override
+  String confirmDeleteFile(String fileName) {
+    return 'Are you sure you want to delete the diary file \"$fileName\"?';
+  }
+
+  @override
+  String get deleteSuccess => 'Delete successful';
+
+  @override
+  String get deleteFailed => 'Delete failed';
+
+  @override
+  String get enterNewDiaryName => 'Please enter new diary file name';
+
+  @override
+  String get createFailed => 'Create failed';
+
+  @override
+  String get newDiaryTooltip => 'New Diary';
+
+  @override
+  String get loadDiaryFilesFailed => 'Failed to load diary files';
+
+  @override
+  String get aiThinking => 'AI is thinking...';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get diaryContent => 'Diary Content';
+
+  @override
+  String get contentAnalysis => 'Content Analysis';
+
+  @override
+  String monthDay(int month, int day) {
+    return '$month/$day';
+  }
+
+  @override
+  String get qaQuestion1 => 'How do you feel today?';
+
+  @override
+  String get qaQuestion2 => 'What was the highlight of your day?';
+
+  @override
+  String get qaQuestion3 => 'Did you face any challenges today?';
+
+  @override
+  String get qaQuestion4 => 'What are you grateful for today?';
+
+  @override
+  String get qaQuestion5 => 'What did you learn today?';
+
+  @override
+  String get qaQuestion6 => 'How did you take care of yourself today?';
+
+  @override
+  String get qaQuestion7 => 'What would you like to improve tomorrow?';
+
+  @override
+  String get qaQuestion8 => 'Who or what inspired you today?';
+
+  @override
+  String get qaQuestion9 => 'Did you help someone today? How?';
+
+  @override
+  String get qaQuestion10 => 'What is your goal for tomorrow?';
+
+  @override
+  String get userInputPlaceholder => 'Jot down your thoughts...';
 }

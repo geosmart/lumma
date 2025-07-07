@@ -1052,10 +1052,10 @@ abstract class AppLocalizations {
   /// **'Click the + button in the upper right corner to start writing your first diary'**
   String get clickToCreateFirstDiary;
 
-  /// No description provided for @createSuccess.
+  /// Success message when create operation succeeds
   ///
   /// In en, this message translates to:
-  /// **'Created successfully'**
+  /// **'Create successful'**
   String get createSuccess;
 
   /// No description provided for @createFailedFileNotCreated.
@@ -1177,6 +1177,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI generated content will be displayed here...'**
   String get aiContentPlaceholder;
+
+  /// Title for diary detail page
+  ///
+  /// In en, this message translates to:
+  /// **'Diary Detail'**
+  String get diaryDetail;
+
+  /// Title for LLM request parameters dialog
+  ///
+  /// In en, this message translates to:
+  /// **'LLM Request Parameters'**
+  String get llmRequestParameters;
+
+  /// Copy button text
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// Close button text
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// Success message when request parameters are copied
+  ///
+  /// In en, this message translates to:
+  /// **'Request parameters copied to clipboard'**
+  String get requestParametersCopied;
+
+  /// Error message when Mermaid is not supported on current platform
+  ///
+  /// In en, this message translates to:
+  /// **'Mermaid is only supported on mobile, current platform does not support rendering'**
+  String get mermaidMobileOnly;
+
+  /// Error message when Mermaid rendering fails
+  ///
+  /// In en, this message translates to:
+  /// **'Mermaid rendering error'**
+  String get mermaidRenderError;
+
+  /// Label for file name input field
+  ///
+  /// In en, this message translates to:
+  /// **'File Name'**
+  String get fileName;
+
+  /// Placeholder text for diary content editing
+  ///
+  /// In en, this message translates to:
+  /// **'Edit diary content'**
+  String get editDiaryContent;
+
+  /// Status text when saving is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// Title for delete confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get confirmDelete;
+
+  /// Confirmation message for deleting a file
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the diary file \"{fileName}\"?'**
+  String confirmDeleteFile(String fileName);
+
+  /// Success message when delete operation succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'Delete successful'**
+  String get deleteSuccess;
+
+  /// Error message when delete operation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed'**
+  String get deleteFailed;
+
+  /// Placeholder text for new diary name input
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter new diary file name'**
+  String get enterNewDiaryName;
+
+  /// Error message when create operation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Create failed'**
+  String get createFailed;
+
+  /// Tooltip text for new diary button
+  ///
+  /// In en, this message translates to:
+  /// **'New Diary'**
+  String get newDiaryTooltip;
+
+  /// Error message when loading diary files fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load diary files'**
+  String get loadDiaryFilesFailed;
+
+  /// Status text when AI is processing
+  ///
+  /// In en, this message translates to:
+  /// **'AI is thinking...'**
+  String get aiThinking;
+
+  /// Label for time field
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// Label for category field
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// Label for diary content field
+  ///
+  /// In en, this message translates to:
+  /// **'Diary Content'**
+  String get diaryContent;
+
+  /// Label for content analysis field
+  ///
+  /// In en, this message translates to:
+  /// **'Content Analysis'**
+  String get contentAnalysis;
+
+  /// Format for displaying month and day in Chinese style
+  ///
+  /// In en, this message translates to:
+  /// **'{month}/{day}'**
+  String monthDay(int month, int day);
+
+  /// Question 1
+  ///
+  /// In en, this message translates to:
+  /// **'How do you feel today?'**
+  String get qaQuestion1;
+
+  /// Question 2
+  ///
+  /// In en, this message translates to:
+  /// **'What was the highlight of your day?'**
+  String get qaQuestion2;
+
+  /// Question 3
+  ///
+  /// In en, this message translates to:
+  /// **'Did you face any challenges today?'**
+  String get qaQuestion3;
+
+  /// Question 4
+  ///
+  /// In en, this message translates to:
+  /// **'What are you grateful for today?'**
+  String get qaQuestion4;
+
+  /// Question 5
+  ///
+  /// In en, this message translates to:
+  /// **'What did you learn today?'**
+  String get qaQuestion5;
+
+  /// Question 6
+  ///
+  /// In en, this message translates to:
+  /// **'How did you take care of yourself today?'**
+  String get qaQuestion6;
+
+  /// Question 7
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to improve tomorrow?'**
+  String get qaQuestion7;
+
+  /// Question 8
+  ///
+  /// In en, this message translates to:
+  /// **'Who or what inspired you today?'**
+  String get qaQuestion8;
+
+  /// Question 9
+  ///
+  /// In en, this message translates to:
+  /// **'Did you help someone today? How?'**
+  String get qaQuestion9;
+
+  /// Question 10
+  ///
+  /// In en, this message translates to:
+  /// **'What is your goal for tomorrow?'**
+  String get qaQuestion10;
+
+  /// Placeholder for user input in chat text field
+  ///
+  /// In en, this message translates to:
+  /// **'Jot down your thoughts...'**
+  String get userInputPlaceholder;
 }
 
 class _AppLocalizationsDelegate

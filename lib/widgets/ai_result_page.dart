@@ -7,13 +7,13 @@ import '../dao/diary_dao.dart';
 import '../util/markdown_service.dart';
 import '../generated/l10n/app_localizations.dart';
 
-/// AI 结果页面公共组件
+/// AI result page common component
 class AiResultPage extends StatefulWidget {
   final String title;
   final VoidCallback onBack;
   final String? processingText;
   final String? hintText;
-  final Future<String?> Function() getContent; // 获取内容的回调
+  final Future<String?> Function() getContent; // Callback to get content
 
   const AiResultPage({
     super.key,
@@ -35,7 +35,7 @@ class _AiResultPageState extends State<AiResultPage> {
   @override
   void initState() {
     super.initState();
-    _startSummaryStream(); // 自动开始AI总结
+    _startSummaryStream(); // Automatically start AI summary
   }
 
   @override
@@ -110,13 +110,14 @@ class _AiResultPageState extends State<AiResultPage> {
         case 'save':
           final editedResult = _controller.text;
           final content = DiaryDao.formatDiaryContent(
+            context: context,
             title: AppLocalizations.of(context)!.dailySummary,
             content: editedResult,
             analysis: '',
             category: '',
           );
-          await MarkdownService.saveOrUpdateDailySummary(content);
-          widget.onBack(); // 返回上一页
+          await MarkdownService.saveOrUpdateDailySummary(context,content);
+          widget.onBack(); // Return to previous page
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(AppLocalizations.of(context)!.dailySummarySaved)),
@@ -150,7 +151,7 @@ class _AiResultPageState extends State<AiResultPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 操作按钮区，放在输入框上方
+            // Action button area, placed above the input field
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

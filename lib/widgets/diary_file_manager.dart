@@ -6,9 +6,9 @@ import '../util/diary_frontmatter_util.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_content_page.dart';
 
-/// 日记文件管理组件，集成列表、增删改查、编辑、选择等全部逻辑
+/// Diary file management component, integrating list, CRUD operations, editing, selection, and other functionalities
 class DiaryFileManager extends StatefulWidget {
-  /// 选中文件后回调（可选）
+  /// Callback after selecting a file (optional)
   final void Function(String fileName)? onFileSelected;
   const DiaryFileManager({super.key, this.onFileSelected});
 
@@ -31,7 +31,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     setState(() => _loading = true);
     try {
       final files = await MarkdownService.listDiaryFiles();
-      // 按 frontmatter 的 created 字段降序排序
+      // Sort by frontmatter created field in descending order
       final filesWithCreated = await Future.wait(files.map((f) async {
         final dt = await getDiaryCreatedTime(f);
         return {'file': f, 'created': dt};
@@ -42,7 +42,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
         if (adt == null && bdt == null) return 0;
         if (adt == null) return 1;
         if (bdt == null) return -1;
-        return bdt.compareTo(adt); // 降序
+        return bdt.compareTo(adt); // Descending order
       });
       setState(() {
         _files = filesWithCreated.map((e) => e['file'] as String).toList();
@@ -130,7 +130,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 标题和操作栏
+        // Title and action bar
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -263,7 +263,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
   }
 }
 
-// 操作按钮组件
+// Action button component
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
@@ -304,7 +304,7 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-// 日记列表项组件
+// Diary list item component
 class _DiaryListItem extends StatelessWidget {
   final String fileName;
   final DateTime? createdTime;
@@ -361,7 +361,7 @@ class _DiaryListItem extends StatelessWidget {
                     if (createdTime != null) ...[
                       const SizedBox(height: 2),
                       Text(
-                        '${createdTime!.month}月${createdTime!.day}日  ${createdTime!.hour.toString().padLeft(2, '0')}:${createdTime!.minute.toString().padLeft(2, '0')}',
+                        AppLocalizations.of(context)!.monthDay(createdTime!.month, createdTime!.day) + '  ${createdTime!.hour.toString().padLeft(2, '0')}:${createdTime!.minute.toString().padLeft(2, '0')}',
                         style: TextStyle(
                           fontSize: 12,
                           color: context.secondaryTextColor,

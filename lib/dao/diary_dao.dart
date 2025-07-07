@@ -1,49 +1,54 @@
+import 'package:flutter/widgets.dart';
+import '../generated/l10n/app_localizations.dart';
+
 class DiaryDao {
-  /// 公共的日记内容格式化方法
-  /// [title] 日记标题（如问题或AI生成标题）
-  /// [answer] 用户回答或AI分析
-  /// [category] 分类（可为空）
-  /// [time] 时间（可为空，默认当前时间）
-  /// [content] 日记内容（如问题本身）
-  /// [analysis] 内容分析（如AI回答，可为空）
+  /// Common diary content formatting method
+  /// [title] Diary title (e.g., question or AI-generated title)
+  /// [answer] User answer or AI analysis
+  /// [category] Category (optional)
+  /// [time] Time (optional, defaults to current time)
+  /// [content] Diary content (e.g., the question itself)
+  /// [analysis] Content analysis (e.g., AI answer, optional)
   static String formatDiaryContent({
+    required BuildContext context,
     required String title,
     required String content,
     required String analysis,
     String? category,
     String? time,
+    bool useEnglish = false,
   }) {
     final buffer = StringBuffer();
-    // 1. 标题
+    // 1. Title
     buffer.writeln('## $title');
     buffer.writeln();
-    // 2. 时间
+    // 2. Time
     final now = DateTime.now();
     final timeStr = time ?? '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    buffer.writeln('### 时间');
+    buffer.writeln(AppLocalizations.of(context)!.time); // i18n for '时间'
     buffer.writeln(timeStr);
     buffer.writeln();
-    // 3. 分类
-    buffer.writeln('### 分类');
+    // 3. Category
+    buffer.writeln(AppLocalizations.of(context)!.category); // i18n for '分类'
     buffer.writeln(category ?? '');
     buffer.writeln();
-    // 4. 日记内容
-    buffer.writeln('### 日记内容');
+    // 4. Diary content
+    buffer.writeln(AppLocalizations.of(context)!.diaryContent); // i18n for '日记内容'
     buffer.writeln(content);
     buffer.writeln();
-    // 5. 内容分析
-    buffer.writeln('### 内容分析');
+    // 5. Content analysis
+    buffer.writeln(AppLocalizations.of(context)!.contentAnalysis); // i18n for '内容分析'
     buffer.writeln(analysis);
     buffer.writeln();
-    // 分割线
+    // Separator
     buffer.writeln('---');
     buffer.writeln();
     return buffer.toString();
   }
 
-  /// 解析markdown为对话轮的函数，返回List<Map<String, String>>
-  /// 每一轮包含：title, time, category, q, a
-  static List<Map<String, String>> parseDiaryMarkdownToChatHistory(String content) {
+  /// Parse markdown to chat history, returns List<Map<String, String>>
+  /// Each round contains: title, time, category, q, a
+  static List<Map<String, String>> parseDiaryMarkdownToChatHistory(BuildContext context, String content) {
     final lines = content.split('\n');
     final List<Map<String, String>> chatHistory = [];
     Map<String, String> currentItem = {};
@@ -52,42 +57,33 @@ class DiaryDao {
     for (final line in lines) {
       final trimmed = line.trim();
       if (trimmed.startsWith('## ')) {
-        // 新的一轮，先保存上一轮
+        // New round, save previous round first
         if (currentItem.isNotEmpty) chatHistory.add(currentItem);
         currentItem = {'title': trimmed.substring(3)};
         currentSection = null;
       } else if (trimmed.startsWith('### ')) {
-        // 标记当前section
-        if (trimmed.contains('时间')) {
+        // Mark current section
+        if (trimmed.contains(AppLocalizations.of(context)!.time) || trimmed.contains('Time')) {
           currentSection = 'time';
-        } else if (trimmed.contains('分类')) {
+        } else if (trimmed.contains(AppLocalizations.of(context)!.category) || trimmed.contains('Category')) {
           currentSection = 'category';
-        } else if (trimmed.contains('日记内容')) {
+        } else if (trimmed.contains(AppLocalizations.of(context)!.diaryContent) || trimmed.contains('Diary Content')) {
           currentSection = 'q';
-        } else if (trimmed.contains('内容分析')) {
+        } else if (trimmed.contains(AppLocalizations.of(context)!.contentAnalysis) || trimmed.contains('Content Analysis')) {
           currentSection = 'a';
         } else {
           currentSection = null;
         }
       } else if (trimmed == '---') {
-        // 轮结束
+        // End of round
         if (currentItem.isNotEmpty) chatHistory.add(currentItem);
         currentItem = {};
         currentSection = null;
       } else if (currentSection != null && trimmed.isNotEmpty) {
-        // 累加section内容
-        currentItem[currentSection] =
-            (currentItem[currentSection] ?? '') + (currentItem[currentSection]?.isNotEmpty == true ? '\n' : '') + trimmed;
+        currentItem[currentSection] = trimmed;
       }
     }
-    // 收尾
     if (currentItem.isNotEmpty) chatHistory.add(currentItem);
-    // 按时间降序排序（最近的在前面）
-    chatHistory.sort((a, b) {
-      final t1 = a['time'] ?? '';
-      final t2 = b['time'] ?? '';
-      return t2.compareTo(t1);
-    });
     return chatHistory;
   }
 }

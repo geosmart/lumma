@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import '../util/ai_service.dart';
 import '../util/markdown_service.dart';
 import '../diary/chat_history_service.dart';
@@ -7,20 +8,21 @@ import '../model/enums.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_constants.dart';
 import '../dao/diary_dao.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class DiaryChatService {
-  // 加载当前模型名称
-  static Future<String> loadCurrentModelName() async {
+  // Load current model name
+  static Future<String> loadCurrentModelName(BuildContext context) async {
     try {
       final config = await AppConfigService.load();
-      return config.model.isNotEmpty ? config.model.first.model : '未知模型';
+      return config.model.isNotEmpty ? config.model.first.model : AppLocalizations.of(context)!.noFilesFound;
     } catch (e) {
-      return '未知模型';
+      return AppLocalizations.of(context)!.noFilesFound;
     }
   }
 
-  // 让AI提取分类和标题
-  static Future<Map<String, String>> extractCategoryAndTitle(String question, String answer) async {
+  // Let AI extract category and title
+  static Future<Map<String, String>> extractCategoryAndTitle(BuildContext context, String question, String answer) async {
     try {
       final prompt = PromptConstants.extractCategoryAndTitlePrompt
         .replaceAll(r'{{question}}', question)
@@ -28,7 +30,7 @@ class DiaryChatService {
       final messages = [
         {'role': 'user', 'content': prompt}
       ];
-      Map<String, String> result = {'分类': '想法', '标题': ''};
+      Map<String, String> result = {AppLocalizations.of(context)!.category: AppLocalizations.of(context)!.aiContentPlaceholder, AppLocalizations.of(context)!.diaryContent: ''};
       bool completed = false;
 
       await AiService.askStream(
@@ -37,44 +39,44 @@ class DiaryChatService {
         onDone: (data) {
           String content = data['content']?.trim() ?? '';
           try {
-            // 1. 去除markdown代码块包裹
+            // 1. Remove markdown code block wrapper
             if (content.startsWith('```')) {
               final idx = content.indexOf('```', 3);
               if (idx > 0) {
                 content = content.substring(3, idx).trim();
-                // 可能有json标记
+                // Might have json tag
                 if (content.startsWith('json')) {
                   content = content.substring(4).trim();
                 }
               }
             }
-            // 2. 去除前后空白
+            // 2. Trim whitespace
             content = content.trim();
-            // 3. 尝试直接解析
+            // 3. Try direct parse
             Map<String, dynamic> map = {};
             try {
               map = Map<String, dynamic>.from(jsonDecode(content));
             } catch (_) {
-              // 4. 若失败，尝试提取第一个{...}部分
+              // 4. If failed, try to extract first {...} part
               final start = content.indexOf('{');
               final end = content.lastIndexOf('}');
               if (start >= 0 && end > start) {
                 final jsonStr = content.substring(start, end + 1);
                 map = Map<String, dynamic>.from(jsonDecode(jsonStr));
               } else {
-                throw Exception('未找到有效JSON');
+                throw Exception('No valid JSON found');
               }
             }
-            if (map['分类'] is String && map['标题'] is String) {
-              result = {'分类': map['分类'], '标题': map['标题']};
+            if (map[AppLocalizations.of(context)!.category] is String && map[AppLocalizations.of(context)!.diaryContent] is String) {
+              result = {AppLocalizations.of(context)!.category: map[AppLocalizations.of(context)!.category], AppLocalizations.of(context)!.diaryContent: map[AppLocalizations.of(context)!.diaryContent]};
             }
           } catch (e) {
-            print('解析AI返回JSON失败: ${data['content']}');
+            print('Failed to parse AI returned JSON: \\${data['content']}');
           }
           completed = true;
         },
         onError: (error) {
-          print('提取分类和标题失败: ${error.toString()}');
+          print(AppLocalizations.of(context)!.loadingFailed);
           completed = true;
         },
       );
@@ -84,28 +86,31 @@ class DiaryChatService {
       }
       return result;
     } catch (e) {
-      print('提取分类和标题失败: ${e.toString()}');
-      return {'分类': '想法', '标题': ''};
+      print(AppLocalizations.of(context)!.loadingFailed);
+      return {AppLocalizations.of(context)!.category: AppLocalizations.of(context)!.aiContentPlaceholder, AppLocalizations.of(context)!.diaryContent: ''};
     }
   }
 
-  // 自动提取分类和标题并保存对话到日记文件
-  static Future<void> extractCategoryAndSave(List<Map<String, String>> history) async {
+  // Auto extract category and title and save conversation to diary file
+  static Future<void> extractCategoryAndSave(BuildContext context, List<Map<String, String>> history) async {
     if (history.isEmpty) return;
 
     try {
-      // 只处理最新的一轮对话（如果存在）
+      // Only process the latest round of conversation (if exists)
       final lastHistory = history.last;
       if (lastHistory['q']?.isNotEmpty == true && lastHistory['a']?.isNotEmpty == true) {
-        // 让AI提取分类和标题
-        final result = await extractCategoryAndTitle(lastHistory['q']!, lastHistory['a']!);
+        // Let AI extract category and title
+        final result = await extractCategoryAndTitle(context, lastHistory['q']!, lastHistory['a']!);
 
-        // 更新历史记录
-        history[history.length - 1]['category'] = result['分类'] ?? '想法';
-        history[history.length - 1]['title'] = result['标题'] ?? '';
+        // Use i18n keys for updating history
+        final categoryKey = AppLocalizations.of(context)!.category;
+        final titleKey = AppLocalizations.of(context)!.diaryContent;
+        history[history.length - 1]['category'] = result[categoryKey] ?? '';
+        history[history.length - 1]['title'] = result[titleKey] ?? '';
 
-        // 分类和标题提取完成后，保存到日记文件
+        // Save to diary file after extraction
         final content = DiaryDao.formatDiaryContent(
+          context: context,
           title: history.last['title'] ?? '',
           content: history.last['q'] ?? '',
           analysis: history.last['a'] ?? '',
@@ -114,15 +119,15 @@ class DiaryChatService {
         );
         await MarkdownService.appendToDailyDiary(content);
 
-        // 打印保存路径（调试用）
+        // Print save path (for debug)
         final fileName = MarkdownService.getDiaryFileName();
         final diaryDir = await MarkdownService.getDiaryDir();
         final filePath = '$diaryDir/$fileName';
-        print('日记已自动追加到: $filePath，分类: \u001b[32m${result['分类']}\u001b[0m，标题: \u001b[34m${result['标题']}\u001b[0m');
+        print('Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}');
       }
     } catch (e) {
-      print('自动保存失败: \u001b[31m${e.toString()}\u001b[0m');
-      // 不显示错误提示，避免影响用户体验
+      print('Auto-save failed: ${e.toString()}');
+      // Do not show error to avoid affecting user experience
     }
   }
 
@@ -155,7 +160,7 @@ class DiaryChatService {
   }
 
   // 构建聊天请求
-  static Future<Map<String, dynamic>> buildChatRequest(List<Map<String, String>> history, String userInput) async {
+  static Future<Map<String, dynamic>> buildChatRequest(BuildContext context, List<Map<String, String>> history, String userInput) async {
     final historyWindow = ChatHistoryService.getRecent(history);
     final systemPrompt = await getActivePromptContent(PromptCategory.chat);
     final messages = AiService.buildMessages(

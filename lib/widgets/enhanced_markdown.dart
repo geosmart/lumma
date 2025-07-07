@@ -3,7 +3,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../widgets/mermaid_widget.dart';
 import '../config/theme_service.dart';
 
-/// 支持 mermaid 代码块的 markdown 渲染组件
+/// Markdown rendering component that supports mermaid code blocks
 class EnhancedMarkdown extends StatelessWidget {
   final String data;
   final MarkdownStyleSheet? styleSheet;
@@ -58,7 +58,7 @@ class EnhancedMarkdown extends StatelessWidget {
     );
   }
 
-  /// 拆分 markdown 内容为普通块和 mermaid 块
+  /// Split markdown content into normal blocks and mermaid blocks
   List<Map<String, String>> _splitMarkdownWithMermaid(String src) {
     final List<Map<String, String>> result = [];
     final reg = RegExp(r'```mermaid([\s\S]*?)```', multiLine: true);

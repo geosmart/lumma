@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../util/markdown_service.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class DiaryFileEditor extends StatefulWidget {
   final String fileName;
@@ -33,6 +34,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
   }
 
   Future<void> _saveFile() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _saving = true);
     try {
       final newName = _nameCtrl.text.trim();
@@ -45,12 +47,12 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
         await oldFile.rename(newFile.path);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('保存成功')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.saveSuccess)));
         widget.onSaved();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: ${e.toString()}')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.saveFailed}: ${e.toString()}')));
       }
     } finally {
       setState(() => _saving = false);
@@ -59,6 +61,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Column(
@@ -70,7 +73,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
               children: [
                 TextField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: '文件名'),
+                  decoration: InputDecoration(labelText: l10n.fileName),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -79,7 +82,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
                   decoration: InputDecoration(
                     labelText: widget.fileName,
                     border: const OutlineInputBorder(),
-                    hintText: '编辑日记内容',
+                    hintText: l10n.editDiaryContent,
                   ),
                 ),
               ],
@@ -92,7 +95,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.save),
-                    label: _saving ? const Text('保存中...') : const Text('保存'),
+                    label: _saving ? Text(l10n.saving) : Text(l10n.save),
                     onPressed: _saving ? null : _saveFile,
                   ),
                 ),

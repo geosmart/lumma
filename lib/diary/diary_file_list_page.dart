@@ -3,7 +3,7 @@ import '../generated/l10n/app_localizations.dart';
 import '../widgets/diary_file_manager.dart';
 import '../config/theme_service.dart';
 
-/// 日记管理页面，支持选择、增删日记文件
+/// Diary management page, supporting selection, creation, and deletion of diary files
 class DiaryFileListPage extends StatelessWidget {
   const DiaryFileListPage({super.key});
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../generated/l10n/app_localizations.dart';
 
-/// 调试请求参数弹窗
+/// Debug request parameters dialog
 class DebugRequestDialog extends StatelessWidget {
   final String requestJson;
 
@@ -10,7 +11,7 @@ class DebugRequestDialog extends StatelessWidget {
     required this.requestJson,
   });
 
-  /// 显示调试弹窗
+  /// Show debug dialog
   static void show(BuildContext context, String requestJson) {
     showDialog(
       context: context,
@@ -21,6 +22,7 @@ class DebugRequestDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
@@ -35,7 +37,7 @@ class DebugRequestDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 标题栏
+            // Title bar
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -55,7 +57,7 @@ class DebugRequestDialog extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '大模型请求参数',
+                    l10n.llmRequestParameters,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -72,7 +74,7 @@ class DebugRequestDialog extends StatelessWidget {
                 ],
               ),
             ),
-            // 内容区
+            // Content area
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -104,7 +106,7 @@ class DebugRequestDialog extends StatelessWidget {
                 ),
               ),
             ),
-            // 底部操作区
+            // Bottom action area
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -120,15 +122,15 @@ class DebugRequestDialog extends StatelessWidget {
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('复制'),
+                    label: Text(l10n.copy),
                     onPressed: () async {
-                      // 复制到剪贴板
+                      // Copy to clipboard
                       await Clipboard.setData(ClipboardData(text: requestJson));
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('请求参数已复制到剪贴板'),
-                            duration: Duration(seconds: 2),
+                          SnackBar(
+                            content: Text(l10n.requestParametersCopied),
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       }
@@ -144,7 +146,7 @@ class DebugRequestDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('关闭'),
+                    child: Text(l10n.close),
                   ),
                 ],
               ),

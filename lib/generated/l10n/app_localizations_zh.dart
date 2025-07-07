@@ -566,4 +566,113 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiContentPlaceholder => 'AI 生成的内容将显示在这里...';
+
+  @override
+  String get diaryDetail => '日记详情';
+
+  @override
+  String get llmRequestParameters => '大模型请求参数';
+
+  @override
+  String get copy => '复制';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get requestParametersCopied => '请求参数已复制到剪贴板';
+
+  @override
+  String get mermaidMobileOnly => 'Mermaid 仅支持移动端，当前平台不支持渲染';
+
+  @override
+  String get mermaidRenderError => 'Mermaid 渲染异常';
+
+  @override
+  String get fileName => '文件名';
+
+  @override
+  String get editDiaryContent => '编辑日记内容';
+
+  @override
+  String get saving => '保存中...';
+
+  @override
+  String get confirmDelete => '确认删除';
+
+  @override
+  String confirmDeleteFile(String fileName) {
+    return '确定要删除日记文件 \"$fileName\" 吗？';
+  }
+
+  @override
+  String get deleteSuccess => '删除成功';
+
+  @override
+  String get deleteFailed => '删除失败';
+
+  @override
+  String get enterNewDiaryName => '请输入新日记文件名';
+
+  @override
+  String get createFailed => '创建失败';
+
+  @override
+  String get newDiaryTooltip => '新建日记';
+
+  @override
+  String get loadDiaryFilesFailed => '加载日记文件失败';
+
+  @override
+  String get aiThinking => 'AI 正在思考...';
+
+  @override
+  String get time => '时间';
+
+  @override
+  String get category => '分类';
+
+  @override
+  String get diaryContent => '日记内容';
+
+  @override
+  String get contentAnalysis => '内容分析';
+
+  @override
+  String monthDay(int month, int day) {
+    return '$month月$day日';
+  }
+
+  @override
+  String get qaQuestion1 => '你今天感觉如何？';
+
+  @override
+  String get qaQuestion2 => '今天最精彩的事情是什么？';
+
+  @override
+  String get qaQuestion3 => '你今天遇到了什么挑战？';
+
+  @override
+  String get qaQuestion4 => '你今天感激什么？';
+
+  @override
+  String get qaQuestion5 => '你今天学到了什么？';
+
+  @override
+  String get qaQuestion6 => '你今天是如何照顾自己的？';
+
+  @override
+  String get qaQuestion7 => '你明天想要改进什么？';
+
+  @override
+  String get qaQuestion8 => '今天谁或什么激励了你？';
+
+  @override
+  String get qaQuestion9 => '你今天帮助了谁？怎么帮助的？';
+
+  @override
+  String get qaQuestion10 => '你明天的目标是什么？';
+
+  @override
+  String get userInputPlaceholder => '记下此刻的想法';
 }

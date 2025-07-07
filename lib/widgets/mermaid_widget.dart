@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class MermaidWidget extends StatefulWidget {
   final String mermaidSource;
@@ -45,6 +46,7 @@ class _MermaidWidgetState extends State<MermaidWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (!(Platform.isAndroid || Platform.isIOS)) {
       return Container(
         height: 180,
@@ -53,7 +55,7 @@ class _MermaidWidgetState extends State<MermaidWidget> {
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Text('Mermaid 仅支持移动端，当前平台不支持渲染'),
+        child: Text(l10n.mermaidMobileOnly),
       );
     }
     try {
@@ -69,7 +71,7 @@ class _MermaidWidgetState extends State<MermaidWidget> {
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text('Mermaid 渲染异常: \\n$e'),
+        child: Text('${l10n.mermaidRenderError}: \\n$e'),
       );
     }
   }

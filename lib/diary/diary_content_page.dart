@@ -4,7 +4,7 @@ import '../widgets/ai_result_page.dart';
 import 'diary_content_service.dart';
 import '../generated/l10n/app_localizations.dart';
 
-/// 单篇日记详情页，全屏、只读Markdown渲染，带编辑提示
+/// Single diary detail page, full-screen, read-only Markdown rendering with edit hints
 class DiaryContentPage extends StatefulWidget {
   final String fileName;
   const DiaryContentPage({super.key, required this.fileName});
@@ -19,8 +19,8 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
   bool _editMode = false;
   final TextEditingController _controller = TextEditingController();
 
-  // AI总结相关状态
-  String? _aiResult; // 非null时表示进入AI结果页
+  // AI summary related state
+  String? _aiResult; // When non-null, indicates entering AI result page
   final TextEditingController _aiResultController = TextEditingController();
 
   @override
@@ -36,7 +36,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
     super.dispose();
   }
 
-  // 根据标签类型返回对应的颜色配置
+  // Return corresponding color configuration based on tag type
   Map<String, Color> _getCategoryColors(String category) {
     return DiaryContentService.getCategoryColors(category);
   }
@@ -54,36 +54,36 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       });
     } catch (e) {
       setState(() => _loading = false);
-      // 处理错误
+      // Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${AppLocalizations.of(context)!.loadingFailed}: $e')),
       );
     }
   }
 
-  // 处理内容中的标签，特别是日总结中的标签
+  // Handle tags in content, especially tags in daily summary
   Widget _buildContentWithTags(String content) {
-    // 检查是否包含标签
+    // Check if content contains tags
     if (!DiaryContentService.hasTagsInContent(content)) {
-      // 如果没有标签，直接使用Markdown渲染
+      // If no tags, render directly with Markdown
       return EnhancedMarkdown(data: content);
     }
 
     final parts = <Widget>[];
 
-    // 按行处理内容
+    // Process content line by line
     final lines = content.split('\n');
     for (int lineIndex = 0; lineIndex < lines.length; lineIndex++) {
       final line = lines[lineIndex];
 
-      // 如果这行包含标签，则进行特殊处理
+      // If this line contains tags, handle specially
       if (DiaryContentService.hasTagsInContent(line)) {
         final lineWidgets = <Widget>[];
         final matches = DiaryContentService.getTagMatches(line);
         int lastEnd = 0;
 
         for (final match in matches) {
-          // 添加标签前的文本
+          // Add text before tag
           if (match.start > lastEnd) {
             final beforeText = line.substring(lastEnd, match.start);
             if (beforeText.isNotEmpty) {
@@ -99,14 +99,14 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
             }
           }
 
-          // 添加标签Widget
+          // Add tag widget
           final tag = match.group(1)!.substring(1); // 去除#号
           lineWidgets.add(_buildTagWidget(tag));
 
           lastEnd = match.end;
         }
 
-        // 添加标签后的文本
+        // Add text after tag
         if (lastEnd < line.length) {
           final afterText = line.substring(lastEnd);
           if (afterText.isNotEmpty) {
@@ -122,7 +122,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           }
         }
 
-        // 将这行的所有Widget包装在一个Wrap中
+        // Wrap all widgets in this line in a Wrap
         parts.add(Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Wrap(
@@ -131,7 +131,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           ),
         ));
       } else {
-        // 不包含标签的行，直接使用Markdown渲染
+        // If line does not contain tags, render with Markdown
         if (line.isNotEmpty) {
           parts.add(EnhancedMarkdown(data: line));
         } else {
@@ -146,13 +146,13 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
     );
   }
 
-  // 处理日总结内容的特殊渲染
+  // Special rendering for daily summary content
   Widget _buildSummaryContent(String content) {
     final groupedContent = DiaryContentService.parseSummaryContent(content);
     final groupInfo = DiaryContentService.getSummaryGroupInfo(context);
     final List<Widget> summaryWidgets = [];
 
-    // 为每个分组创建卡片
+    // Create card for each group
     for (final group in groupInfo.keys) {
       final items = groupedContent[group]!;
       if (items.isEmpty) continue;
@@ -172,7 +172,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 分组标题
+              // Group title
               Row(
                 children: [
                   Icon(info['icon'] as IconData, color: color, size: 20),
@@ -188,7 +188,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              // 分组内容
+              // Group content
               ...items.map((item) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: _buildSummaryItem(item, color),
@@ -205,7 +205,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
     );
   }
 
-  // 构建总结条目
+  // Build summary item
   Widget _buildSummaryItem(String content, Color themeColor) {
     final finalContent = DiaryContentService.cleanSummaryItemContent(content);
 
@@ -220,7 +220,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
     );
   }
 
-  // 创建标签Widget
+  // Create tag widget
   Widget _buildTagWidget(String tag) {
     final colors = _getCategoryColors(tag);
 
@@ -243,12 +243,12 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
     );
   }
 
-  // 判断是否为日总结内容
+  // Determine if it is summary content
   bool _isSummaryContent(String content) {
     return DiaryContentService.isSummaryContent(content);
   }
 
-  // 判断是否应该显示时间和标题（日总结时不显示）
+  // Determine if time and title should be shown (not shown for summary)
   bool _shouldShowTimeAndTitle(Map<String, String> historyItem) {
     return DiaryContentService.shouldShowTimeAndTitle(historyItem);
   }
@@ -354,7 +354,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
 
   // 新增：只读chat风格展示
   Widget _buildChatView(BuildContext context) {
-    final history = DiaryContentService.getChatHistoryWithSummaryFirst(_content!);
+    final history = DiaryContentService.getChatHistoryWithSummaryFirst(context, _content!);
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       itemCount: history.length,

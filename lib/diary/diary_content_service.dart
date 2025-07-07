@@ -4,15 +4,15 @@ import '../util/markdown_service.dart';
 import '../dao/diary_dao.dart';
 import '../generated/l10n/app_localizations.dart';
 
-/// 日记内容服务类，处理日记内容的业务逻辑
+/// Diary content service class, handles business logic for diary content
 class DiaryContentService {
-  /// 加载日记内容
+  /// Load diary content
   static Future<Map<String, dynamic>> loadDiaryContent(String fileName) async {
     final diaryDir = await MarkdownService.getDiaryDir();
     final file = File('$diaryDir/$fileName');
     final content = await MarkdownService.readDiaryMarkdown(file);
 
-    // 解析 frontmatter
+    // Parse frontmatter
     Map<String, String>? frontmatter;
     String body = content;
     if (content.startsWith('---')) {
@@ -29,7 +29,7 @@ class DiaryContentService {
             frontmatter[key] = value;
           }
         }
-        // 去除 frontmatter 部分
+        // Remove frontmatter section
         body = lines.sublist(endIdx + 1).join('\n');
       }
     }
@@ -42,16 +42,16 @@ class DiaryContentService {
     };
   }
 
-  /// 保存日记内容
+  /// Save diary content
   static Future<void> saveDiaryContent(String content, String fileName) async {
     await MarkdownService.saveDiaryMarkdown(content, fileName: fileName);
   }
 
-  /// 获取聊天历史记录并排序，将总结内容放在最前面
-  static List<Map<String, String>> getChatHistoryWithSummaryFirst(String content) {
-    final history = DiaryDao.parseDiaryMarkdownToChatHistory(content);
+  /// Get chat history and sort, placing summary content first
+  static List<Map<String, String>> getChatHistoryWithSummaryFirst(BuildContext context, String content) {
+    final history = DiaryDao.parseDiaryMarkdownToChatHistory(context, content);
 
-    // 分离总结内容和普通内容
+    // Separate summary content and normal content
     final summaryItems = <Map<String, String>>[];
     final normalItems = <Map<String, String>>[];
 
@@ -63,35 +63,35 @@ class DiaryContentService {
       }
     }
 
-    // 总结内容放在最前面
+    // Place summary content at the beginning
     return [...summaryItems, ...normalItems];
   }
 
-  /// 判断是否为日总结内容
+  /// Determine if content is summary content
   static bool isSummaryContent(String content) {
-    // 如果内容包含日总结相关的标签组合，则认为是日总结内容
+    // If content contains summary-related tag combinations, it is considered summary content
     final hasObserve = content.contains('#observe');
     final hasGood = content.contains('#good');
     final hasDifficult = content.contains('#difficult');
     final hasDifferent = content.contains('#different');
 
-    // 如果包含至少2个主要分类标签，则认为是日总结内容
+    // If contains at least 2 main category tags, it is considered summary content
     final count = [hasObserve, hasGood, hasDifficult, hasDifferent].where((x) => x).length;
     return count >= 2;
   }
 
-  /// 判断是否应该显示时间和标题（日总结时不显示）
+  /// Determine if time and title should be shown (not shown in daily summary)
   static bool shouldShowTimeAndTitle(Map<String, String> historyItem) {
     final q = historyItem['q'] ?? '';
     final a = historyItem['a'] ?? '';
     return !isSummaryContent(q) && !isSummaryContent(a);
   }
 
-  /// 根据标签类型返回对应的颜色配置
+  /// Return corresponding color configuration based on tag type
   static Map<String, Color> getCategoryColors(String category) {
     final lowerCategory = category.toLowerCase();
 
-    // 观察类标签 - 蓝色系
+    // Observation tags - blue
     if (lowerCategory.contains('observe') || lowerCategory.contains('观察') ||
         lowerCategory.contains('环境') || lowerCategory.contains('他人')) {
       return {
@@ -101,7 +101,7 @@ class DiaryContentService {
       };
     }
 
-    // 积极/好事类标签 - 绿色系
+    // Positive/good tags - green
     if (lowerCategory.contains('good') || lowerCategory.contains('成就') ||
         lowerCategory.contains('喜悦') || lowerCategory.contains('感恩')) {
       return {
@@ -111,7 +111,7 @@ class DiaryContentService {
       };
     }
 
-    // 困难/挑战类标签 - 红色系
+    // Difficult/challenge tags - red
     if (lowerCategory.contains('difficult') || lowerCategory.contains('挑战') ||
         lowerCategory.contains('情绪') || lowerCategory.contains('身体')) {
       return {
@@ -121,7 +121,7 @@ class DiaryContentService {
       };
     }
 
-    // 改进/不同类标签 - 紫色系
+    // Improvement/different tags - purple
     if (lowerCategory.contains('different') || lowerCategory.contains('觉察') ||
         lowerCategory.contains('改进')) {
       return {
@@ -131,7 +131,7 @@ class DiaryContentService {
       };
     }
 
-    // 日总结 - 橙色系（特别处理）
+    // Daily summary - orange (special handling)
     if (lowerCategory.contains('日总结') || lowerCategory.contains('总结') ||
         lowerCategory == '## 日总结') {
       return {
@@ -141,7 +141,7 @@ class DiaryContentService {
       };
     }
 
-    // 工作相关 - 靛蓝色系
+    // Work related - indigo
     if (lowerCategory.contains('工作') || lowerCategory.contains('职场') ||
         lowerCategory.contains('meeting') || lowerCategory.contains('项目')) {
       return {
@@ -151,7 +151,7 @@ class DiaryContentService {
       };
     }
 
-    // 生活相关 - 棕色系
+    // Life related - brown
     if (lowerCategory.contains('生活') || lowerCategory.contains('日常') ||
         lowerCategory.contains('家庭') || lowerCategory.contains('休闲')) {
       return {
@@ -161,7 +161,7 @@ class DiaryContentService {
       };
     }
 
-    // 学习相关 - 深紫色系
+    // Study related - deep purple
     if (lowerCategory.contains('学习') || lowerCategory.contains('读书') ||
         lowerCategory.contains('知识') || lowerCategory.contains('技能')) {
       return {
@@ -171,7 +171,7 @@ class DiaryContentService {
       };
     }
 
-    // 健康相关 - 粉红色系
+    // Health related - pink
     if (lowerCategory.contains('健康') || lowerCategory.contains('运动') ||
         lowerCategory.contains('饮食') || lowerCategory.contains('锻炼')) {
       return {
@@ -181,7 +181,7 @@ class DiaryContentService {
       };
     }
 
-    // 其他标签 - 默认青色系
+    // Other tags - default teal
     return {
       'background': Colors.teal[50]!,
       'border': Colors.teal[200]!,
@@ -189,9 +189,9 @@ class DiaryContentService {
     };
   }
 
-  /// 解析日总结内容并按分组返回
+  /// Parse summary content and return grouped by categories
   static Map<String, List<String>> parseSummaryContent(String content) {
-    // 按4个大类分组
+    // Group summary content by 4 categories
     final Map<String, List<String>> groupedContent = {
       'observe': [],
       'good': [],
@@ -199,7 +199,7 @@ class DiaryContentService {
       'different': [],
     };
 
-    // 解析内容并分组
+    // Parse content and group
     final lines = content.split('\n');
     for (final line in lines) {
       final trimmedLine = line.trim();
@@ -219,7 +219,7 @@ class DiaryContentService {
     return groupedContent;
   }
 
-  /// 获取总结分组信息
+  /// Get summary group information
   static Map<String, Map<String, dynamic>> getSummaryGroupInfo(BuildContext context) {
     return {
       'observe': {'title': AppLocalizations.of(context)!.observeDiscovery, 'icon': Icons.visibility, 'color': Colors.blue},
@@ -229,26 +229,26 @@ class DiaryContentService {
     };
   }
 
-  /// 清理总结项内容（去除标签和标记）
+  /// Clean summary item content (remove tags and markers)
   static String cleanSummaryItemContent(String content) {
     final tagRegex = RegExp(r'(#[^\s#]+)');
 
-    // 去掉所有标签，只显示纯文本内容
+    // Remove all tags, only show plain text
     final cleanContent = content.replaceAll(tagRegex, '').trim();
 
-    // 去掉开头的 * 或 - 标记
+    // Remove leading * or - marker
     final finalContent = cleanContent.replaceFirst(RegExp(r'^[\*\-]\s*'), '');
 
     return finalContent;
   }
 
-  /// 解析内容中的标签
+  /// Parse tags in content
   static bool hasTagsInContent(String content) {
     final tagRegex = RegExp(r'(#[^\s#]+)');
     return tagRegex.hasMatch(content);
   }
 
-  /// 获取内容中的标签匹配
+  /// Get tag matches in content
   static Iterable<RegExpMatch> getTagMatches(String content) {
     final tagRegex = RegExp(r'(#[^\s#]+)');
     return tagRegex.allMatches(content);

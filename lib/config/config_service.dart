@@ -6,19 +6,18 @@ import 'theme_service.dart';
 import 'language_service.dart';
 import 'llm_config_service.dart';
 import 'prompt_config_service.dart';
-import '../diary/qa_questions_service.dart';
 import 'diary_mode_config_service.dart';
 import '../util/storage_service.dart';
 
 const String kLummaConfigFileName = 'lumma_config.json';
 
-/// AppConfigService 负责管理应用配置的加载、保存和更新
+/// AppConfigService is responsible for managing the loading, saving, and updating of application configuration
 ///
-/// 配置文件存储路径优先级：
-/// 1. 用户自定义配置目录 (config.sync.configDir)
-/// 2. 应用文档目录
+/// Configuration file storage path priority:
+/// 1. User-defined configuration directory (config.sync.configDir)
+/// 2. Application documents directory
 ///
-/// 当配置文件不存在或加载失败时，会创建默认配置并将其持久化到配置文件
+/// When the configuration file does not exist or fails to load, a default configuration is created and persisted to the configuration file
 /// 系统其他地方应尽量使用此服务获取配置文件路径，以保持一致性
 class AppConfigService {
   static AppConfig? _cache;
@@ -164,13 +163,14 @@ class AppConfigService {
     // 主入口，初始化所有配置
     await LlmConfigService.init();
     await PromptConfigService.init();
-    await QaQuestionsService.init();
+    // await QaQuestionsService.init(); // Needs BuildContext, must be called from app-level init
     await ThemeService.instance.init();
     await LanguageService.instance.init();
     await DiaryModeConfigService.init();
     // 可扩展：如有其它配置类，继续调用其 init
     // 例如：await SyncConfigService.init?.call();
 
+    // TODO: QaQuestionsService.init(context) must be called from app-level with BuildContext
     print('[AppConfigService] 系统初始化完成，使用统一的数据存储目录结构');
   }
 }

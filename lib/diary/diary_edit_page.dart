@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/diary_file_manager.dart';
 
-/// 单个日记维护页，可查看、编辑、保存指定日记内容
+/// Single diary maintenance page, can view, edit, and save specified diary content
 class DiaryEditPage extends StatelessWidget {
   final String fileName;
   const DiaryEditPage({super.key, required this.fileName});

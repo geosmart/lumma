@@ -517,5 +517,143 @@
   "aiContentPlaceholder": "AI generated content will be displayed here...",
   "@aiContentPlaceholder": {
     "description": "Placeholder text for AI content input field"
-  }
+  },
+  "diaryDetail": "Diary Detail",
+  "@diaryDetail": {
+    "description": "Title for diary detail page"
+  },
+  "llmRequestParameters": "LLM Request Parameters",
+  "@llmRequestParameters": {
+    "description": "Title for LLM request parameters dialog"
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Copy button text"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button text"
+  },
+  "requestParametersCopied": "Request parameters copied to clipboard",
+  "@requestParametersCopied": {
+    "description": "Success message when request parameters are copied"
+  },
+  "mermaidMobileOnly": "Mermaid is only supported on mobile, current platform does not support rendering",
+  "@mermaidMobileOnly": {
+    "description": "Error message when Mermaid is not supported on current platform"
+  },
+  "mermaidRenderError": "Mermaid rendering error",
+  "@mermaidRenderError": {
+    "description": "Error message when Mermaid rendering fails"
+  },
+  "fileName": "File Name",
+  "@fileName": {
+    "description": "Label for file name input field"
+  },
+  "editDiaryContent": "Edit diary content",
+  "@editDiaryContent": {
+    "description": "Placeholder text for diary content editing"
+  },
+  "saving": "Saving...",
+  "@saving": {
+    "description": "Status text when saving is in progress"
+  },
+  "confirmDelete": "Confirm Delete",
+  "@confirmDelete": {
+    "description": "Title for delete confirmation dialog"
+  },
+  "confirmDeleteFile": "Are you sure you want to delete the diary file \"{fileName}\"?",
+  "@confirmDeleteFile": {
+    "description": "Confirmation message for deleting a file",
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "description": "The name of the file to be deleted"
+      }
+    }
+  },
+  "deleteSuccess": "Delete successful",
+  "@deleteSuccess": {
+    "description": "Success message when delete operation succeeds"
+  },
+  "deleteFailed": "Delete failed",
+  "@deleteFailed": {
+    "description": "Error message when delete operation fails"
+  },
+  "enterNewDiaryName": "Please enter new diary file name",
+  "@enterNewDiaryName": {
+    "description": "Placeholder text for new diary name input"
+  },
+  "createSuccess": "Create successful",
+  "@createSuccess": {
+    "description": "Success message when create operation succeeds"
+  },
+  "createFailed": "Create failed",
+  "@createFailed": {
+    "description": "Error message when create operation fails"
+  },
+  "newDiaryTooltip": "New Diary",
+  "@newDiaryTooltip": {
+    "description": "Tooltip text for new diary button"
+  },
+  "loadDiaryFilesFailed": "Failed to load diary files",
+  "@loadDiaryFilesFailed": {
+    "description": "Error message when loading diary files fails"
+  },
+  "aiThinking": "AI is thinking...",
+  "@aiThinking": {
+    "description": "Status text when AI is processing"
+  },
+  "time": "Time",
+  "@time": {
+    "description": "Label for time field"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Label for category field"
+  },
+  "diaryContent": "Diary Content",
+  "@diaryContent": {
+    "description": "Label for diary content field"
+  },
+  "contentAnalysis": "Content Analysis",
+  "@contentAnalysis": {
+    "description": "Label for content analysis field"
+  },
+  "monthDay": "{month}/{day}",
+  "@monthDay": {
+    "description": "Format for displaying month and day in Chinese style",
+    "placeholders": {
+      "month": {
+        "type": "int",
+        "description": "The month number"
+      },
+      "day": {
+        "type": "int",
+        "description": "The day number"
+      }
+    }
+  },
+  "qaQuestion1": "How do you feel today?",
+  "@qaQuestion1": {"description": "Question 1"},
+  "qaQuestion2": "What was the highlight of your day?",
+  "@qaQuestion2": {"description": "Question 2"},
+  "qaQuestion3": "Did you face any challenges today?",
+  "@qaQuestion3": {"description": "Question 3"},
+  "qaQuestion4": "What are you grateful for today?",
+  "@qaQuestion4": {"description": "Question 4"},
+  "qaQuestion5": "What did you learn today?",
+  "@qaQuestion5": {"description": "Question 5"},
+  "qaQuestion6": "How did you take care of yourself today?",
+  "@qaQuestion6": {"description": "Question 6"},
+  "qaQuestion7": "What would you like to improve tomorrow?",
+  "@qaQuestion7": {"description": "Question 7"},
+  "qaQuestion8": "Who or what inspired you today?",
+  "@qaQuestion8": {"description": "Question 8"},
+  "qaQuestion9": "Did you help someone today? How?",
+  "@qaQuestion9": {"description": "Question 9"},
+  "qaQuestion10": "What is your goal for tomorrow?",
+  "@qaQuestion10": {"description": "Question 10"},
+  "userInputPlaceholder": "Jot down your thoughts...",
+  "@userInputPlaceholder": {"description": "Placeholder for user input in chat text field"}
 }

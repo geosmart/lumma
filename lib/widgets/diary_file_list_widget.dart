@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../util/markdown_service.dart';
+import '../generated/l10n/app_localizations.dart';
 
-/// 日记文件列表组件，负责日记文件的增删查改
+/// Diary file list component for managing diary files (create, read, update, delete)
 class DiaryFileListWidget extends StatefulWidget {
   final void Function(String fileName)? onFileSelected;
   const DiaryFileListWidget({super.key, this.onFileSelected});
@@ -33,8 +34,9 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
         _files = [];
         _loading = false;
       });
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('加载日记文件失败: ${e.toString()}')),
+        SnackBar(content: Text('${l10n.loadDiaryFilesFailed}: ${e.toString()}')),
       );
     }
   }
@@ -44,14 +46,15 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
   }
 
   void _onDelete(String file) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除日记文件 "$file" 吗？'),
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.confirmDeleteFile(file)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('删除', style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.cancel)),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.delete, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -59,28 +62,29 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
       try {
         await MarkdownService.deleteDiaryFile(file);
         await _loadFiles();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('删除成功')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.deleteSuccess)));
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除失败: ${e.toString()}')),
+          SnackBar(content: Text('${l10n.deleteFailed}: ${e.toString()}')),
         );
       }
     }
   }
 
   void _onCreate() async {
+    final l10n = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
     final fileName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新建日记'),
+        title: Text(l10n.newDiary),
         content: TextField(
           controller: nameCtrl,
-          decoration: const InputDecoration(hintText: '请输入新日记文件名'),
+          decoration: InputDecoration(hintText: l10n.enterNewDiaryName),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(nameCtrl.text.trim()), child: const Text('创建')),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.cancel)),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(nameCtrl.text.trim()), child: Text(l10n.create)),
         ],
       ),
     );
@@ -88,10 +92,10 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
       try {
         await MarkdownService.createDiaryFile(fileName);
         await _loadFiles();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('新建成功')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.createSuccess)));
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('新建失败: ${e.toString()}')),
+          SnackBar(content: Text('${l10n.createFailed}: ${e.toString()}')),
         );
       }
     }
@@ -99,16 +103,17 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text('日记文件', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(l10n.diaryFiles, style: const TextStyle(fontWeight: FontWeight.bold)),
             const Spacer(),
             IconButton(
               icon: const Icon(Icons.add),
-              tooltip: '新建日记',
+              tooltip: l10n.newDiaryTooltip,
               onPressed: _onCreate,
             ),
           ],
@@ -129,4 +134,4 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
   }
 }
 
-// 此文件已被 DiaryFileManager 替代，保留空壳防止引用报错，可安全删除。
+// This file has been replaced by DiaryFileManager, keeping empty shell to prevent import errors, can be safely deleted.

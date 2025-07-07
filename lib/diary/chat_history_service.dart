@@ -1,11 +1,11 @@
 /// chat_history_service.dart
-/// 聊天历史管理，便于 UI 层瘦身
+/// Chat history management to keep the UI layer lean
 library;
 
 class ChatHistoryService {
   static const int maxHistory = 20;
 
-  /// 新增一轮对话，自动裁剪历史长度
+  /// Add a new conversation round, automatically trim history length
   static List<Map<String, String>> addHistory(
     List<Map<String, String>> history, {
     required String question,
@@ -17,7 +17,7 @@ class ChatHistoryService {
     return newHistory;
   }
 
-  /// 更新当前轮的回答
+  /// Update the answer for the current round
   static List<Map<String, String>> updateAnswer(
     List<Map<String, String>> history,
     int index,
@@ -30,7 +30,7 @@ class ChatHistoryService {
     return newHistory;
   }
 
-  /// 更新当前轮的问题
+  /// Update the question for the current round
   static List<Map<String, String>> updateQuestion(
     List<Map<String, String>> history,
     int index,
@@ -43,7 +43,7 @@ class ChatHistoryService {
     return newHistory;
   }
 
-  /// 获取最近 N 轮历史
+  /// Get the last N rounds of history
   static List<Map<String, String>> getRecent(
     List<Map<String, String>> history, {
     int window = maxHistory,

@@ -25,30 +25,30 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   String _askStreamingReasoning = '';
   final ScrollController _scrollController = ScrollController();
   String? _lastRequestJson;
-  String _currentModelName = ''; // 当前使用的模型名称
+  String _currentModelName = ''; // Current model name in use
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentModelName(); // 加载当前模型名称
+    _loadCurrentModelName(); // Load current model name
   }
 
-  // 加载当前模型名称
+  // Load current model name
   void _loadCurrentModelName() async {
-    final modelName = await DiaryChatService.loadCurrentModelName();
+    final modelName = await DiaryChatService.loadCurrentModelName(context);
     setState(() {
       _currentModelName = modelName;
     });
   }
 
-  // 自动提取分类和标题并保存对话到日记文件
+  // Automatically extract category and title and save conversation to diary file
   Future<void> _extractCategoryAndSave() async {
-    await DiaryChatService.extractCategoryAndSave(_history);
-    // 触发UI更新
+    await DiaryChatService.extractCategoryAndSave(context, _history);
+    // Trigger UI update
     setState(() {});
   }
 
-  // 显示模型名称的tooltip
+  // Show model name tooltip
   void _showModelTooltip(BuildContext context, Offset position) {
     final overlay = Overlay.of(context);
     OverlayEntry? overlayEntry;
@@ -87,7 +87,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
 
     overlay.insert(overlayEntry);
 
-    // 2秒后自动隐藏
+    // Auto hide after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
       overlayEntry?.remove();
     });
@@ -111,14 +111,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
 
     final userInput = _history.isNotEmpty ? _history.last['q'] ?? '' : _ctrl.text.trim();
 
-    // 构建请求并获取调试信息
-    final raw = await DiaryChatService.buildChatRequest(_history, userInput);
+    // Build request and get debug information
+    final raw = await DiaryChatService.buildChatRequest(context, _history, userInput);
     final prettyJson = DiaryChatService.formatRequestJson(raw);
     setState(() {
       _lastRequestJson = prettyJson;
     });
 
-    // 发送AI请求
+    // Send AI request
     await DiaryChatService.sendAiRequest(
       history: _history,
       userInput: userInput,
@@ -136,13 +136,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
               }
             }
           });
-          // 新增日志打印大模型返回内容
+          // Add log printing for LLM response content
           print('[LLM] Delta: \\n${data.toString()}');
           _scrollToBottom();
         }
       },
       onDone: (data) async {
-        // 检查是否为API返回的JSON错误（如401等）
+        // Check if it is a JSON error returned by the API (such as 401)
         final errorMsg = DiaryChatService.checkApiError(data);
         if (!_askInterrupted) {
           setState(() {
@@ -154,17 +154,17 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             }
           });
           if (errorMsg == null) {
-            // 更新调试信息
-            final raw = await DiaryChatService.buildChatRequest(_history, '');
+            // Update debug information
+            final raw = await DiaryChatService.buildChatRequest(context, _history, '');
             final prettyJson = DiaryChatService.formatRequestJson(raw);
             setState(() {
               _lastRequestJson = prettyJson;
             });
-            // 新增日志打印大模型最终返回内容
+            // Add log printing for final LLM response content
             print('[LLM] Done: \n$data');
             _scrollToBottom();
 
-            // AI回答完成后自动提取分类并保存到日记文件
+            // Automatically extract category and save to diary file after AI response completion
             _extractCategoryAndSave();
           }
         }
@@ -176,7 +176,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             _asking = false;
             _askStreaming = errorMsg;
           });
-          // 新增日志打印错误信息
+          // Add log printing for error information
           print('[LLM] Error: $err');
         }
       },
@@ -205,14 +205,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     _askNext();
     _scrollToBottom();
 
-    // 用户发送消息时不立即保存，等待AI回答完成后再保存
-    // 保存逻辑在 _extractCategoryAndSave() 中处理
+    // User message is not saved immediately, wait for AI response to save
+    // Save logic is handled in _extractCategoryAndSave()
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-      future: getDiaryQaTitle(),
+      future: getDiaryQaTitle(context),
       builder: (context, snapshot) {
         final title = snapshot.data ?? AppLocalizations.of(context)!.chatDiaryTitle;
         return Scaffold(
@@ -222,14 +222,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
               children: [
                 Column(
                   children: [
-                    // 顶部工具栏区（只保留返回和标题）
+                    // Top toolbar area (only back and title)
                     Container(
                       height: 52,
                       color: context.cardBackgroundColor,
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       child: Row(
                         children: [
-                          // 返回按钮
+                          // Return button
                           Container(
                             decoration: BoxDecoration(
                               color: context.cardBackgroundColor,
@@ -266,7 +266,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                         ],
                       ),
                     ),
-                    // 沉浸式全屏聊天主界面，无AppBar
+                    // Immersive full-screen chat main UI, no AppBar
                     Expanded(
                       child: ListView.builder(
                         controller: _scrollController,
@@ -274,12 +274,12 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                         itemCount: _history.length + (_asking ? 1 : 0),
                         itemBuilder: (ctx, i) {
                           if (_summary != null && i == 0) {
-                            return SizedBox.shrink(); // 全屏聊天时不显示AI总结/编辑区
+                            return SizedBox.shrink(); // Do not show AI summary/edit area in full-screen chat
                           }
                           if (i < _history.length) {
                             final h = _history[i];
                             final isLast = i == _history.length - 1;
-                            // 如果正在流式输出，最后一条的 answer 不渲染（只渲染流式）
+                            // If streaming output, do not render the last answer (only render streaming)
                             final showAnswer = h['a'] != null && h['a']!.isNotEmpty && (!(_asking && isLast));
                             return Column(
                               children: [
@@ -295,13 +295,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF2D5A2B)  // 深色模式下的深绿色
-                                                : Colors.green[50],        // 浅色模式下的浅绿色
+                                                ? const Color(0xFF2D5A2B)  // Dark mode deep green
+                                                : Colors.green[50],        // Light mode light green
                                             borderRadius: BorderRadius.circular(16),
                                             border: Border.all(
                                               color: Theme.of(context).brightness == Brightness.dark
-                                                  ? const Color(0xFF4CAF50)  // 深色模式下的绿色边框
-                                                  : Colors.green[100]!,     // 浅色模式下的浅绿色边框
+                                                  ? const Color(0xFF4CAF50)  // Dark mode green border
+                                                  : Colors.green[100]!,     // Light mode light green border
                                             ),
                                           ),
                                           child: EnhancedMarkdown(data: h['q'] ?? ''),
@@ -310,13 +310,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                       const SizedBox(width: 8),
                                       CircleAvatar(
                                         backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                            ? const Color(0xFF2D5A2B)  // 深色模式下的深绿色
-                                            : const Color(0xFFE8F5E9), // 浅色模式下的浅绿色
+                                            ? const Color(0xFF2D5A2B)  // Dark mode deep green
+                                            : const Color(0xFFE8F5E9), // Light mode light green
                                         child: Icon(
                                           Icons.person,
                                           color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF4CAF50)  // 深色模式下的绿色图标
-                                              : Colors.green,           // 浅色模式下的绿色图标
+                                              ? const Color(0xFF4CAF50)  // Dark mode green icon
+                                              : Colors.green,           // Light mode green icon
                                         ),
                                       ),
                                     ],
@@ -331,13 +331,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         },
                                         child: CircleAvatar(
                                           backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF37474F)    // 深色模式下的深蓝灰色
-                                              : Colors.blueGrey[50],       // 浅色模式下的浅蓝灰色
+                                              ? const Color(0xFF37474F)    // Dark mode deep blue-grey
+                                              : Colors.blueGrey[50],       // Light mode light blue-grey
                                           child: Icon(
                                             Icons.smart_toy,
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF90A4AE)  // 深色模式下的蓝灰色图标
-                                                : Colors.blueGrey,         // 浅色模式下的蓝灰色图标
+                                                ? const Color(0xFF90A4AE)  // Dark mode blue-grey icon
+                                                : Colors.blueGrey,         // Light mode blue-grey icon
                                           ),
                                         ),
                                       ),
@@ -349,20 +349,20 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                             if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
                                               _ReasoningCollapse(
                                                 content: h['reasoning']!,
-                                                initiallyExpanded: false, // 历史消息默认收缩
+                                                initiallyExpanded: false, // History messages collapsed by default
                                               ),
                                             Container(
                                               margin: const EdgeInsets.only(bottom: 12),
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
                                                 color: Theme.of(context).brightness == Brightness.dark
-                                                    ? const Color(0xFF1E3A8A)  // 深色模式下的深蓝色
-                                                    : Colors.blue[50],         // 浅色模式下的浅蓝色
+                                                    ? const Color(0xFF1E3A8A)  // Dark mode deep blue
+                                                    : Colors.blue[50],         // Light mode light blue
                                                 borderRadius: BorderRadius.circular(16),
                                                 border: Border.all(
                                                   color: Theme.of(context).brightness == Brightness.dark
-                                                      ? const Color(0xFF3B82F6)  // 深色模式下的蓝色边框
-                                                      : Colors.blue[100]!,      // 浅色模式下的浅蓝色边框
+                                                      ? const Color(0xFF3B82F6)  // Dark mode blue border
+                                                      : Colors.blue[100]!,      // Light mode light blue border
                                                 ),
                                               ),
                                               child: EnhancedMarkdown(data: h['a'] ?? ''),
@@ -376,7 +376,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               ],
                             );
                           } else if (_asking && i == _history.length) {
-                            // AI 正在思考/流式输出
+                            // AI thinking/streaming output
                             return Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -386,13 +386,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                   },
                                   child: CircleAvatar(
                                     backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                        ? const Color(0xFF37474F)    // 深色模式下的深蓝灰色
-                                        : Colors.blueGrey[50],       // 浅色模式下的浅蓝灰色
+                                        ? const Color(0xFF37474F)    // Dark mode deep blue-grey
+                                        : Colors.blueGrey[50],       // Light mode light blue-grey
                                     child: Icon(
                                       Icons.smart_toy,
                                       color: Theme.of(context).brightness == Brightness.dark
-                                          ? const Color(0xFF90A4AE)  // 深色模式下的蓝灰色图标
-                                          : Colors.blueGrey,         // 浅色模式下的蓝灰色图标
+                                          ? const Color(0xFF90A4AE)  // Dark mode blue-grey icon
+                                          : Colors.blueGrey,         // Light mode blue-grey icon
                                     ),
                                   ),
                                 ),
@@ -401,7 +401,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // 显示流式reasoning，默认展开
+                                      // Show streaming reasoning, expanded by default
                                       if (_askStreamingReasoning.isNotEmpty)
                                         _ReasoningCollapse(
                                           content: _askStreamingReasoning,
@@ -413,16 +413,16 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
                                           color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF374151)  // 深色模式下的深灰色
-                                              : Colors.grey[100],        // 浅色模式下的浅灰色
+                                              ? const Color(0xFF374151)  // Dark mode deep grey
+                                              : Colors.grey[100],        // Light mode light grey
                                           borderRadius: BorderRadius.circular(16),
                                           border: Border.all(
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF6B7280)  // 深色模式下的灰色边框
-                                                : Colors.grey[200]!,       // 浅色模式下的浅灰色边框
+                                                ? const Color(0xFF6B7280)  // Dark mode grey border
+                                                : Colors.grey[200]!,       // Light mode light grey border
                                           ),
                                         ),
-                                        child: EnhancedMarkdown(data: _askStreaming.isEmpty ? 'AI 正在思考...' : _askStreaming),
+                                        child: EnhancedMarkdown(data: _askStreaming.isEmpty ? AppLocalizations.of(context)!.aiThinking : _askStreaming),
                                       ),
                                     ],
                                   ),
@@ -436,13 +436,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                         },
                       ),
                     ),
-                    // 按钮区：输入框上方，只显示调试、保存、日记列表按钮
+                    // Button area: above input field, only showing debug, save, and diary list buttons
                     Container(
                       color: context.cardBackgroundColor,
                       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                       child: Row(
                         children: [
-                          // 调试按钮
+                          // Debug button
                           IconButton(
                             icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
                             tooltip: AppLocalizations.of(context)!.debugTooltip,
@@ -453,7 +453,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                             },
                           ),
                           const SizedBox(width: 4),
-                          // 日记列表按钮
+                          // Diary list button
                           IconButton(
                             icon: const Icon(Icons.menu_book, color: Colors.teal),
                             tooltip: AppLocalizations.of(context)!.viewDiaryList,
@@ -466,7 +466,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                         ],
                       ),
                     ),
-                    // 底部输入栏，贴边圆角悬浮
+                    // Bottom input bar, floating with rounded corners
                     Container(
                       color: context.cardBackgroundColor,
                       padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
@@ -491,7 +491,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 controller: _ctrl,
                                 style: TextStyle(color: context.primaryTextColor),
                                 decoration: InputDecoration(
-                                  hintText: '记下现在的想法...',
+                                  hintText: AppLocalizations.of(context)!.userInputPlaceholder,
                                   hintStyle: TextStyle(color: context.secondaryTextColor),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -526,12 +526,12 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                     ),
                   ],
                 ),
-                // 悬浮停止按钮，往上移避免遮挡工具栏
+                // Floating stop button, moved up to avoid toolbar
                 if (_asking)
                   Positioned(
                     left: 0,
                     right: 0,
-                    bottom: 140, // 往上移
+                    bottom: 140, // Move up
                     child: Center(
                       child: SizedBox(
                         height: 40,
@@ -557,11 +557,11 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   }
 }
 
-// Reasoning折叠显示组件
+// Reasoning collapse component
 class _ReasoningCollapse extends StatefulWidget {
   final String content;
   final bool initiallyExpanded;
-  final bool hasMainContent; // 是否有主要内容
+  final bool hasMainContent; // Whether there is main content
 
   const _ReasoningCollapse({
     required this.content,
@@ -585,7 +585,7 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
   @override
   void didUpdateWidget(_ReasoningCollapse oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 当有主要内容输出时，自动收缩reasoning
+    // When there is main content output, automatically collapse reasoning
     if (widget.hasMainContent && _expanded && widget.initiallyExpanded) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -613,7 +613,7 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
                 ),
                 const SizedBox(width: 2),
                 Text(
-                  '模型思考过程',
+                  AppLocalizations.of(context)!.aiSummaryResult,
                   style: TextStyle(
                     fontSize: 12,
                     color: context.secondaryTextColor,
@@ -629,8 +629,8 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF374151)  // 深色模式下的深灰色
-                    : Colors.grey[100],        // 浅色模式下的浅灰色
+                    ? const Color(0xFF374151)  // Dark mode deep grey
+                    : Colors.grey[100],        // Light mode light grey
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

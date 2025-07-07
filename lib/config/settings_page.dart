@@ -46,7 +46,7 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-// 外观设置页面（包含主题和语言）
+// Appearance settings page (including theme and language)
 class _AppearanceSettingsPage extends StatefulWidget {
   const _AppearanceSettingsPage();
 
@@ -71,7 +71,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-          // 页面标题
+          // Page title
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
@@ -95,7 +95,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
             ),
           ),
 
-          // 语言设置
+          // Language settings
           Container(
             decoration: BoxDecoration(
               color: context.cardBackgroundColor,
@@ -130,7 +130,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                   ),
                 ),
 
-                // 中文
+                // Chinese
                 Container(
                   decoration: BoxDecoration(
                     color: LanguageService.instance.currentLocale.languageCode == 'zh'
@@ -179,7 +179,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                   ),
                 ),
 
-                // 英语
+                // English
                 Container(
                   decoration: BoxDecoration(
                     color: LanguageService.instance.currentLocale.languageCode == 'en'
@@ -233,7 +233,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
 
           const SizedBox(height: 24),
 
-          // 主题切换卡片
+          // Theme switch card
           Container(
             decoration: BoxDecoration(
               color: context.cardBackgroundColor,
@@ -268,15 +268,15 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                   ),
                 ),
 
-                // 浅色主题
+                // Light theme
                 Container(
                   decoration: BoxDecoration(
                     color: ThemeService.instance.themeMode == ThemeMode.light
-                        ? const Color(0xFFF3E5AB).withOpacity(0.3)  // 选中时用温暖的金黄色背景
+                        ? const Color(0xFFF3E5AB).withOpacity(0.3)  // Use warm golden background when selected
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     border: ThemeService.instance.themeMode == ThemeMode.light
-                        ? Border.all(color: const Color(0xFFD4A574), width: 1.5)  // 选中时添加金色边框
+                        ? Border.all(color: const Color(0xFFD4A574), width: 1.5)  // Add golden border when selected
                         : null,
                   ),
                   child: ListTile(
@@ -293,7 +293,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: ThemeService.instance.themeMode == ThemeMode.light
-                              ? const Color(0xFFD4A574)   // 选中时用金色边框
+                              ? const Color(0xFFD4A574)   // Use golden border when selected
                               : context.borderColor,
                           width: ThemeService.instance.themeMode == ThemeMode.light ? 3 : 2,
                         ),
@@ -308,7 +308,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                       AppLocalizations.of(context)!.themeLightMode,
                       style: TextStyle(
                         fontWeight: ThemeService.instance.themeMode == ThemeMode.light
-                            ? FontWeight.w600  // 选中时字体加粗
+                            ? FontWeight.w600  // Bold font when selected
                             : FontWeight.w500,
                         color: context.primaryTextColor,
                       ),
@@ -322,7 +322,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                     trailing: Radio<ThemeMode>(
                       value: ThemeMode.light,
                       groupValue: ThemeService.instance.themeMode,
-                      activeColor: const Color(0xFFD4A574),  // 浅色主题用金色
+                      activeColor: const Color(0xFFD4A574),  // Light theme用金色
                       onChanged: (value) {
                         if (value != null) {
                           ThemeService.instance.setTheme(value);
@@ -339,7 +339,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
 
                 Divider(color: context.borderColor, height: 1),
 
-                // 暗色主题
+                // Dark theme
                 Container(
                   decoration: BoxDecoration(
                     color: ThemeService.instance.themeMode == ThemeMode.dark
@@ -379,7 +379,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                       AppLocalizations.of(context)!.themeDarkMode,
                       style: TextStyle(
                         fontWeight: ThemeService.instance.themeMode == ThemeMode.dark
-                            ? FontWeight.w600  // 选中时字体加粗
+                            ? FontWeight.w600  // Bold font when selected
                             : FontWeight.w500,
                         color: context.primaryTextColor,
                       ),
@@ -393,7 +393,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                     trailing: Radio<ThemeMode>(
                       value: ThemeMode.dark,
                       groupValue: ThemeService.instance.themeMode,
-                      activeColor: const Color(0xFF9FA8DA),  // 暗色主题用淡蓝色
+                      activeColor: const Color(0xFF9FA8DA),  // Dark theme用淡蓝色
                       onChanged: (value) {
                         if (value != null) {
                           ThemeService.instance.setTheme(value);
@@ -413,7 +413,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
 
           const SizedBox(height: 24),
 
-          // 预览卡片
+          // Preview card
           Container(
             decoration: BoxDecoration(
               color: context.cardBackgroundColor,
@@ -437,7 +437,7 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // 模拟主页样式
+                // Simulate homepage style
                 Container(
                   height: 120,
                   decoration: BoxDecoration(

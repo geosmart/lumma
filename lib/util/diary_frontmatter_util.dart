@@ -2,7 +2,7 @@ import 'dart:io';
 import '../config/config_service.dart';
 import 'storage_service.dart';
 
-/// 解析 frontmatter 获取 created 字段
+/// Parse frontmatter to get the created field
 Future<DateTime?> getDiaryCreatedTime(String diaryFileName) async {
   try {
     // 使用标准化的日记目录路径

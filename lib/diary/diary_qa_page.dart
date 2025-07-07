@@ -6,6 +6,7 @@ import '../config/config_service.dart';
 import '../config/theme_service.dart';
 import '../dao/diary_dao.dart';
 import '../widgets/ai_result_page.dart';
+import '../generated/l10n/app_localizations.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});
@@ -55,7 +56,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载问题列表失败:  e.toString()}')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.loadingFailed)),
         );
       }
     }
@@ -80,7 +81,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建日记失败:  [31m${e.toString()} [0m')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))),
         );
       }
     }
@@ -88,27 +89,24 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
 
 
-  // 新增：自动保存问答到日记文件
+  // Auto-save Q&A to diary file
   Future<void> _autoSaveToDiary(String question, String answer) async {
     if (!_diaryCreated || _diaryFileName == null) return;
 
     try {
       final content = DiaryDao.formatDiaryContent(
-        title: question,
-        content: answer,
+        context: context,
+        title: _questions[_current],
+        content: _answers[_current],
         analysis: '',
-        category: '',
       );
       await MarkdownService.appendToDailyDiary(content);
 
-      // 打印保存路径（调试用）
-      final fileName = MarkdownService.getDiaryFileName();
-      final diaryDir = await MarkdownService.getDiaryDir();
-      final filePath = '$diaryDir/$fileName';
-      print('问答日记已自动追加到: $filePath');
+      // Print save path (for debug)
+      print(AppLocalizations.of(context)!.saveSuccess);
     } catch (e) {
-      print('自动保存失败: ${e.toString()}');
-      // 不显示错误提示，避免影响用户体验
+      print(AppLocalizations.of(context)!.saveFailed);
+      // Do not show error to avoid affecting user experience
     }
   }
 
@@ -128,7 +126,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   Widget build(BuildContext context) {
     if (_aiResult != null) {
       return AiResultPage(
-        title: 'AI 总结结果',
+        title: AppLocalizations.of(context)!.aiSummaryResult,
         onBack: () {
           setState(() {
             _aiResult = null;
@@ -143,7 +141,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       );
     }
     return FutureBuilder<String>(
-      future: getDiaryQaTitle(),
+      future: getDiaryQaTitle(context),
       builder: (context, snapshot) {
         final title = snapshot.data ?? '固定问答式日记';
         return Scaffold(
@@ -263,7 +261,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
-                                tooltip: 'AI 总结',
+                                tooltip: AppLocalizations.of(context)!.aiSummary,
                                 onPressed: () {
                                   setState(() {
                                     _aiResult = ''; // 触发显示AI结果页
@@ -296,8 +294,8 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                     style: TextStyle(color: context.primaryTextColor),
                                     decoration: InputDecoration(
                                       hintText: _current < _questions.length
-                                        ? '请输入你的回答...（${_current + 1}/${_questions.length}）'
-                                        : '已完成所有问题',
+                                        ? AppLocalizations.of(context)!.aiContentPlaceholder
+                                        : AppLocalizations.of(context)!.qaNone,
                                       hintStyle: TextStyle(color: context.secondaryTextColor),
                                       border: InputBorder.none,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -343,7 +341,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   }
 
   void _onSubmit() {
-    // 检查是否还有问题可回答
+    // Check if there are more questions to answer
     if (_current >= _questions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('已完成所有问题')),
@@ -355,7 +353,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     final question = _questions[_current];
 
     if (answer.isEmpty) {
-      // 没有输入内容，不推进问题，也不保存
+      // No input, do not advance or save
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入内容后再提交')),
       );

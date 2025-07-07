@@ -25,7 +25,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
 
   Future<List<String>> _initAndLoadQuestions() async {
     // 保证有默认值并持久化
-    await QaQuestionsService.init();
+    await QaQuestionsService.init(context);
     return _loadQuestions();
   }
 
