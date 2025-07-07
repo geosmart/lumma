@@ -103,17 +103,17 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
         final file = File('$diaryDir/$fileName');
         if (await file.exists()) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('新建成功')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createSuccess)));
           }
           await _loadFiles();
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('新建失败，文件未创建')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedFileNotCreated)));
           }
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('新建失败: \n${e.toString()}')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))));
         }
       }
     }
@@ -144,7 +144,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           child: Row(
             children: [
               Text(
-                '我的日记',
+                AppLocalizations.of(context)!.myDiary,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -155,13 +155,13 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
               const Spacer(),
               _ActionButton(
                 icon: Icons.refresh,
-                tooltip: '刷新',
+                tooltip: AppLocalizations.of(context)!.refresh,
                 onPressed: _loadFiles,
               ),
               const SizedBox(width: 8),
               _ActionButton(
                 icon: Icons.add,
-                tooltip: '新建日记',
+                tooltip: AppLocalizations.of(context)!.newDiary,
                 onPressed: _createFile,
               ),
             ],
@@ -201,7 +201,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            '还没有任何日记',
+                            AppLocalizations.of(context)!.noDiaryYet,
                             style: TextStyle(
                               fontSize: 16,
                               color: context.secondaryTextColor,
@@ -210,7 +210,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '点击右上角的 + 开始写你的第一篇日记吧',
+                            AppLocalizations.of(context)!.clickToCreateFirstDiary,
                             style: TextStyle(
                               fontSize: 14,
                               color: context.secondaryTextColor,

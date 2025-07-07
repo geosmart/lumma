@@ -329,7 +329,7 @@
   "@aiChatDescription": {
     "description": "AI chat mode description"
   },
-  "startWritingDiary": "Start Writing Diary",
+  "startWritingDiary": "Start Writing",
   "@startWritingDiary": {
     "description": "Main action button text"
   },
@@ -434,6 +434,88 @@
     }
   },
   "syncTaskComplete": "Sync task completed",
-  "startWritingDiary": "Start Writing Diary",
-  "diaryList": "Diary List"
+  "myDiary": "My Diary",
+  "refresh": "Refresh",
+  "noDiaryYet": "No diary yet",
+  "clickToCreateFirstDiary": "Click the + button in the upper right corner to start writing your first diary",
+  "createSuccess": "Created successfully",
+  "createFailedFileNotCreated": "Creation failed, file not created",
+  "createFailedWithError": "Creation failed: {error}",
+  "@createFailedWithError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "observeDiscovery": "Observe & Discovery",
+  "@observeDiscovery": {
+    "description": "Title for observe category in diary summary"
+  },
+  "positiveGains": "Positive Gains",
+  "@positiveGains": {
+    "description": "Title for good category in diary summary"
+  },
+  "difficultChallenges": "Difficult Challenges",
+  "@difficultChallenges": {
+    "description": "Title for difficult category in diary summary"
+  },
+  "reflectionImprovement": "Reflection & Improvement",
+  "@reflectionImprovement": {
+    "description": "Title for different category in diary summary"
+  },
+  "loadingFailed": "Loading failed",
+  "@loadingFailed": {
+    "description": "Error message when loading fails"
+  },
+  "aiSummary": "AI Summary",
+  "@aiSummary": {
+    "description": "AI summary button tooltip"
+  },
+  "aiSummaryResult": "AI Summary Result",
+  "@aiSummaryResult": {
+    "description": "AI summary result page title"
+  },
+  "editDiary": "Edit Diary",
+  "@editDiary": {
+    "description": "Edit diary label text"
+  },
+  "saveSuccess": "Save successful",
+  "@saveSuccess": {
+    "description": "Success message when saving"
+  },
+  "saveFailed": "Save failed",
+  "@saveFailed": {
+    "description": "Error message when saving fails"
+  },
+  "noContent": "No content",
+  "@noContent": {
+    "description": "Message when there is no content"
+  },
+  "dailySummary": "Daily Summary",
+  "@dailySummary": {
+    "description": "Daily summary section title"
+  },
+  "regenerate": "Regenerate",
+  "@regenerate": {
+    "description": "Regenerate button text"
+  },
+  "aiSummaryFailed": "AI summary failed",
+  "@aiSummaryFailed": {
+    "description": "Error message when AI summary fails"
+  },
+  "aiGenerating": "AI is generating...",
+  "@aiGenerating": {
+    "description": "Status message when AI is generating content"
+  },
+  "dailySummarySaved": "Daily summary saved to diary",
+  "@dailySummarySaved": {
+    "description": "Success message when daily summary is saved"
+  },
+  "operationFailed": "Operation failed",
+  "@operationFailed": {
+    "description": "Error message when operation fails"
+  },
+  "aiContentPlaceholder": "AI generated content will be displayed here...",
+  "@aiContentPlaceholder": {
+    "description": "Placeholder text for AI content input field"
+  }
 }

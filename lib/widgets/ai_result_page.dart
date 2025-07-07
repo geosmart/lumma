@@ -5,6 +5,7 @@ import '../util/prompt_util.dart';
 import '../model/enums.dart';
 import '../dao/diary_dao.dart';
 import '../util/markdown_service.dart';
+import '../generated/l10n/app_localizations.dart';
 
 /// AI 结果页面公共组件
 class AiResultPage extends StatefulWidget {
@@ -83,7 +84,7 @@ class _AiResultPageState extends State<AiResultPage> {
               _isProcessing = false;
             });
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('AI 总结失败: ${error.toString()}')),
+              SnackBar(content: Text('${AppLocalizations.of(context)!.aiSummaryFailed}: ${error.toString()}')),
             );
           }
         },
@@ -94,7 +95,7 @@ class _AiResultPageState extends State<AiResultPage> {
           _isProcessing = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('AI 总结失败: ${e.toString()}')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.aiSummaryFailed}: ${e.toString()}')),
         );
       }
     }
@@ -109,7 +110,7 @@ class _AiResultPageState extends State<AiResultPage> {
         case 'save':
           final editedResult = _controller.text;
           final content = DiaryDao.formatDiaryContent(
-            title: '日总结',
+            title: AppLocalizations.of(context)!.dailySummary,
             content: editedResult,
             analysis: '',
             category: '',
@@ -118,7 +119,7 @@ class _AiResultPageState extends State<AiResultPage> {
           widget.onBack(); // 返回上一页
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('日总结已保存到日记')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.dailySummarySaved)),
             );
           }
           break;
@@ -126,7 +127,7 @@ class _AiResultPageState extends State<AiResultPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('操作失败: ${e.toString()}')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.operationFailed}: ${e.toString()}')),
         );
       }
     }
@@ -155,12 +156,12 @@ class _AiResultPageState extends State<AiResultPage> {
               children: [
                 ElevatedButton.icon(
                   icon: const Icon(Icons.refresh),
-                  label: const Text('重新生成'),
+                  label: Text(AppLocalizations.of(context)!.regenerate),
                   onPressed: _isProcessing ? null : () => _handleAction('regenerate'),
                 ),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.save),
-                  label: const Text('保存'),
+                  label: Text(AppLocalizations.of(context)!.save),
                   onPressed: _isProcessing ? null : () => _handleAction('save'),
                 ),
               ],
@@ -175,7 +176,7 @@ class _AiResultPageState extends State<AiResultPage> {
                     const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                     const SizedBox(width: 8),
                     Text(
-                      widget.processingText ?? 'AI 正在生成中...',
+                      widget.processingText ?? AppLocalizations.of(context)!.aiGenerating,
                       style: TextStyle(color: context.secondaryTextColor)
                     ),
                   ],
@@ -198,7 +199,7 @@ class _AiResultPageState extends State<AiResultPage> {
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Theme.of(context).primaryColor),
                   ),
-                  hintText: widget.hintText ?? 'AI 生成的内容将显示在这里...',
+                  hintText: widget.hintText ?? AppLocalizations.of(context)!.aiContentPlaceholder,
                   hintStyle: TextStyle(color: context.secondaryTextColor),
                   fillColor: context.cardBackgroundColor,
                   filled: true,

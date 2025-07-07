@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../util/markdown_service.dart';
 import '../dao/diary_dao.dart';
+import '../generated/l10n/app_localizations.dart';
 
 /// 日记内容服务类，处理日记内容的业务逻辑
 class DiaryContentService {
@@ -219,12 +220,12 @@ class DiaryContentService {
   }
 
   /// 获取总结分组信息
-  static Map<String, Map<String, dynamic>> getSummaryGroupInfo() {
+  static Map<String, Map<String, dynamic>> getSummaryGroupInfo(BuildContext context) {
     return {
-      'observe': {'title': '观察发现', 'icon': Icons.visibility, 'color': Colors.blue},
-      'good': {'title': '积极收获', 'icon': Icons.favorite, 'color': Colors.green},
-      'difficult': {'title': '困难挑战', 'icon': Icons.warning, 'color': Colors.red},
-      'different': {'title': '反思改进', 'icon': Icons.psychology, 'color': Colors.purple},
+      'observe': {'title': AppLocalizations.of(context)!.observeDiscovery, 'icon': Icons.visibility, 'color': Colors.blue},
+      'good': {'title': AppLocalizations.of(context)!.positiveGains, 'icon': Icons.favorite, 'color': Colors.green},
+      'difficult': {'title': AppLocalizations.of(context)!.difficultChallenges, 'icon': Icons.warning, 'color': Colors.red},
+      'different': {'title': AppLocalizations.of(context)!.reflectionImprovement, 'icon': Icons.psychology, 'color': Colors.purple},
     };
   }
 

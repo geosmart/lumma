@@ -489,4 +489,81 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get syncTaskComplete => '同步任务完成';
+
+  @override
+  String get myDiary => '我的日记';
+
+  @override
+  String get refresh => '刷新';
+
+  @override
+  String get noDiaryYet => '还没有任何日记';
+
+  @override
+  String get clickToCreateFirstDiary => '点击右上角的 + 开始写你的第一篇日记吧';
+
+  @override
+  String get createSuccess => '新建成功';
+
+  @override
+  String get createFailedFileNotCreated => '新建失败，文件未创建';
+
+  @override
+  String createFailedWithError(String error) {
+    return '新建失败: $error';
+  }
+
+  @override
+  String get observeDiscovery => '观察发现';
+
+  @override
+  String get positiveGains => '积极收获';
+
+  @override
+  String get difficultChallenges => '困难挑战';
+
+  @override
+  String get reflectionImprovement => '反思改进';
+
+  @override
+  String get loadingFailed => '加载失败';
+
+  @override
+  String get aiSummary => 'AI 总结';
+
+  @override
+  String get aiSummaryResult => 'AI 总结结果';
+
+  @override
+  String get editDiary => '编辑日记';
+
+  @override
+  String get saveSuccess => '保存成功';
+
+  @override
+  String get saveFailed => '保存失败';
+
+  @override
+  String get noContent => '无内容';
+
+  @override
+  String get dailySummary => '日总结';
+
+  @override
+  String get regenerate => '重新生成';
+
+  @override
+  String get aiSummaryFailed => 'AI 总结失败';
+
+  @override
+  String get aiGenerating => 'AI 正在生成中...';
+
+  @override
+  String get dailySummarySaved => '日总结已保存到日记';
+
+  @override
+  String get operationFailed => '操作失败';
+
+  @override
+  String get aiContentPlaceholder => 'AI 生成的内容将显示在这里...';
 }

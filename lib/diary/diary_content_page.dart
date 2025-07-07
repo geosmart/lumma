@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/enhanced_markdown.dart';
 import '../widgets/ai_result_page.dart';
 import 'diary_content_service.dart';
+import '../generated/l10n/app_localizations.dart';
 
 /// 单篇日记详情页，全屏、只读Markdown渲染，带编辑提示
 class DiaryContentPage extends StatefulWidget {
@@ -55,7 +56,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       setState(() => _loading = false);
       // 处理错误
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('加载失败: $e')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.loadingFailed}: $e')),
       );
     }
   }
@@ -148,7 +149,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
   // 处理日总结内容的特殊渲染
   Widget _buildSummaryContent(String content) {
     final groupedContent = DiaryContentService.parseSummaryContent(content);
-    final groupInfo = DiaryContentService.getSummaryGroupInfo();
+    final groupInfo = DiaryContentService.getSummaryGroupInfo(context);
     final List<Widget> summaryWidgets = [];
 
     // 为每个分组创建卡片
@@ -256,7 +257,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
   Widget build(BuildContext context) {
     if (_aiResult != null) {
       return AiResultPage(
-        title: 'AI 总结结果',
+        title: AppLocalizations.of(context)!.aiSummaryResult,
         onBack: () {
           setState(() {
             _aiResult = null;
@@ -274,7 +275,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           if (!_editMode && !_loading)
             IconButton(
               icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
-              tooltip: 'AI 总结',
+              tooltip: AppLocalizations.of(context)!.aiSummary,
               onPressed: () {
                 setState(() {
                   _aiResult = ''; // 触发显示AI结果页
@@ -284,7 +285,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           if (!_editMode && !_loading)
             IconButton(
               icon: const Icon(Icons.edit),
-              tooltip: '编辑',
+              tooltip: AppLocalizations.of(context)!.edit,
               onPressed: () {
                 setState(() {
                   _editMode = true;
@@ -306,11 +307,11 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                           maxLines: null,
                           expands: true,
                           textAlignVertical: TextAlignVertical.top,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: '编辑日记',
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: AppLocalizations.of(context)!.editDiary,
                             alignLabelWithHint: true,
-                            contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 12),
+                            contentPadding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
                             isDense: true,
                           ),
                           strutStyle: const StrutStyle(
@@ -330,13 +331,13 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                                 _content = _controller.text;
                                 _editMode = false;
                               });
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('保存成功')));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)));
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: $e')));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.saveFailed}: $e')));
                             }
                           },
                           icon: const Icon(Icons.save),
-                          label: const Text('保存'),
+                          label: Text(AppLocalizations.of(context)!.save),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(double.infinity, 48),
                           ),
@@ -346,7 +347,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                   ),
                 )
               : _content == null
-                  ? const Center(child: Text('无内容'))
+                  ? Center(child: Text(AppLocalizations.of(context)!.noContent))
                   : _buildChatView(context),
     );
   }
@@ -460,7 +461,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                                 Icon(Icons.auto_awesome, color: Colors.orange[600], size: 18),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '日总结',
+                                  AppLocalizations.of(context)!.dailySummary,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -524,7 +525,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                                   Icon(Icons.auto_awesome, color: Colors.orange[600], size: 16),
                                   const SizedBox(width: 6),
                                   Text(
-                                    '日总结',
+                                    AppLocalizations.of(context)!.dailySummary,
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,

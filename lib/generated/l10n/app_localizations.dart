@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   /// Main action button text
   ///
   /// In en, this message translates to:
-  /// **'Start Writing Diary'**
+  /// **'Start Writing'**
   String get startWritingDiary;
 
   /// Diary list button text
@@ -1027,6 +1027,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sync task completed'**
   String get syncTaskComplete;
+
+  /// No description provided for @myDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'My Diary'**
+  String get myDiary;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @noDiaryYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No diary yet'**
+  String get noDiaryYet;
+
+  /// No description provided for @clickToCreateFirstDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'Click the + button in the upper right corner to start writing your first diary'**
+  String get clickToCreateFirstDiary;
+
+  /// No description provided for @createSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Created successfully'**
+  String get createSuccess;
+
+  /// No description provided for @createFailedFileNotCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Creation failed, file not created'**
+  String get createFailedFileNotCreated;
+
+  /// No description provided for @createFailedWithError.
+  ///
+  /// In en, this message translates to:
+  /// **'Creation failed: {error}'**
+  String createFailedWithError(String error);
+
+  /// Title for observe category in diary summary
+  ///
+  /// In en, this message translates to:
+  /// **'Observe & Discovery'**
+  String get observeDiscovery;
+
+  /// Title for good category in diary summary
+  ///
+  /// In en, this message translates to:
+  /// **'Positive Gains'**
+  String get positiveGains;
+
+  /// Title for difficult category in diary summary
+  ///
+  /// In en, this message translates to:
+  /// **'Difficult Challenges'**
+  String get difficultChallenges;
+
+  /// Title for different category in diary summary
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection & Improvement'**
+  String get reflectionImprovement;
+
+  /// Error message when loading fails
+  ///
+  /// In en, this message translates to:
+  /// **'Loading failed'**
+  String get loadingFailed;
+
+  /// AI summary button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'AI Summary'**
+  String get aiSummary;
+
+  /// AI summary result page title
+  ///
+  /// In en, this message translates to:
+  /// **'AI Summary Result'**
+  String get aiSummaryResult;
+
+  /// Edit diary label text
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Diary'**
+  String get editDiary;
+
+  /// Success message when saving
+  ///
+  /// In en, this message translates to:
+  /// **'Save successful'**
+  String get saveSuccess;
+
+  /// Error message when saving fails
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed'**
+  String get saveFailed;
+
+  /// Message when there is no content
+  ///
+  /// In en, this message translates to:
+  /// **'No content'**
+  String get noContent;
+
+  /// Daily summary section title
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Summary'**
+  String get dailySummary;
+
+  /// Regenerate button text
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get regenerate;
+
+  /// Error message when AI summary fails
+  ///
+  /// In en, this message translates to:
+  /// **'AI summary failed'**
+  String get aiSummaryFailed;
+
+  /// Status message when AI is generating content
+  ///
+  /// In en, this message translates to:
+  /// **'AI is generating...'**
+  String get aiGenerating;
+
+  /// Success message when daily summary is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Daily summary saved to diary'**
+  String get dailySummarySaved;
+
+  /// Error message when operation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed'**
+  String get operationFailed;
+
+  /// Placeholder text for AI content input field
+  ///
+  /// In en, this message translates to:
+  /// **'AI generated content will be displayed here...'**
+  String get aiContentPlaceholder;
 }
 
 class _AppLocalizationsDelegate

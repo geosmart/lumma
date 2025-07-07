@@ -270,7 +270,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Chat with AI using Q&A prompts to generate custom diary';
 
   @override
-  String get startWritingDiary => 'Start Writing Diary';
+  String get startWritingDiary => 'Start Writing';
 
   @override
   String get diaryList => 'Diary List';
@@ -507,4 +507,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncTaskComplete => 'Sync task completed';
+
+  @override
+  String get myDiary => 'My Diary';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get noDiaryYet => 'No diary yet';
+
+  @override
+  String get clickToCreateFirstDiary =>
+      'Click the + button in the upper right corner to start writing your first diary';
+
+  @override
+  String get createSuccess => 'Created successfully';
+
+  @override
+  String get createFailedFileNotCreated => 'Creation failed, file not created';
+
+  @override
+  String createFailedWithError(String error) {
+    return 'Creation failed: $error';
+  }
+
+  @override
+  String get observeDiscovery => 'Observe & Discovery';
+
+  @override
+  String get positiveGains => 'Positive Gains';
+
+  @override
+  String get difficultChallenges => 'Difficult Challenges';
+
+  @override
+  String get reflectionImprovement => 'Reflection & Improvement';
+
+  @override
+  String get loadingFailed => 'Loading failed';
+
+  @override
+  String get aiSummary => 'AI Summary';
+
+  @override
+  String get aiSummaryResult => 'AI Summary Result';
+
+  @override
+  String get editDiary => 'Edit Diary';
+
+  @override
+  String get saveSuccess => 'Save successful';
+
+  @override
+  String get saveFailed => 'Save failed';
+
+  @override
+  String get noContent => 'No content';
+
+  @override
+  String get dailySummary => 'Daily Summary';
+
+  @override
+  String get regenerate => 'Regenerate';
+
+  @override
+  String get aiSummaryFailed => 'AI summary failed';
+
+  @override
+  String get aiGenerating => 'AI is generating...';
+
+  @override
+  String get dailySummarySaved => 'Daily summary saved to diary';
+
+  @override
+  String get operationFailed => 'Operation failed';
+
+  @override
+  String get aiContentPlaceholder =>
+      'AI generated content will be displayed here...';
 }
