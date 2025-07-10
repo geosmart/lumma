@@ -4,6 +4,7 @@ import '../util/ai_service.dart';
 import '../util/markdown_service.dart';
 import '../diary/chat_history_service.dart';
 import '../config/config_service.dart';
+import '../config/language_service.dart';
 import '../model/enums.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_constants.dart';
@@ -24,7 +25,7 @@ class DiaryChatService {
   // Let AI extract category and title
   static Future<Map<String, String>> extractCategoryAndTitle(BuildContext context, String question, String answer) async {
     try {
-      final prompt = PromptConstants.extractCategoryAndTitlePrompt
+      final prompt = PromptConstants.getExtractCategoryAndTitlePrompt()
         .replaceAll(r'{{question}}', question)
         .replaceAll(r'{{answer}}', answer);
       final messages = [
@@ -67,8 +68,18 @@ class DiaryChatService {
                 throw Exception('No valid JSON found');
               }
             }
-            if (map[AppLocalizations.of(context)!.category] is String && map[AppLocalizations.of(context)!.diaryContent] is String) {
-              result = {AppLocalizations.of(context)!.category: map[AppLocalizations.of(context)!.category], AppLocalizations.of(context)!.diaryContent: map[AppLocalizations.of(context)!.diaryContent]};
+            // Parse the JSON response based on language
+            final languageService = LanguageService.instance;
+            final isZh = languageService.currentLocale.languageCode == 'zh';
+
+            String categoryKey = isZh ? '分类' : 'Category';
+            String titleKey = isZh ? '标题' : 'Title';
+
+            if (map[categoryKey] is String && map[titleKey] is String) {
+              result = {
+                AppLocalizations.of(context)!.category: map[categoryKey],
+                AppLocalizations.of(context)!.diaryContent: map[titleKey]
+              };
             }
           } catch (e) {
             print('Failed to parse AI returned JSON: \\${data['content']}');
@@ -102,11 +113,11 @@ class DiaryChatService {
         // Let AI extract category and title
         final result = await extractCategoryAndTitle(context, lastHistory['q']!, lastHistory['a']!);
 
-        // Use i18n keys for updating history
+        // Use correct keys for updating history
         final categoryKey = AppLocalizations.of(context)!.category;
         final titleKey = AppLocalizations.of(context)!.diaryContent;
         history[history.length - 1]['category'] = result[categoryKey] ?? '';
-        history[history.length - 1]['title'] = result[titleKey] ?? '';
+        history[history.length - 1]['title'] = result[titleKey] ?? '';  // This should be the extracted title
 
         // Save to diary file after extraction
         final content = DiaryDao.formatDiaryContent(

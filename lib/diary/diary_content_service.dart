@@ -56,10 +56,10 @@ class DiaryContentService {
     final normalItems = <Map<String, String>>[];
 
     for (final item in history) {
-      if (isSummaryContent(item['q'] ?? '') || isSummaryContent(item['a'] ?? '')) {
-        summaryItems.add(item);
+      if (isSummaryContent(item.q ?? '') || isSummaryContent(item.a ?? '')) {
+        summaryItems.add(item.toMap());
       } else {
-        normalItems.add(item);
+        normalItems.add(item.toMap());
       }
     }
 
