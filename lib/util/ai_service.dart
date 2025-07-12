@@ -101,6 +101,10 @@ class AiService {
             errorMessage = '大模型API访问被拒绝，请检查配置';
           } else if (streamedResponse.statusCode == 404) {
             errorMessage = '大模型服务地址不存在，请检查配置';
+          } else if (streamedResponse.statusCode == 405) {
+            errorMessage = '大模型服务响应错误 (405)';
+          } else if (streamedResponse.statusCode == 429) {
+            errorMessage = '大模型服务请求过于频繁 (429)，请稍后重试';
           } else if (streamedResponse.statusCode >= 500) {
             errorMessage = '大模型服务器内部错误，请稍后重试或检查配置';
           }

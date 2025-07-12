@@ -210,7 +210,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                             print('[PromptConfigPage] 设置激活提示词失败: $e');
                                             if (mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text(AppLocalizations.of(context)!.promptSetActiveFailed(e))),
+                                                SnackBar(content: Text(AppLocalizations.of(context)!.promptSetActiveFailed(e.toString()))),
                                               );
                                             }
                                           }

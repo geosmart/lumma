@@ -10,12 +10,15 @@ import 'theme_service.dart';
 import 'settings_ui_config.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  final int initialTabIndex;
+
+  const SettingsPage({super.key, this.initialTabIndex = 0});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 6,
+      initialIndex: initialTabIndex,
       child: Scaffold(
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.settings, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),

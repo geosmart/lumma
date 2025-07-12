@@ -138,7 +138,7 @@ class MarkdownService {
       final currentContent = await file.readAsString();
 
       // 查找并删除现有的 ## 日总结 章节（包括其下的所有内容）
-      final summaryRegex = RegExp('^---\\s*\n\n## ' + RegExp.escape(dailySummaryTitle) + '\\s*\n.*?(?=^---|\\Z)', multiLine: true, dotAll: true);
+      final summaryRegex = RegExp('^---\\s*\n\n## ${RegExp.escape(dailySummaryTitle)}\\s*\n.*?(?=^---|\\Z)', multiLine: true, dotAll: true);
 
       if (summaryRegex.hasMatch(currentContent)) {
         // 如果已存在日总结，则删除整个章节

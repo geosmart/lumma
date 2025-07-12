@@ -728,11 +728,11 @@ abstract class AppLocalizations {
   /// **'No prompts yet'**
   String get promptNone;
 
-  /// No description provided for @promptSetActiveFailed.
+  /// Error message when setting active prompt fails
   ///
   /// In en, this message translates to:
   /// **'Failed to set active: {error}'**
-  String promptSetActiveFailed(Object error);
+  String promptSetActiveFailed(String error);
 
   /// No description provided for @promptAddSuccess.
   ///
@@ -764,11 +764,11 @@ abstract class AppLocalizations {
   /// **'No questions yet'**
   String get qaNone;
 
-  /// No description provided for @qaQuestionLabel.
+  /// Label for question number
   ///
   /// In en, this message translates to:
   /// **'Question {number}'**
-  String qaQuestionLabel(Object number);
+  String qaQuestionLabel(int number);
 
   /// No description provided for @qaDelete.
   ///
@@ -1052,10 +1052,10 @@ abstract class AppLocalizations {
   /// **'Click the + button in the upper right corner to start writing your first diary'**
   String get clickToCreateFirstDiary;
 
-  /// Success message when create operation succeeds
+  /// No description provided for @createSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Create successful'**
+  /// **'Created successfully'**
   String get createSuccess;
 
   /// No description provided for @createFailedFileNotCreated.
@@ -1387,6 +1387,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Jot down your thoughts...'**
   String get userInputPlaceholder;
+
+  /// Title for LLM configuration error dialog
+  ///
+  /// In en, this message translates to:
+  /// **'LLM Configuration Error'**
+  String get llmConfigurationError;
+
+  /// Error message when LLM service returns 405 error
+  ///
+  /// In en, this message translates to:
+  /// **'The LLM service returned an error (405). This usually indicates a configuration issue with the current active model. Please check your LLM configuration.'**
+  String get llmConfigurationErrorMessage;
+
+  /// Title for LLM rate limit error dialog
+  ///
+  /// In en, this message translates to:
+  /// **'LLM Rate Limit Error'**
+  String get llmRateLimitError;
+
+  /// Error message when LLM service returns 429 error
+  ///
+  /// In en, this message translates to:
+  /// **'The LLM service is temporarily unavailable due to rate limiting (429). Please wait a moment and try again, or check your API usage limits.'**
+  String get llmRateLimitErrorMessage;
+
+  /// Button text to navigate to LLM configuration page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to LLM Configuration'**
+  String get goToLlmConfig;
+
+  /// Generic LLM service error message with status code
+  ///
+  /// In en, this message translates to:
+  /// **'LLM Service Error ({statusCode})'**
+  String llmServiceError(int statusCode);
 }
 
 class _AppLocalizationsDelegate

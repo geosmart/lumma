@@ -346,7 +346,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promptNone => 'No prompts yet';
 
   @override
-  String promptSetActiveFailed(Object error) {
+  String promptSetActiveFailed(String error) {
     return 'Failed to set active: $error';
   }
 
@@ -367,7 +367,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qaNone => 'No questions yet';
 
   @override
-  String qaQuestionLabel(Object number) {
+  String qaQuestionLabel(int number) {
     return 'Question $number';
   }
 
@@ -522,7 +522,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Click the + button in the upper right corner to start writing your first diary';
 
   @override
-  String get createSuccess => 'Create successful';
+  String get createSuccess => 'Created successfully';
 
   @override
   String get createFailedFileNotCreated => 'Creation failed, file not created';
@@ -697,4 +697,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userInputPlaceholder => 'Jot down your thoughts...';
+
+  @override
+  String get llmConfigurationError => 'LLM Configuration Error';
+
+  @override
+  String get llmConfigurationErrorMessage =>
+      'The LLM service returned an error (405). This usually indicates a configuration issue with the current active model. Please check your LLM configuration.';
+
+  @override
+  String get llmRateLimitError => 'LLM Rate Limit Error';
+
+  @override
+  String get llmRateLimitErrorMessage =>
+      'The LLM service is temporarily unavailable due to rate limiting (429). Please wait a moment and try again, or check your API usage limits.';
+
+  @override
+  String get goToLlmConfig => 'Go to LLM Configuration';
+
+  @override
+  String llmServiceError(int statusCode) {
+    return 'LLM Service Error ($statusCode)';
+  }
 }

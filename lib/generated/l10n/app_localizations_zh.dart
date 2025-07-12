@@ -329,7 +329,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get promptNone => '暂无提示词';
 
   @override
-  String promptSetActiveFailed(Object error) {
+  String promptSetActiveFailed(String error) {
     return '设置激活失败: $error';
   }
 
@@ -349,7 +349,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get qaNone => '暂无问题';
 
   @override
-  String qaQuestionLabel(Object number) {
+  String qaQuestionLabel(int number) {
     return '问题 $number';
   }
 
@@ -675,4 +675,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get userInputPlaceholder => '记下此刻的想法';
+
+  @override
+  String get llmConfigurationError => '大模型配置错误';
+
+  @override
+  String get llmConfigurationErrorMessage =>
+      '大模型服务返回错误 (405)，这通常表示当前激活的模型存在配置问题。请检查大模型配置。';
+
+  @override
+  String get llmRateLimitError => '大模型限流错误';
+
+  @override
+  String get llmRateLimitErrorMessage =>
+      '大模型服务因请求过于频繁而暂时不可用 (429)。请稍等片刻后重试，或检查您的API使用限制。';
+
+  @override
+  String get goToLlmConfig => '前往大模型配置';
+
+  @override
+  String llmServiceError(int statusCode) {
+    return '大模型服务错误 ($statusCode)';
+  }
 }

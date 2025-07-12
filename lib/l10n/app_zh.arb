@@ -1,4 +1,5 @@
 {
+  "@@locale": "zh",
   "appTitle": "Lumma",
   "appSubtitle": "AI驱动的问答日记",
   "settings": "设置",
@@ -213,5 +214,11 @@
   "qaQuestion8": "今天谁或什么激励了你？",
   "qaQuestion9": "你今天帮助了谁？怎么帮助的？",
   "qaQuestion10": "你明天的目标是什么？",
-  "userInputPlaceholder": "记下此刻的想法"
+  "userInputPlaceholder": "记下此刻的想法",
+  "llmConfigurationError": "大模型配置错误",
+  "llmConfigurationErrorMessage": "大模型服务返回错误 (405)，这通常表示当前激活的模型存在配置问题。请检查大模型配置。",
+  "llmRateLimitError": "大模型限流错误",
+  "llmRateLimitErrorMessage": "大模型服务因请求过于频繁而暂时不可用 (429)。请稍等片刻后重试，或检查您的API使用限制。",
+  "goToLlmConfig": "前往大模型配置",
+  "llmServiceError": "大模型服务错误 ({statusCode})"
 }

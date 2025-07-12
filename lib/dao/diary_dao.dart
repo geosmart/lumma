@@ -111,7 +111,7 @@ class DiaryDao {
     String? currentSection;
 
     // Helper function to get section type from header text
-    String? _getSectionType(String headerText) {
+    String? getSectionType(String headerText) {
       final lower = headerText.toLowerCase();
       if (lower.contains('时间') || lower.contains('time')) return 'time';
       if (lower.contains('分类') || lower.contains('category')) return 'category';
@@ -133,7 +133,7 @@ class DiaryDao {
         currentSection = null;
       } else if (trimmed.startsWith('### ')) {
         // Section header with ### prefix
-        currentSection = _getSectionType(trimmed);
+        currentSection = getSectionType(trimmed);
       } else if (trimmed == '---') {
         // End of diary entry
         if (currentItem.isNotEmpty) {
@@ -143,7 +143,7 @@ class DiaryDao {
         currentSection = null;
       } else if (trimmed.isNotEmpty && !trimmed.startsWith('#')) {
         // Check if it's a section header without ### prefix
-        final sectionType = _getSectionType(trimmed);
+        final sectionType = getSectionType(trimmed);
         if (sectionType != null) {
           currentSection = sectionType;
         } else if (currentSection != null) {

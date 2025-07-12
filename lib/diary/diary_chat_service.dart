@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import '../util/ai_service.dart';
 import '../util/markdown_service.dart';
+import '../util/llm_error_dialog.dart';
 import '../diary/chat_history_service.dart';
 import '../config/config_service.dart';
 import '../config/language_service.dart';
@@ -168,6 +170,34 @@ class DiaryChatService {
       }
     } catch (_) {}
     return errorMsg;
+  }
+
+  // 处理LLM配置错误，显示用户友好的错误对话框
+  static Future<void> handleLlmConfigurationError(
+    BuildContext context,
+    String errorMessage
+  ) async {
+    if (LlmErrorDialog.isLlmConfigurationError(errorMessage)) {
+      final statusCode = LlmErrorDialog.extractStatusCode(errorMessage);
+      await LlmErrorDialog.showLlmConfigurationError(
+        context,
+        errorMessage: errorMessage,
+        statusCode: statusCode,
+      );
+    }
+  }
+
+  // 检查是否为LLM配置相关错误
+  static bool isLlmConfigurationError(String errorMessage) {
+    return LlmErrorDialog.isLlmConfigurationError(errorMessage);
+  }
+
+  // 显示LLM配置错误对话框
+  static Future<void> showConfigurationErrorDialog(BuildContext context, dynamic error) async {
+    final errorMessage = error.toString();
+    if (isLlmConfigurationError(errorMessage)) {
+      await handleLlmConfigurationError(context, errorMessage);
+    }
   }
 
   // 构建聊天请求

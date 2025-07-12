@@ -361,7 +361,7 @@ class _DiaryListItem extends StatelessWidget {
                     if (createdTime != null) ...[
                       const SizedBox(height: 2),
                       Text(
-                        AppLocalizations.of(context)!.monthDay(createdTime!.month, createdTime!.day) + '  ${createdTime!.hour.toString().padLeft(2, '0')}:${createdTime!.minute.toString().padLeft(2, '0')}',
+                        '${AppLocalizations.of(context)!.monthDay(createdTime!.month, createdTime!.day)}  ${createdTime!.hour.toString().padLeft(2, '0')}:${createdTime!.minute.toString().padLeft(2, '0')}',
                         style: TextStyle(
                           fontSize: 12,
                           color: context.secondaryTextColor,

@@ -178,6 +178,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
           });
           // Add log printing for error information
           print('[LLM] Error: $err');
+
+          // Show configuration error dialog if it's a configuration-related error
+          if (DiaryChatService.isLlmConfigurationError(errorMsg)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              DiaryChatService.showConfigurationErrorDialog(context, err);
+            });
+          }
         }
       },
     );
