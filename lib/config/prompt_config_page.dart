@@ -63,6 +63,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
           readOnly: readOnly,
           initialContent: prompt?.content ?? initialContent,
           initialName: prompt?.name, // 新增，传递名称
+          isSystem: prompt?.isSystem ?? false, // 新增，传递系统级标识
         ),
       ),
     );
@@ -73,8 +74,8 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
   }
 
   void _deletePrompt(PromptConfig prompt) async {
-    // 系统默认提示词不可删除
-    if (prompt.name == '问答AI日记助手.md' || prompt.name == '总结AI日记助手.md') {
+    // 系统级提示词不可删除
+    if (prompt.isSystem) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.promptSystemNotDeletable)));
       return;
     }
@@ -96,6 +97,58 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     await _loadActivePrompt();
   }
 
+  Future<void> _createMissingSystemPrompts() async {
+    try {
+      final createdCount = await PromptConfigService.createMissingSystemPrompts();
+
+      if (createdCount > 0) {
+        // 重新加载提示词列表
+        await _loadPrompts();
+        await _loadActivePrompt();
+
+        // 显示成功消息
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                  ? '成功创建了 $createdCount 个系统提示词'
+                  : 'Successfully created $createdCount system prompts'
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // 显示没有缺少的提示词消息
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                  ? '所有系统提示词都已存在'
+                  : 'All system prompts already exist'
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('[PromptConfigPage] 创建系统提示词失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                ? '创建系统提示词失败: $e'
+                : 'Failed to create system prompts: $e'
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +181,19 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                     fontWeight: SettingsUiConfig.titleFontWeight,
                     color: context.primaryTextColor,
                   ),
+                ),
+                const Spacer(),
+                // 创建系统提示词按钮
+                IconButton(
+                  icon: Icon(
+                    Icons.refresh,
+                    color: context.primaryTextColor,
+                    size: 20,
+                  ),
+                  onPressed: _createMissingSystemPrompts,
+                  tooltip: Localizations.localeOf(context).languageCode == 'zh'
+                    ? '创建缺少的系统提示词'
+                    : 'Create Missing System Prompts',
                 ),
               ],
             ),
@@ -185,6 +251,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                             child: ListTile(
                               dense: true,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                              onTap: prompt.isSystem ? () => _showPrompt(prompt, readOnly: true) : null,
                               title: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -221,21 +288,46 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
-                                        child: Text(
-                                          name,
-                                          style: TextStyle(
-                                            fontSize: SettingsUiConfig.titleFontSize,
-                                            color: context.primaryTextColor,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                name,
+                                                style: TextStyle(
+                                                  fontSize: SettingsUiConfig.titleFontSize,
+                                                  color: context.primaryTextColor,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                              ),
+                                            ),
+                                            // 系统级提示词角标
+                                            if (prompt.isSystem)
+                                              Container(
+                                                margin: const EdgeInsets.only(left: 8),
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                                                ),
+                                                child: Text(
+                                                  Localizations.localeOf(context).languageCode == 'zh' ? '系统' : 'System',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    color: Colors.blue,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: 6),
-                                  // 第二排：右下角3个操作按钮
+                                  // 第二排：右下角操作按钮
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -246,33 +338,38 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           color: context.secondaryTextColor,
                                         ),
                                         onPressed: () async {
-                                          _showPrompt(prompt);
+                                          _showPrompt(prompt, readOnly: true);
                                         },
                                         tooltip: AppLocalizations.of(context)!.promptCopy,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
+                                      // 只有非系统提示词才显示编辑按钮
+                                      if (!prompt.isSystem) ...[
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.edit,
+                                            size: 20,
+                                            color: context.secondaryTextColor,
+                                          ),
+                                          onPressed: () => _showPrompt(prompt),
+                                          tooltip: AppLocalizations.of(context)!.promptEdit,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
                                       const SizedBox(width: 8),
                                       IconButton(
                                         icon: Icon(
-                                          Icons.edit,
-                                          size: 20,
-                                          color: context.secondaryTextColor,
-                                        ),
-                                        onPressed: () => _showPrompt(prompt),
-                                        tooltip: AppLocalizations.of(context)!.promptEdit,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: const Icon(
                                           Icons.delete,
                                           size: 20,
-                                          color: Colors.red,
+                                          color: prompt.isSystem ? Colors.red.withOpacity(0.5) : Colors.red,
                                         ),
-                                        onPressed: () => _deletePrompt(prompt),
-                                        tooltip: AppLocalizations.of(context)!.promptDelete,
+                                        onPressed: prompt.isSystem ? null : () => _deletePrompt(prompt),
+                                        tooltip: prompt.isSystem ?
+                                          AppLocalizations.of(context)!.promptSystemNotDeletable :
+                                          AppLocalizations.of(context)!.promptDelete,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),

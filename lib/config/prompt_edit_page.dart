@@ -12,6 +12,7 @@ class PromptEditPage extends StatefulWidget {
   final bool readOnly;
   final String? initialContent;
   final String? initialName; // 新增
+  final bool isSystem; // 新增：是否为系统级提示词
 
   const PromptEditPage({
     super.key,
@@ -20,6 +21,7 @@ class PromptEditPage extends StatefulWidget {
     this.readOnly = false,
     this.initialContent,
     this.initialName, // 新增
+    this.isSystem = false, // 新增
   });
 
   @override
@@ -36,7 +38,10 @@ class _PromptEditPageState extends State<PromptEditPage> {
   @override
   void initState() {
     super.initState();
-    _isSystem = widget.file?.path.split('/').last == '问答AI日记助手.md';
+
+    // 使用传入的 isSystem 参数
+    _isSystem = widget.isSystem;
+
     _contentCtrl = TextEditingController(text: widget.initialContent ?? '');
     _nameCtrl = TextEditingController(text: widget.initialName ?? ''); // 优先用 initialName
     _selectedCategory = widget.activeCategory;
@@ -67,6 +72,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
       _nameCtrl.text = activePrompt.name;
       _selectedCategory = activePrompt.type;
       _isActive = activePrompt.active;
+      _isSystem = activePrompt.isSystem; // 确保系统级标识正确加载
     });
   }
 
@@ -84,6 +90,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
       type: _selectedCategory,
       active: _isActive,
       content: _contentCtrl.text,
+      isSystem: _isSystem, // 保持原有的系统级标识
       updated: DateTime.now(),
     );
     await savePrompt(prompt, oldName: widget.file?.path.split('/').last.replaceAll('.md', ''));

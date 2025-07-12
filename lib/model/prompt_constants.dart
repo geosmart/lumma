@@ -33,6 +33,41 @@ class PromptConstants {
     final currentLanguage = languageService.currentLocale.languageCode;
 
     return currentLanguage == 'zh' ? systemChatPromptsChinese : systemChatPrompts;
+  }  /// 获取所有应该存在的系统提示词配置
+  static List<Map<String, dynamic>> getAllSystemPrompts() {
+    final languageService = LanguageService.instance;
+    final currentLanguage = languageService.currentLocale.languageCode;
+    final isZh = currentLanguage == 'zh';
+
+    List<Map<String, dynamic>> systemPrompts = [];
+
+    // 添加默认的问答和总结提示词
+    systemPrompts.add({
+      'name': isZh ? '问答AI日记助手.md' : 'QA Diary Assistant.md',
+      'type': 'chat',
+      'content': getDefaultChatPrompt(),
+      'isSystem': true,
+    });
+
+    systemPrompts.add({
+      'name': isZh ? '总结AI日记助手.md' : 'Summary Diary Assistant.md',
+      'type': 'qa',
+      'content': getDefaultSummaryPrompt(),
+      'isSystem': true,
+    });
+
+    // 添加系统聊天提示词
+    final chatPrompts = getSystemChatPrompts();
+    for (final chatPrompt in chatPrompts) {
+      systemPrompts.add({
+        'name': '${chatPrompt['name']!}.md',
+        'type': 'chat',
+        'content': chatPrompt['content']!,
+        'isSystem': true,
+      });
+    }
+
+    return systemPrompts;
   }
 
   // Default language is English
