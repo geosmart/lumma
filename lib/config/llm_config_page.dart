@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/llm_config.dart';
 import 'config_service.dart';
+import 'llm_config_service.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
 import 'llm_edit_page.dart';
@@ -31,14 +32,14 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
     });
   }
 
-  void _showEditDialog({LLMConfig? config, int? index}) async {
+  void _showEditDialog({LLMConfig? config, int? index, bool readOnly = false}) async {
     final result = await Navigator.of(context).push<LLMConfig>(
       MaterialPageRoute(
-        builder: (context) => LLMEditPage(config: config),
+        builder: (context) => LLMEditPage(config: config, readOnly: readOnly),
       ),
     );
 
-    if (result != null) {
+    if (result != null && !readOnly) {
       setState(() {
         if (index != null) {
           _configs[index] = result;
@@ -51,6 +52,22 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
   }
 
   void _deleteConfig(int index) async {
+    final config = _configs[index];
+
+    // 系统级配置不可删除
+    if (config.isSystem) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            Localizations.localeOf(context).languageCode == 'zh'
+              ? '系统配置不可删除'
+              : 'System configuration cannot be deleted'
+          ),
+        ),
+      );
+      return;
+    }
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -83,12 +100,65 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
         apiKey: _configs[i].apiKey,
         model: _configs[i].model,
         active: i == index,
+        isSystem: _configs[i].isSystem, // 保留系统级标识
         created: _configs[i].created,
         updated: DateTime.now(),
       );
     }
     await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
     setState(() {});
+  }
+
+  Future<void> _createMissingSystemConfigs() async {
+    try {
+      final createdCount = await LlmConfigService.createMissingSystemConfigs();
+
+      if (createdCount > 0) {
+        // 重新加载配置列表
+        await _loadConfigs();
+
+        // 显示成功消息
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                  ? '成功重置了 $createdCount 个系统模型配置'
+                  : 'Successfully reset $createdCount system model configurations'
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // 显示没有缺少的配置消息
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                  ? '所有系统模型配置都已存在'
+                  : 'All system model configurations already exist'
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('[LLMConfigPage] 重置系统模型配置失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                ? '重置系统模型配置失败: $e'
+                : 'Failed to reset system model configurations: $e'
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -133,6 +203,19 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                               color: context.primaryTextColor,
                             ),
                           ),
+                          const Spacer(),
+                          // 重置系统模型按钮
+                          IconButton(
+                            icon: Icon(
+                              Icons.refresh,
+                              color: context.primaryTextColor,
+                              size: 20,
+                            ),
+                            onPressed: _createMissingSystemConfigs,
+                            tooltip: Localizations.localeOf(context).languageCode == 'zh'
+                              ? '重置系统默认模型'
+                              : 'Reset System Default Models',
+                          ),
                         ],
                       ),
                     ),
@@ -167,6 +250,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                     child: ListTile(
                                       dense: true,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                      onTap: c.isSystem ? () => _showEditDialog(config: c, readOnly: true) : null,
                                       leading: IconButton(
                                         icon: Icon(
                                           c.active ? Icons.check_circle : Icons.circle_outlined,
@@ -191,15 +275,40 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(height: 2),
-                                          Text(
-                                            c.model,
-                                            style: TextStyle(
-                                              fontSize: SettingsUiConfig.titleFontSize,
-                                              color: context.primaryTextColor,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  c.model,
+                                                  style: TextStyle(
+                                                    fontSize: SettingsUiConfig.titleFontSize,
+                                                    color: context.primaryTextColor,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 2,
+                                                ),
+                                              ),
+                                              // 系统级配置角标
+                                              if (c.isSystem)
+                                                Container(
+                                                  margin: const EdgeInsets.only(left: 8),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.blue.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                                                  ),
+                                                  child: Text(
+                                                    Localizations.localeOf(context).languageCode == 'zh' ? '系统' : 'System',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: Colors.blue,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                           const SizedBox(height: 6),
                                           Row(
@@ -217,7 +326,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                     baseUrl: c.baseUrl,
                                                     apiKey: c.apiKey,
                                                     model: c.model,
-                                                    active: c.active,
+                                                    active: false, // 复制的配置默认为非激活
+                                                    isSystem: false, // 复制的配置不是系统级
                                                     created: c.created,
                                                     updated: DateTime.now(),
                                                   );
@@ -227,27 +337,32 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
+                                              // 只有非系统配置才显示编辑按钮
+                                              if (!c.isSystem) ...[
+                                                const SizedBox(width: 8),
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.edit,
+                                                    size: 20,
+                                                    color: context.secondaryTextColor,
+                                                  ),
+                                                  onPressed: () => _showEditDialog(config: c, index: i),
+                                                  tooltip: AppLocalizations.of(context)!.llmEdit,
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                ),
+                                              ],
                                               const SizedBox(width: 8),
                                               IconButton(
                                                 icon: Icon(
-                                                  Icons.edit,
-                                                  size: 20,
-                                                  color: context.secondaryTextColor,
-                                                ),
-                                                onPressed: () => _showEditDialog(config: c, index: i),
-                                                tooltip: AppLocalizations.of(context)!.llmEdit,
-                                                padding: EdgeInsets.zero,
-                                                constraints: const BoxConstraints(),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              IconButton(
-                                                icon: const Icon(
                                                   Icons.delete,
                                                   size: 20,
-                                                  color: Colors.red,
+                                                  color: c.isSystem ? Colors.red.withOpacity(0.5) : Colors.red,
                                                 ),
-                                                onPressed: () => _deleteConfig(i),
-                                                tooltip: AppLocalizations.of(context)!.llmDelete,
+                                                onPressed: c.isSystem ? null : () => _deleteConfig(i),
+                                                tooltip: c.isSystem ?
+                                                  (Localizations.localeOf(context).languageCode == 'zh' ? '系统配置不可删除' : 'System configuration cannot be deleted') :
+                                                  AppLocalizations.of(context)!.llmDelete,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),

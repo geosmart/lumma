@@ -20,7 +20,6 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
   final TextEditingController _controller = TextEditingController();
 
   // AI summary related state
-  String? _aiResult; // When non-null, indicates entering AI result page
   final TextEditingController _aiResultController = TextEditingController();
 
   @override
@@ -255,19 +254,6 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_aiResult != null) {
-      return AiResultPage(
-        title: AppLocalizations.of(context)!.aiSummaryResult,
-        onBack: () {
-          setState(() {
-            _aiResult = null;
-          });
-        },
-        getContent: () async {
-          return _content;
-        },
-      );
-    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.fileName),
@@ -276,10 +262,26 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
             IconButton(
               icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
               tooltip: AppLocalizations.of(context)!.aiSummary,
-              onPressed: () {
-                setState(() {
-                  _aiResult = ''; // 触发显示AI结果页
-                });
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AiResultPage(
+                      title: AppLocalizations.of(context)!.aiSummaryResult,
+                      onBack: () {
+                        Navigator.of(context).pop();
+                      },
+                      getContent: () async {
+                        return _content;
+                      },
+                    ),
+                  ),
+                );
+
+                // If result is true, refresh the diary content
+                if (result == true) {
+                  await _loadContent();
+                }
               },
             ),
           if (!_editMode && !_loading)

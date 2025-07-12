@@ -31,21 +31,21 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
     setState(() => _loading = true);
     try {
       final files = await MarkdownService.listDiaryFiles();
-      // Sort by frontmatter created field in descending order
-      final filesWithCreated = await Future.wait(files.map((f) async {
-        final dt = await getDiaryCreatedTime(f);
-        return {'file': f, 'created': dt};
-      }));
-      filesWithCreated.sort((a, b) {
-        final adt = a['created'] as DateTime?;
-        final bdt = b['created'] as DateTime?;
-        if (adt == null && bdt == null) return 0;
-        if (adt == null) return 1;
-        if (bdt == null) return -1;
-        return bdt.compareTo(adt); // Descending order
+      // Sort by filename in descending order (YYYY-MM-DD.md format)
+      // This is more efficient than reading frontmatter for each file
+      files.sort((a, b) {
+        // Extract date from filename for comparison
+        final dateA = _extractDateFromFilename(a);
+        final dateB = _extractDateFromFilename(b);
+
+        if (dateA == null && dateB == null) return b.compareTo(a); // Fallback to alphabetical desc
+        if (dateA == null) return 1;
+        if (dateB == null) return -1;
+        return dateB.compareTo(dateA); // Descending order by date
       });
+
       setState(() {
-        _files = filesWithCreated.map((e) => e['file'] as String).toList();
+        _files = files;
         _loading = false;
       });
     } catch (e) {
@@ -81,26 +81,27 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
   }
 
   Future<void> _createFile() async {
-    final nameCtrl = TextEditingController();
-    final fileName = await showDialog<String>(
+    final selectedDate = await showDatePicker(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.newDiary),
-        content: TextField(
-          controller: nameCtrl,
-          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.enterFileName),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(AppLocalizations.of(context)!.cancel)),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(nameCtrl.text.trim()), child: Text(AppLocalizations.of(context)!.create)),
-        ],
-      ),
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (fileName != null && fileName.isNotEmpty) {
+
+    if (selectedDate != null) {
+      // 生成日期格式的文件名，格式为 YYYY-MM-DD.md
+      final fileName = '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}.md';
+
+      print('Creating diary file: $fileName'); // Debug log
+
       try {
         await MarkdownService.createDiaryFile(fileName);
         final diaryDir = await MarkdownService.getDiaryDir();
         final file = File('$diaryDir/$fileName');
+
+        print('File path: ${file.path}'); // Debug log
+        print('File exists: ${await file.exists()}'); // Debug log
+
         if (await file.exists()) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createSuccess)));
@@ -112,11 +113,38 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           }
         }
       } catch (e) {
+        print('Error creating file: $e'); // Debug log
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))));
         }
       }
     }
+  }
+
+  /// Extract date from filename (YYYY-MM-DD.md format)
+  DateTime? _extractDateFromFilename(String filename) {
+    try {
+      // Remove .md extension if present
+      final nameWithoutExt = filename.endsWith('.md') ? filename.substring(0, filename.length - 3) : filename;
+
+      // Check if filename matches YYYY-MM-DD format
+      final dateRegex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+      if (!dateRegex.hasMatch(nameWithoutExt)) {
+        return null;
+      }
+
+      // Parse the date
+      final parts = nameWithoutExt.split('-');
+      if (parts.length == 3) {
+        final year = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final day = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (e) {
+      // If parsing fails, return null
+    }
+    return null;
   }
 
   @override

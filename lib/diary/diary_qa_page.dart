@@ -7,6 +7,8 @@ import '../config/theme_service.dart';
 import '../dao/diary_dao.dart';
 import '../widgets/ai_result_page.dart';
 import '../generated/l10n/app_localizations.dart';
+import 'diary_file_list_page.dart';
+import 'qa_questions_service.dart';
 
 class DiaryQaPage extends StatefulWidget {
   const DiaryQaPage({super.key});
@@ -27,7 +29,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   bool _diaryCreated = false; // 是否已创建日记
 
   // AI相关状态
-  String? _aiResult; // 非null时表示进入AI结果页
 
   @override
   void initState() {
@@ -46,6 +47,9 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
   Future<void> _loadQuestions() async {
     try {
+      // 首先初始化默认问题（如果问题列表为空）
+      await QaQuestionsService.init(context);
+
       final config = await AppConfigService.load();
       final questions = config.qaQuestions;
       if (mounted) {
@@ -96,8 +100,8 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     try {
       final content = DiaryDao.formatDiaryContent(
         context: context,
-        title: _questions[_current],
-        content: _answers[_current],
+        title: question,
+        content: answer,
         analysis: '',
       );
       await MarkdownService.appendToDailyDiary(content);
@@ -106,7 +110,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       print(AppLocalizations.of(context)!.saveSuccess);
     } catch (e) {
       print(AppLocalizations.of(context)!.saveFailed);
-      // Do not show error to avoid affecting user experience
     }
   }
 
@@ -124,22 +127,6 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_aiResult != null) {
-      return AiResultPage(
-        title: AppLocalizations.of(context)!.aiSummaryResult,
-        onBack: () {
-          setState(() {
-            _aiResult = null;
-          });
-        },
-        getContent: () async {
-          if (!_diaryCreated || _diaryFileName == null) return null;
-          final diaryDir = await MarkdownService.getDiaryDir();
-          final file = File('$diaryDir/$_diaryFileName');
-          return await file.readAsString();
-        },
-      );
-    }
     return FutureBuilder<String>(
       future: getDiaryQaTitle(context),
       builder: (context, snapshot) {
@@ -262,10 +249,41 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                               IconButton(
                                 icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
                                 tooltip: AppLocalizations.of(context)!.aiSummary,
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AiResultPage(
+                                        title: AppLocalizations.of(context)!.aiSummaryResult,
+                                        onBack: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        getContent: () async {
+                                          if (!_diaryCreated || _diaryFileName == null) return null;
+                                          final diaryDir = await MarkdownService.getDiaryDir();
+                                          final file = File('$diaryDir/$_diaryFileName');
+                                          return await file.readAsString();
+                                        },
+                                      ),
+                                    ),
+                                  );
+
+                                  // If result is true, refresh the diary content
+                                  if (result == true) {
+                                    // Trigger a rebuild to refresh the content
+                                    setState(() {});
+                                  }
+                                },
+                              ),
+                              const SizedBox(width: 4),
+                              // 日记列表按钮
+                              IconButton(
+                                icon: const Icon(Icons.menu_book, color: Colors.teal),
+                                tooltip: AppLocalizations.of(context)!.viewDiaryList,
                                 onPressed: () {
-                                  setState(() {
-                                    _aiResult = ''; // 触发显示AI结果页
-                                  });
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
+                                  );
                                 },
                               ),
                             ],
@@ -305,24 +323,20 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              InkWell(
-                                borderRadius: BorderRadius.circular(24),
-                                onTap: _onSubmit,
-                                child: Container(
-                                  height: 44,
-                                  width: 44,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.white.withOpacity(0.8)
-                                        : Theme.of(context).primaryColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                  child: Icon(
-                                    Icons.send,
-                                    size: 28,
-                                    color: Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.black
-                                        : Theme.of(context).primaryColor,
+                              SizedBox(
+                                height: 44,
+                                width: 56,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(24),
+                                  onTap: _onSubmit,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.send,
+                                      size: 30,
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.white
+                                          : Theme.of(context).primaryColor,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -340,7 +354,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     );
   }
 
-  void _onSubmit() {
+  void _onSubmit() async {
     // Check if there are more questions to answer
     if (_current >= _questions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -366,7 +380,8 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       _current++;
     });
 
-    _autoSaveToDiary(question, answer);
+    // 等待保存完成
+    await _autoSaveToDiary(question, answer);
     _scrollToBottom();
   }
 }

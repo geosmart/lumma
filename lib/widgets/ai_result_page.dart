@@ -54,7 +54,7 @@ class _AiResultPageState extends State<AiResultPage> {
     });
 
     try {
-      final systemPrompt = await getActivePromptContent(PromptCategory.qa);
+      final systemPrompt = await getActivePromptContent(PromptCategory.summary);
       final messages = AiService.buildMessages(
         systemPrompt: systemPrompt,
         history: [],
@@ -117,12 +117,16 @@ class _AiResultPageState extends State<AiResultPage> {
             category: '',
           );
           await MarkdownService.saveOrUpdateDailySummary(context,content);
-          widget.onBack(); // Return to previous page
+
+          // Show success message first
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(AppLocalizations.of(context)!.dailySummarySaved)),
             );
           }
+
+          // Return to previous page with success result to trigger refresh
+          Navigator.of(context).pop(true);
           break;
       }
     } catch (e) {

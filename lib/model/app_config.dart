@@ -16,7 +16,7 @@ class AppConfig {
     this.diaryMode = DiaryMode.qa,
     this.model = const [],
     List<PromptConfig>? prompt,
-    this.theme = ThemeModeType.light,
+    this.theme = ThemeModeType.dark,
     this.language = LanguageType.zh,
     SyncConfig? sync,
     List<String>? qaQuestions,
@@ -28,13 +28,14 @@ class AppConfig {
   factory AppConfig.defaultConfig() {
     // 创建默认提示词配置
     final defaultPrompts = [
-      PromptConfig.qaDefault(),
+      PromptConfig.chatDefault(),
       PromptConfig.summaryDefault(),
     ];
 
     // 创建默认LLM配置
     final defaultModels = [
-      LLMConfig.openAIDefault(),
+      LLMConfig.openRouterDefault(),
+      LLMConfig.deepSeekDefault(),
     ];
 
     // 创建默认同步配置
@@ -42,7 +43,7 @@ class AppConfig {
 
     return AppConfig(
       diaryMode: DiaryMode.qa,
-      theme: ThemeModeType.light,
+      theme: ThemeModeType.dark,
       language: LanguageType.zh,
       model: defaultModels,
       prompt: defaultPrompts,

@@ -363,7 +363,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get qaSave => '保存设置';
 
   @override
-  String get promptCategoryQa => '问答';
+  String get promptCategoryChat => '问答';
 
   @override
   String get promptCategorySummary => '总结';

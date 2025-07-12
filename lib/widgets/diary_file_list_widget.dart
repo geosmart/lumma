@@ -25,6 +25,17 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
     setState(() => _loading = true);
     try {
       final files = await MarkdownService.listDiaryFiles();
+      // Sort by filename in descending order (YYYY-MM-DD.md format)
+      files.sort((a, b) {
+        final dateA = _extractDateFromFilename(a);
+        final dateB = _extractDateFromFilename(b);
+
+        if (dateA == null && dateB == null) return b.compareTo(a); // Fallback to alphabetical desc
+        if (dateA == null) return 1;
+        if (dateB == null) return -1;
+        return dateB.compareTo(dateA); // Descending order by date
+      });
+
       setState(() {
         _files = files;
         _loading = false;
@@ -73,22 +84,17 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
 
   void _onCreate() async {
     final l10n = AppLocalizations.of(context)!;
-    final nameCtrl = TextEditingController();
-    final fileName = await showDialog<String>(
+    final selectedDate = await showDatePicker(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.newDiary),
-        content: TextField(
-          controller: nameCtrl,
-          decoration: InputDecoration(hintText: l10n.enterNewDiaryName),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.cancel)),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(nameCtrl.text.trim()), child: Text(l10n.create)),
-        ],
-      ),
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (fileName != null && fileName.isNotEmpty) {
+
+    if (selectedDate != null) {
+      // 生成日期格式的文件名，格式为 YYYY-MM-DD.md
+      final fileName = '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}.md';
+
       try {
         await MarkdownService.createDiaryFile(fileName);
         await _loadFiles();
@@ -99,6 +105,32 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
         );
       }
     }
+  }
+
+  /// Extract date from filename (YYYY-MM-DD.md format)
+  DateTime? _extractDateFromFilename(String filename) {
+    try {
+      // Remove .md extension if present
+      final nameWithoutExt = filename.endsWith('.md') ? filename.substring(0, filename.length - 3) : filename;
+
+      // Check if filename matches YYYY-MM-DD format
+      final dateRegex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+      if (!dateRegex.hasMatch(nameWithoutExt)) {
+        return null;
+      }
+
+      // Parse the date
+      final parts = nameWithoutExt.split('-');
+      if (parts.length == 3) {
+        final year = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final day = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (e) {
+      // If parsing fails, return null
+    }
+    return null;
   }
 
   @override

@@ -29,12 +29,12 @@ class PromptConfigService {
     final chatPrompts = config.prompt.where((p) => p.type == PromptCategory.chat).toList();
     if (chatPrompts.isEmpty) {
       print('[PromptConfigService] 没有找到聊天类型的提示词，创建默认提示词');
-      config.prompt.add(PromptConfig.qaDefault());
+      config.prompt.add(PromptConfig.chatDefault());
       needsSave = true;
     }
 
     // 检查是否有总结类型的提示词
-    final summaryPrompts = config.prompt.where((p) => p.type == PromptCategory.qa).toList();
+    final summaryPrompts = config.prompt.where((p) => p.type == PromptCategory.summary).toList();
     if (summaryPrompts.isEmpty) {
       print('[PromptConfigService] 没有找到总结类型的提示词，创建默认提示词');
       config.prompt.add(PromptConfig.summaryDefault());

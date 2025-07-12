@@ -4,7 +4,7 @@ import '../model/enums.dart';
 
 /// 主题管理服务
 class ThemeService extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.dark;
 
   ThemeMode get themeMode => _themeMode;
 

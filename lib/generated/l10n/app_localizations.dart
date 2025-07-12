@@ -788,11 +788,11 @@ abstract class AppLocalizations {
   /// **'Save Settings'**
   String get qaSave;
 
-  /// No description provided for @promptCategoryQa.
+  /// No description provided for @promptCategoryChat.
   ///
   /// In en, this message translates to:
   /// **'Chat'**
-  String get promptCategoryQa;
+  String get promptCategoryChat;
 
   /// No description provided for @promptCategorySummary.
   ///

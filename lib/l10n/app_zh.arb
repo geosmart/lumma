@@ -122,7 +122,7 @@
   "qaDelete": "删除",
   "qaAdd": "添加问题",
   "qaSave": "保存设置",
-  "promptCategoryQa": "问答",
+  "promptCategoryChat": "问答",
   "promptCategorySummary": "总结",
   "appearanceSettings": "外观设置",
   "themePreview": "主题预览",

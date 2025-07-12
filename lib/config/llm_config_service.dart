@@ -23,6 +23,36 @@ class LlmConfigService {
     // 假设模型配置已在 AppConfig 中，直接调用 AppConfigService.save()
     await AppConfigService.save();
   }
+
+  /// 创建缺少的系统LLM配置
+  static Future<int> createMissingSystemConfigs() async {
+    final config = await AppConfigService.load();
+    final systemConfigs = LLMConfig.getAllSystemConfigs();
+
+    int createdCount = 0;
+
+    for (final systemConfig in systemConfigs) {
+      // 检查是否已经存在相同的系统配置
+      final exists = config.model.any((llm) =>
+          llm.provider == systemConfig.provider &&
+          llm.baseUrl == systemConfig.baseUrl &&
+          llm.model == systemConfig.model &&
+          llm.isSystem == true);
+
+      if (!exists) {
+        print('[LlmConfigService] 创建缺少的系统LLM配置: ${systemConfig.provider} - ${systemConfig.model}');
+        config.model.add(systemConfig);
+        createdCount++;
+      }
+    }
+
+    if (createdCount > 0) {
+      await AppConfigService.save();
+      print('[LlmConfigService] 成功创建了 $createdCount 个系统LLM配置');
+    }
+
+    return createdCount;
+  }
 }
 
 Future<Map<String, String>> _readEnv() async {

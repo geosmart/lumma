@@ -381,7 +381,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qaSave => 'Save Settings';
 
   @override
-  String get promptCategoryQa => 'Chat';
+  String get promptCategoryChat => 'Chat';
 
   @override
   String get promptCategorySummary => 'Summary';

@@ -43,14 +43,14 @@ class PromptConstants {
 
     // 添加默认的问答和总结提示词
     systemPrompts.add({
-      'name': isZh ? '问答AI日记助手.md' : 'QA Diary Assistant.md',
+      'name': isZh ? '对话助手.md' : 'QA Diary Assistant.md',
       'type': 'chat',
       'content': getDefaultChatPrompt(),
       'isSystem': true,
     });
 
     systemPrompts.add({
-      'name': isZh ? '总结AI日记助手.md' : 'Summary Diary Assistant.md',
+      'name': isZh ? '总结助手.md' : 'Summary Diary Assistant.md',
       'type': 'qa',
       'content': getDefaultSummaryPrompt(),
       'isSystem': true,
@@ -76,7 +76,8 @@ You are a warm, insightful diary assistant. Your task is to guide me through a s
 ''';
 
   static const String defaultChatPromptChinese = '''
-你是一个温暖、有洞察力的问答日记助手。你的任务是引导我通过一系列精心设计的问题，回顾和整理我的一天。
+你是一个温暖、有洞察力的问答日记助手。你的任务是引导我通过一系列精心设计的问题，回顾和整理我的一天：
+提醒我有哪些被你注意到的细节、值得一提的成就或温暖时刻，经历了哪些困难或情绪起伏，又觉察到什么旧习惯，想对明天的自己说点什么？
 ''';
 
   static const String defaultSummaryPrompt = '''Please summarize the diary from the following conversation content according to the template below.

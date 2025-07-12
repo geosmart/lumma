@@ -66,7 +66,7 @@ class AppConfigService {
         _cache = AppConfig.defaultConfig();
         // 将默认配置持久化到文件
         await file.create(recursive: true);
-        await file.writeAsString(jsonEncode(_cache!.toMap()));
+        await file.writeAsString(const JsonEncoder.withIndent('  ').convert(_cache!.toMap()));
         print('[AppConfigService] 创建默认配置文件');
         return _cache!;
       }
@@ -83,7 +83,7 @@ class AppConfigService {
       try {
         final file = await getConfigFile();
         await file.create(recursive: true);
-        await file.writeAsString(jsonEncode(_cache!.toMap()));
+        await file.writeAsString(const JsonEncoder.withIndent('  ').convert(_cache!.toMap()));
         print('[AppConfigService] 加载异常后创建默认配置文件');
       } catch (saveError) {
         print('[AppConfigService] 创建默认配置文件失败: $saveError');
@@ -98,8 +98,8 @@ class AppConfigService {
       print('[AppConfigService] save() called');
       if (_cache != null) {
         final file = await getConfigFile();
-        await file.writeAsString(jsonEncode(_cache!.toMap()));
-        print('[AppConfigService] 保存配置: ${jsonEncode(_cache!.toMap())}');
+        await file.writeAsString(const JsonEncoder.withIndent('  ').convert(_cache!.toMap()));
+        print('[AppConfigService] 保存配置: ${const JsonEncoder.withIndent('  ').convert(_cache!.toMap())}');
       }
     } catch (e, stack) {
       print('[AppConfigService] 保存配置异常: $e\n$stack');

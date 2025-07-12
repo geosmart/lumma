@@ -4,8 +4,9 @@ import '../generated/l10n/app_localizations.dart';
 
 class LLMEditPage extends StatefulWidget {
   final LLMConfig? config;
+  final bool readOnly;
 
-  const LLMEditPage({super.key, this.config});
+  const LLMEditPage({super.key, this.config, this.readOnly = false});
 
   @override
   State<LLMEditPage> createState() => _LLMEditPageState();
@@ -46,6 +47,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
       apiKey: _apiKeyCtrl.text,
       model: _modelCtrl.text,
       active: widget.config?.active ?? false,
+      isSystem: widget.config?.isSystem ?? false, // 保留系统级标识
       created: widget.config?.created,
       updated: DateTime.now(),
     );
@@ -54,9 +56,17 @@ class _LLMEditPageState extends State<LLMEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isReadOnly = widget.readOnly || _isDefault;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.config == null ? AppLocalizations.of(context)!.llmEditAddTitle : AppLocalizations.of(context)!.llmEditEditTitle),
+        title: Text(
+          widget.config == null
+            ? AppLocalizations.of(context)!.llmEditAddTitle
+            : widget.readOnly
+              ? (Localizations.localeOf(context).languageCode == 'zh' ? '查看模型配置' : 'View Model Configuration')
+              : AppLocalizations.of(context)!.llmEditEditTitle
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -69,12 +79,12 @@ class _LLMEditPageState extends State<LLMEditPage> {
                     TextField(
                       controller: _providerCtrl,
                       decoration: InputDecoration(labelText: AppLocalizations.of(context)!.llmEditProvider),
-                      readOnly: _isDefault,
+                      readOnly: isReadOnly,
                     ),
                     TextField(
                       controller: _baseUrlCtrl,
                       decoration: InputDecoration(labelText: AppLocalizations.of(context)!.llmEditBaseUrl),
-                      readOnly: _isDefault,
+                      readOnly: isReadOnly,
                     ),
                     TextField(
                       controller: _apiKeyCtrl,
@@ -90,12 +100,12 @@ class _LLMEditPageState extends State<LLMEditPage> {
                         ),
                       ),
                       obscureText: _obscureApiKey,
-                      readOnly: _isDefault,
+                      readOnly: isReadOnly,
                     ),
                     TextField(
                       controller: _modelCtrl,
                       decoration: InputDecoration(labelText: AppLocalizations.of(context)!.llmEditModel),
-                      readOnly: _isDefault,
+                      readOnly: isReadOnly,
                     ),
                   ],
                 ),
@@ -104,7 +114,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
               child: ElevatedButton.icon(
-                onPressed: _isDefault ? null : _saveConfig,
+                onPressed: isReadOnly ? null : _saveConfig,
                 icon: const Icon(Icons.save),
                 label: Text(AppLocalizations.of(context)!.llmEditSave),
                 style: ElevatedButton.styleFrom(

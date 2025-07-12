@@ -9,7 +9,7 @@ Future<String?> getActivePromptContent(PromptCategory category) async {
     (p) => p.type == category && p.active,
     orElse: () => config.prompt.firstWhere(
       (p) => p.type == category,
-      orElse: () => PromptConfig.qaDefault(),
+      orElse: () => PromptConfig.chatDefault(),
     ),
   );
   return prompt.content;
@@ -22,7 +22,7 @@ Future<String?> getActivePromptName(PromptCategory category) async {
     (p) => p.type == category && p.active,
     orElse: () => config.prompt.firstWhere(
       (p) => p.type == category,
-      orElse: () => PromptConfig.qaDefault(),
+      orElse: () => PromptConfig.chatDefault(),
     ),
   );
   return prompt.name;

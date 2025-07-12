@@ -22,7 +22,7 @@ class PromptConfig extends Timestamped {
   });
 
   /// 问答提示词默认配置
-  factory PromptConfig.qaDefault() => PromptConfig(
+  factory PromptConfig.chatDefault() => PromptConfig(
         name: getDefaultFileName(PromptCategory.chat),
         type: PromptCategory.chat,
         active: true,
@@ -32,8 +32,8 @@ class PromptConfig extends Timestamped {
 
   /// 总结提示词默认配置
   factory PromptConfig.summaryDefault() => PromptConfig(
-        name: getDefaultFileName(PromptCategory.qa),
-        type: PromptCategory.qa,
+        name: getDefaultFileName(PromptCategory.summary),
+        type: PromptCategory.summary,
         active: false,
         content: PromptConstants.getDefaultSummaryPrompt(),
         isSystem: true, // 系统级提示词
@@ -49,9 +49,9 @@ class PromptConfig extends Timestamped {
 
     switch (type) {
       case PromptCategory.chat:
-        return isZh ? '问答AI日记助手.md' : 'QA Diary Assistant.md';
-      case PromptCategory.qa:
-        return isZh ? '总结AI日记助手.md' : 'Summary Diary Assistant.md';
+        return isZh ? '对话助手.md' : 'QA Diary Assistant.md';
+      case PromptCategory.summary:
+        return isZh ? '总结助手.md' : 'Summary Diary Assistant.md';
     }
   }
 
@@ -62,7 +62,7 @@ class PromptConfig extends Timestamped {
             : promptCategoryFromString(map['type'] ?? 'qa'),
         active: map['active'] ?? false,
         content: map['content'] ?? '',
-        isSystem: map['isSystem'] ?? false, // 新增字段
+        isSystem: map['isSystem'] == true, // 更安全的处理，默认为false
         created: DateTime.tryParse(map['created'] ?? '') ?? DateTime.now(),
         updated: DateTime.tryParse(map['updated'] ?? '') ?? DateTime.now(),
       );
