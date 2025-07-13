@@ -24,10 +24,7 @@ DiaryMode diaryModeFromString(String value) {
 }
 
 // 提示词分类枚举
-enum PromptCategory {
-  chat,
-  summary
-}
+enum PromptCategory { chat, summary }
 
 // 获取提示词分类显示名称（国际化）
 String promptCategoryToDisplayName(PromptCategory category, BuildContext context) {

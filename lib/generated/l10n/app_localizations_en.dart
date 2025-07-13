@@ -21,15 +21,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncNotConfigured => 'Sync Not Configured';
 
   @override
-  String get syncNotConfiguredMessage =>
-      'Please configure sync mode in settings.';
+  String get syncNotConfiguredMessage => 'Please configure sync mode in settings.';
 
   @override
   String get syncFailed => 'Sync Failed';
 
   @override
-  String get syncFailedMessage =>
-      'WebDAV sync failed, please check network or configuration.';
+  String get syncFailedMessage => 'WebDAV sync failed, please check network or configuration.';
 
   @override
   String get syncSuccess => 'Sync Success';
@@ -90,8 +88,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteConfirmTitle => 'Delete Confirmation';
 
   @override
-  String get deleteConfirmMessage =>
-      'Are you sure you want to delete this file?';
+  String get deleteConfirmMessage => 'Are you sure you want to delete this file?';
 
   @override
   String get theme => 'Theme';
@@ -118,8 +115,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncMethod => 'Sync Method';
 
   @override
-  String get obsidianSync =>
-      'Obsidian Sync (URI-based sync via Obsidian plugin)';
+  String get obsidianSync => 'Obsidian Sync (URI-based sync via Obsidian plugin)';
 
   @override
   String get webdavSync => 'WebDAV Sync (Sync to remote WebDAV server)';
@@ -128,8 +124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncAddress => 'Sync Address';
 
   @override
-  String get syncAddressDescription =>
-      'Set the AdvanceUri for Obsidian sync command';
+  String get syncAddressDescription => 'Set the AdvanceUri for Obsidian sync command';
 
   @override
   String get setSyncAddress => 'Set Address';
@@ -150,8 +145,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmClear => 'Confirm Clear';
 
   @override
-  String get confirmClearSyncAddress =>
-      'Are you sure you want to clear the sync address setting?';
+  String get confirmClearSyncAddress => 'Are you sure you want to clear the sync address setting?';
 
   @override
   String get syncAddressCleared => 'Sync address setting cleared';
@@ -196,16 +190,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webdavConfigSaved => 'WebDAV configuration saved';
 
   @override
-  String get pleaseCompleteWebdavConfig =>
-      'Please fill in complete WebDAV configuration';
+  String get pleaseCompleteWebdavConfig => 'Please fill in complete WebDAV configuration';
 
   @override
-  String get webdavConnectionSuccess =>
-      'WebDAV connection successful, directory exists!';
+  String get webdavConnectionSuccess => 'WebDAV connection successful, directory exists!';
 
   @override
-  String get authenticationFailed =>
-      'Authentication failed, please check username and password';
+  String get authenticationFailed => 'Authentication failed, please check username and password';
 
   @override
   String get directoryNotFound => 'Directory not found';
@@ -231,26 +222,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectDataWorkDirectory => 'Select data work directory';
 
   @override
-  String get dataWorkDirectorySetSuccess =>
-      'Data work directory set successfully';
+  String get dataWorkDirectorySetSuccess => 'Data work directory set successfully';
 
   @override
-  String get confirmClearDataWorkDirectory =>
-      'Are you sure you want to clear the data work directory setting?';
+  String get confirmClearDataWorkDirectory => 'Are you sure you want to clear the data work directory setting?';
 
   @override
   String get dataWorkDirectoryCleared => 'Data work directory setting cleared';
 
   @override
-  String get storagePermissionRequired =>
-      'File access permission required to select directory';
+  String get storagePermissionRequired => 'File access permission required to select directory';
 
   @override
   String get selectWebdavLocalDirectory => 'Select WebDAV local directory';
 
   @override
-  String get webdavLocalDirectorySetSuccess =>
-      'WebDAV local directory set successfully';
+  String get webdavLocalDirectorySetSuccess => 'WebDAV local directory set successfully';
 
   @override
   String get diaryMode => 'Diary Mode';
@@ -259,15 +246,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixedQA => 'Fixed Q&A';
 
   @override
-  String get fixedQADescription =>
-      'Answer preset questions one by one to generate structured diary';
+  String get fixedQADescription => 'Answer preset questions one by one to generate structured diary';
 
   @override
   String get aiChat => 'AI Chat';
 
   @override
-  String get aiChatDescription =>
-      'Chat with AI using Q&A prompts to generate custom diary';
+  String get aiChatDescription => 'Chat with AI using Q&A prompts to generate custom diary';
 
   @override
   String get startWritingDiary => 'Start Writing';
@@ -315,8 +300,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get llmDeleteConfirmTitle => 'Confirm Delete';
 
   @override
-  String get llmDeleteConfirmContent =>
-      'Are you sure you want to delete this model?';
+  String get llmDeleteConfirmContent => 'Are you sure you want to delete this model?';
 
   @override
   String get llmCancel => 'Cancel';
@@ -354,8 +338,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promptAddSuccess => 'Prompt added successfully';
 
   @override
-  String get promptDeleteConfirm =>
-      'Are you sure you want to delete this prompt?';
+  String get promptDeleteConfirm => 'Are you sure you want to delete this prompt?';
 
   @override
   String get promptCancel => 'Cancel';
@@ -584,8 +567,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get operationFailed => 'Operation failed';
 
   @override
-  String get aiContentPlaceholder =>
-      'AI generated content will be displayed here...';
+  String get aiContentPlaceholder => 'AI generated content will be displayed here...';
 
   @override
   String get diaryDetail => 'Diary Detail';
@@ -600,12 +582,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
-  String get requestParametersCopied =>
-      'Request parameters copied to clipboard';
+  String get requestParametersCopied => 'Request parameters copied to clipboard';
 
   @override
-  String get mermaidMobileOnly =>
-      'Mermaid is only supported on mobile, current platform does not support rendering';
+  String get mermaidMobileOnly => 'Mermaid is only supported on mobile, current platform does not support rendering';
 
   @override
   String get mermaidRenderError => 'Mermaid rendering error';

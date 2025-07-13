@@ -62,10 +62,10 @@ class _LLMEditPageState extends State<LLMEditPage> {
       appBar: AppBar(
         title: Text(
           widget.config == null
-            ? AppLocalizations.of(context)!.llmEditAddTitle
-            : widget.readOnly
+              ? AppLocalizations.of(context)!.llmEditAddTitle
+              : widget.readOnly
               ? (Localizations.localeOf(context).languageCode == 'zh' ? '查看模型配置' : 'View Model Configuration')
-              : AppLocalizations.of(context)!.llmEditEditTitle
+              : AppLocalizations.of(context)!.llmEditEditTitle,
         ),
       ),
       body: Padding(
@@ -117,9 +117,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
                 onPressed: isReadOnly ? null : _saveConfig,
                 icon: const Icon(Icons.save),
                 label: Text(AppLocalizations.of(context)!.llmEditSave),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                ),
+                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
               ),
             ),
           ],

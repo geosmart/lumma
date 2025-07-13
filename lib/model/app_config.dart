@@ -20,23 +20,17 @@ class AppConfig {
     this.language = LanguageType.zh,
     SyncConfig? sync,
     List<String>? qaQuestions,
-  })  : prompt = prompt ?? const [],
-        sync = sync ?? SyncConfig.defaultConfig(),
-        qaQuestions = qaQuestions ?? const [];
+  }) : prompt = prompt ?? const [],
+       sync = sync ?? SyncConfig.defaultConfig(),
+       qaQuestions = qaQuestions ?? const [];
 
   /// 创建默认配置
   factory AppConfig.defaultConfig() {
     // 创建默认提示词配置
-    final defaultPrompts = [
-      PromptConfig.chatDefault(),
-      PromptConfig.summaryDefault(),
-    ];
+    final defaultPrompts = [PromptConfig.chatDefault(), PromptConfig.summaryDefault()];
 
     // 创建默认LLM配置
-    final defaultModels = [
-      LLMConfig.openRouterDefault(),
-      LLMConfig.deepSeekDefault(),
-    ];
+    final defaultModels = [LLMConfig.openRouterDefault(), LLMConfig.deepSeekDefault()];
 
     // 创建默认同步配置
     final defaultSync = SyncConfig.defaultConfig();
@@ -53,21 +47,21 @@ class AppConfig {
   }
 
   factory AppConfig.fromMap(Map map) => AppConfig(
-        diaryMode: diaryModeFromString(map['diary_mode'] ?? 'qa'),
-        model: (map['model'] as List? ?? []).map((e) => LLMConfig.fromMap(e)).toList(),
-        prompt: (map['prompt'] as List? ?? []).map((e) => PromptConfig.fromMap(e)).toList(),
-        theme: themeModeTypeFromString(map['theme'] ?? 'light'),
-        language: languageTypeFromString(map['language'] ?? 'zh'),
-        sync: map['sync'] != null ? SyncConfig.fromMap(map['sync']) : SyncConfig.defaultConfig(),
-        qaQuestions: (map['qa_questions'] as List? ?? []).map((e) => e.toString()).toList(),
-      );
+    diaryMode: diaryModeFromString(map['diary_mode'] ?? 'qa'),
+    model: (map['model'] as List? ?? []).map((e) => LLMConfig.fromMap(e)).toList(),
+    prompt: (map['prompt'] as List? ?? []).map((e) => PromptConfig.fromMap(e)).toList(),
+    theme: themeModeTypeFromString(map['theme'] ?? 'light'),
+    language: languageTypeFromString(map['language'] ?? 'zh'),
+    sync: map['sync'] != null ? SyncConfig.fromMap(map['sync']) : SyncConfig.defaultConfig(),
+    qaQuestions: (map['qa_questions'] as List? ?? []).map((e) => e.toString()).toList(),
+  );
   Map<String, dynamic> toMap() => {
-        'diary_mode': diaryModeToString(diaryMode),
-        'model': model.map((e) => e.toMap()).toList(),
-        'prompt': prompt.map((e) => e.toMap()).toList(),
-        'theme': themeModeTypeToString(theme),
-        'language': languageTypeToString(language),
-        'sync': sync.toMap(),
-        'qa_questions': qaQuestions,
-      };
+    'diary_mode': diaryModeToString(diaryMode),
+    'model': model.map((e) => e.toMap()).toList(),
+    'prompt': prompt.map((e) => e.toMap()).toList(),
+    'theme': themeModeTypeToString(theme),
+    'language': languageTypeToString(language),
+    'sync': sync.toMap(),
+    'qa_questions': qaQuestions,
+  };
 }

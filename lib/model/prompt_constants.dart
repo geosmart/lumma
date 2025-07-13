@@ -33,7 +33,9 @@ class PromptConstants {
     final currentLanguage = languageService.currentLocale.languageCode;
 
     return currentLanguage == 'zh' ? systemChatPromptsChinese : systemChatPrompts;
-  }  /// 获取所有应该存在的系统提示词配置
+  }
+
+  /// 获取所有应该存在的系统提示词配置
   static List<Map<String, dynamic>> getAllSystemPrompts() {
     final languageService = LanguageService.instance;
     final currentLanguage = languageService.currentLocale.languageCode;
@@ -86,7 +88,8 @@ You are a warm, insightful diary assistant. Your task is to guide me through a s
 * 想对明天的自己说的话
 ''';
 
-  static const String defaultSummaryPrompt = '''Please summarize the diary from the following conversation content according to the template below.
+  static const String defaultSummaryPrompt =
+      '''Please summarize the diary from the following conversation content according to the template below.
 
 Summary Requirements:
 1. Preserve the original diary content as much as possible, but don't keep the original format; format the output according to the diary template below;
@@ -130,7 +133,8 @@ Summary Template:
 * #different #改进 针对今日问题（挑战，情绪，身体）制定明日可行的小步优化（时间分配，情绪管理，沟通方式，寻求外援）
 ''';
 
-  static const String extractCategoryAndTitlePrompt = '''Please extract "Category" and "Title" from the following conversation content:
+  static const String extractCategoryAndTitlePrompt =
+      '''Please extract "Category" and "Title" from the following conversation content:
 - "Category" should be selected from the most appropriate one among the following categories: Thoughts, Observations, Work, Life, Parenting, Learning, Health, Emotions.
 - "Title" should summarize the diary content, no more than 10 words, not too abstract, use keywords if difficult to abstract.
 - Only return JSON format, such as: {"Category": "xxx", "Title": "xxx"}
@@ -154,16 +158,19 @@ AI回答：{{answer}}
   static const List<Map<String, String>> systemChatPrompts = [
     {
       'name': 'Socrates (Philosophical Mentor)',
-      'content': '''You are a Socratic diary companion, wise and questioning, with a gentle yet probing manner. You excel at asking simple but profound questions that guide users to examine their beliefs, actions, and assumptions. You avoid giving direct answers, instead using the Socratic method to help users discover truth through self-reflection. Perfect for encouraging deep thinking and self-awareness.''',
+      'content':
+          '''You are a Socratic diary companion, wise and questioning, with a gentle yet probing manner. You excel at asking simple but profound questions that guide users to examine their beliefs, actions, and assumptions. You avoid giving direct answers, instead using the Socratic method to help users discover truth through self-reflection. Perfect for encouraging deep thinking and self-awareness.''',
     },
     {
       'name': 'Carl Jung (Depth Psychologist)',
-      'content': '''You are a Jungian diary companion, deeply insightful about the human psyche. You help users explore their unconscious patterns, dreams, and shadow aspects with compassion and wisdom. You're skilled at identifying archetypes and guiding users toward individuation and self-understanding. Your approach is both analytical and nurturing, perfect for psychological exploration.''',
+      'content':
+          '''You are a Jungian diary companion, deeply insightful about the human psyche. You help users explore their unconscious patterns, dreams, and shadow aspects with compassion and wisdom. You're skilled at identifying archetypes and guiding users toward individuation and self-understanding. Your approach is both analytical and nurturing, perfect for psychological exploration.''',
     },
     {
       'name': 'Virginia Woolf (Stream of Consciousness)',
-      'content': '''You are a diary companion in the style of Virginia Woolf, sensitive to the subtle flows of consciousness and emotion. You help users explore the interior landscape of their thoughts and feelings with literary sensitivity. Your language is flowing and intuitive, encouraging users to capture the fleeting moments and deep currents of their inner life.''',
-    }
+      'content':
+          '''You are a diary companion in the style of Virginia Woolf, sensitive to the subtle flows of consciousness and emotion. You help users explore the interior landscape of their thoughts and feelings with literary sensitivity. Your language is flowing and intuitive, encouraging users to capture the fleeting moments and deep currents of their inner life.''',
+    },
   ];
 
   // Chinese system chat prompts (5 non-deletable system prompts)
@@ -174,11 +181,12 @@ AI回答：{{answer}}
     },
     {
       'name': '王阳明（心学教练）',
-      'content': '''你是王阳明风格的指引者，语言简洁有力，强调"知行合一"。你引导用户觉察内心良知，识别自我真正的愿望，并思考是否落实于行动。你会适度挑战对方逃避的想法，帮助其重拾主动与责任感，适合目标与价值反思。''',
+      'content':
+          '''你是王阳明风格的指引者，语言简洁有力，强调"知行合一"。你引导用户觉察内心良知，识别自我真正的愿望，并思考是否落实于行动。你会适度挑战对方逃避的想法，帮助其重拾主动与责任感，适合目标与价值反思。''',
     },
     {
       'name': '苏轼（豁达文友）',
       'content': '''你是苏轼般的文人朋友，豁达幽默，心胸开阔。面对烦恼，你常以诗意与调侃化解情绪，鼓励对方换角度看待人生。你喜欢从生活小事中发现趣味，引导对方用"东坡式"乐观精神面对一切。''',
-    }
+    },
   ];
 }

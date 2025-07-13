@@ -76,7 +76,9 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
   void _deletePrompt(PromptConfig prompt) async {
     // 系统级提示词不可删除
     if (prompt.isSystem) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.promptSystemNotDeletable)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.promptSystemNotDeletable)));
       return;
     }
     // 检查是否为激活中的提示词
@@ -112,8 +114,8 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
             SnackBar(
               content: Text(
                 Localizations.localeOf(context).languageCode == 'zh'
-                  ? '成功创建了 $createdCount 个系统提示词'
-                  : 'Successfully created $createdCount system prompts'
+                    ? '成功创建了 $createdCount 个系统提示词'
+                    : 'Successfully created $createdCount system prompts',
               ),
               backgroundColor: Colors.green,
             ),
@@ -126,8 +128,8 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
             SnackBar(
               content: Text(
                 Localizations.localeOf(context).languageCode == 'zh'
-                  ? '所有系统提示词都已存在'
-                  : 'All system prompts already exist'
+                    ? '所有系统提示词都已存在'
+                    : 'All system prompts already exist',
               ),
             ),
           );
@@ -140,8 +142,8 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
           SnackBar(
             content: Text(
               Localizations.localeOf(context).languageCode == 'zh'
-                ? '创建系统提示词失败: $e'
-                : 'Failed to create system prompts: $e'
+                  ? '创建系统提示词失败: $e'
+                  : 'Failed to create system prompts: $e',
             ),
             backgroundColor: Colors.red,
           ),
@@ -164,8 +166,8 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
           SnackBar(
             content: Text(
               Localizations.localeOf(context).languageCode == 'zh'
-                ? '已复制提示词: ${newPrompt.name}'
-                : 'Copied prompt: ${newPrompt.name}'
+                  ? '已复制提示词: ${newPrompt.name}'
+                  : 'Copied prompt: ${newPrompt.name}',
             ),
             backgroundColor: Colors.green,
           ),
@@ -177,9 +179,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              Localizations.localeOf(context).languageCode == 'zh'
-                ? '复制提示词失败: $e'
-                : 'Failed to copy prompt: $e'
+              Localizations.localeOf(context).languageCode == 'zh' ? '复制提示词失败: $e' : 'Failed to copy prompt: $e',
             ),
             backgroundColor: Colors.red,
           ),
@@ -206,11 +206,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               children: [
-                Icon(
-                  Icons.chat,
-                  color: context.primaryTextColor,
-                  size: 24,
-                ),
+                Icon(Icons.chat, color: context.primaryTextColor, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   AppLocalizations.of(context)!.promptManage,
@@ -223,15 +219,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                 const Spacer(),
                 // 创建系统提示词按钮
                 IconButton(
-                  icon: Icon(
-                    Icons.refresh,
-                    color: context.primaryTextColor,
-                    size: 20,
-                  ),
+                  icon: Icon(Icons.refresh, color: context.primaryTextColor, size: 20),
                   onPressed: _createMissingSystemPrompts,
                   tooltip: Localizations.localeOf(context).languageCode == 'zh'
-                    ? '创建缺少的系统提示词'
-                    : 'Create Missing System Prompts',
+                      ? '创建缺少的系统提示词'
+                      : 'Create Missing System Prompts',
                 ),
               ],
             ),
@@ -246,7 +238,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                     children: [
                       for (final category in PromptCategory.values)
                         ChoiceChip(
-                          label: Text(promptCategoryToDisplayName(category,context)),
+                          label: Text(promptCategoryToDisplayName(category, context)),
                           selected: _activeCategory == category,
                           onSelected: (v) {
                             setState(() {
@@ -279,10 +271,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                           decoration: BoxDecoration(
                             color: context.cardBackgroundColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: context.borderColor,
-                              width: 1,
-                            ),
+                            border: Border.all(color: context.borderColor, width: 1),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
@@ -298,10 +287,14 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                     children: [
                                       IconButton(
                                         icon: Icon(
-                                          _activePrompt[_activeCategory] == prompt.name // 用名称判断激活
+                                          _activePrompt[_activeCategory] ==
+                                                  prompt
+                                                      .name // 用名称判断激活
                                               ? Icons.check_circle
                                               : Icons.circle_outlined,
-                                          color: _activePrompt[_activeCategory] == prompt.name ? Colors.green : context.secondaryTextColor,
+                                          color: _activePrompt[_activeCategory] == prompt.name
+                                              ? Colors.green
+                                              : context.secondaryTextColor,
                                           size: 22,
                                         ),
                                         onPressed: () async {
@@ -315,7 +308,11 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                             print('[PromptConfigPage] 设置激活提示词失败: $e');
                                             if (mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text(AppLocalizations.of(context)!.promptSetActiveFailed(e.toString()))),
+                                                SnackBar(
+                                                  content: Text(
+                                                    AppLocalizations.of(context)!.promptSetActiveFailed(e.toString()),
+                                                  ),
+                                                ),
                                               );
                                             }
                                           }
@@ -351,7 +348,9 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                                   border: Border.all(color: Colors.blue.withOpacity(0.3)),
                                                 ),
                                                 child: Text(
-                                                  Localizations.localeOf(context).languageCode == 'zh' ? '系统' : 'System',
+                                                  Localizations.localeOf(context).languageCode == 'zh'
+                                                      ? '系统'
+                                                      : 'System',
                                                   style: TextStyle(
                                                     fontSize: 10,
                                                     color: Colors.blue,
@@ -372,11 +371,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                       // 系统提示词：只显示查看和复制按钮
                                       if (prompt.isSystem) ...[
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.visibility,
-                                            size: 20,
-                                            color: context.secondaryTextColor,
-                                          ),
+                                          icon: Icon(Icons.visibility, size: 20, color: context.secondaryTextColor),
                                           onPressed: () => _showPrompt(prompt, readOnly: true),
                                           tooltip: Localizations.localeOf(context).languageCode == 'zh' ? '查看' : 'View',
                                           padding: EdgeInsets.zero,
@@ -384,11 +379,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                         ),
                                         const SizedBox(width: 8),
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.copy,
-                                            size: 20,
-                                            color: context.secondaryTextColor,
-                                          ),
+                                          icon: Icon(Icons.copy, size: 20, color: context.secondaryTextColor),
                                           onPressed: () async {
                                             await _copyPrompt(prompt);
                                           },
@@ -399,11 +390,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                       ] else ...[
                                         // 非系统提示词：显示复制、编辑和删除按钮
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.copy,
-                                            size: 20,
-                                            color: context.secondaryTextColor,
-                                          ),
+                                          icon: Icon(Icons.copy, size: 20, color: context.secondaryTextColor),
                                           onPressed: () async {
                                             await _copyPrompt(prompt);
                                           },
@@ -413,11 +400,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                         ),
                                         const SizedBox(width: 8),
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.edit,
-                                            size: 20,
-                                            color: context.secondaryTextColor,
-                                          ),
+                                          icon: Icon(Icons.edit, size: 20, color: context.secondaryTextColor),
                                           onPressed: () => _showPrompt(prompt),
                                           tooltip: AppLocalizations.of(context)!.promptEdit,
                                           padding: EdgeInsets.zero,
@@ -425,11 +408,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                         ),
                                         const SizedBox(width: 8),
                                         IconButton(
-                                          icon: Icon(
-                                            Icons.delete,
-                                            size: 20,
-                                            color: Colors.red,
-                                          ),
+                                          icon: Icon(Icons.delete, size: 20, color: Colors.red),
                                           onPressed: () => _deletePrompt(prompt),
                                           tooltip: AppLocalizations.of(context)!.promptDelete,
                                           padding: EdgeInsets.zero,

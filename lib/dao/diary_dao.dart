@@ -1,5 +1,9 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'dart:io';
 import '../generated/l10n/app_localizations.dart';
+import '../util/frontmatter_service.dart';
+import '../util/storage_service.dart';
+import '../config/config_service.dart';
 
 /// Diary entry model for better readability
 class DiaryEntry {
@@ -9,13 +13,7 @@ class DiaryEntry {
   final String? q; // diary content (question)
   final String? a; // content analysis (answer)
 
-  DiaryEntry({
-    required this.title,
-    this.time,
-    this.category,
-    this.q,
-    this.a,
-  });
+  DiaryEntry({required this.title, this.time, this.category, this.q, this.a});
 
   /// Convert from Map<String, String> format
   factory DiaryEntry.fromMap(Map<String, String> map) {
@@ -249,5 +247,140 @@ class DiaryDao {
     }
 
     return buffer.toString().trim();
+  }
+
+  // === 日记文件操作方法 ===
+
+  /// Get diary directory path
+  static Future<String> getDiaryDir() async {
+    // 使用标准化的日记目录路径
+    try {
+      final diaryPath = await StorageService.getDiaryDirPath();
+      final diaryDir = Directory(diaryPath);
+      if (!await diaryDir.exists()) {
+        await diaryDir.create(recursive: true);
+      }
+      return diaryPath;
+    } catch (e) {
+      // 异常处理，使用基于应用数据目录的日记路径
+      final appDataDir = await AppConfigService.getAppDataDir();
+      final standardDiaryDir = Directory('${appDataDir.path}/data/diary');
+      if (!await standardDiaryDir.exists()) {
+        await standardDiaryDir.create(recursive: true);
+      }
+      return standardDiaryDir.path;
+    }
+  }
+
+  /// Save diary content, automatically update the updated field in frontmatter
+  static Future<File> saveDiaryMarkdown(String content, {BuildContext? context, String? fileName}) async {
+    try {
+      print('=== DiaryDao.saveDiaryMarkdown ===');
+      final diaryDir = await getDiaryDir();
+      print('日记目录: $diaryDir');
+
+      File file;
+      if (fileName != null && fileName.isNotEmpty) {
+        file = File('$diaryDir/$fileName');
+        print('使用指定文件名: $fileName');
+      } else {
+        // 默认用未命名+时间戳
+        final now = DateTime.now();
+        final nowStr = now.toIso8601String().substring(0, 19).replaceAll('T', 'T');
+        final generatedFileName = '${nowStr.replaceAll(RegExp(r"[\-:T]"), "")}.md';
+        file = File('$diaryDir/$generatedFileName');
+        print('生成文件名: $generatedFileName');
+      }
+
+      print('最终文件路径: ${file.path}');
+      print('保存内容长度: ${content.length} 字符');
+
+      final now = DateTime.now();
+      final newContent = FrontmatterService.upsert(content, updated: now);
+      print('添加frontmatter后内容长度: ${newContent.length} 字符');
+
+      await file.writeAsString(newContent);
+      print('文件写入成功');
+      return file;
+    } catch (e) {
+      print('保存失败，错误: $e');
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存日记失败: \n${e.toString()}')));
+      }
+      rethrow;
+    }
+  }
+
+  /// List all diary files
+  static Future<List<FileSystemEntity>> listDiaries() async {
+    final diaryDir = await getDiaryDir();
+    return Directory(diaryDir).listSync().where((f) => f.path.endsWith('.md')).toList();
+  }
+
+  /// Read diary markdown content from file
+  static Future<String> readDiaryMarkdown(File file) async {
+    return await file.readAsString();
+  }
+
+  /// Get all diary filenames (without path), sorted by creation time desc (filenames contain timestamps)
+  static Future<List<String>> listDiaryFiles() async {
+    final diaryDir = await getDiaryDir();
+    final files = Directory(diaryDir).listSync().where((f) => f.path.endsWith('.md')).toList();
+    files.sort((a, b) => b.uri.pathSegments.last.compareTo(a.uri.pathSegments.last));
+    return files.map((f) => f.uri.pathSegments.last).toList();
+  }
+
+  /// Delete the specified diary file
+  static Future<void> deleteDiaryFile(String fileName) async {
+    final diaryDir = await getDiaryDir();
+    final file = File('$diaryDir/$fileName');
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  /// Create empty diary file, write frontmatter (created/updated)
+  static Future<void> createDiaryFile(String fileName) async {
+    final diaryDir = await getDiaryDir();
+    final file = File('$diaryDir/$fileName');
+    if (!await file.exists()) {
+      final now = DateTime.now();
+      final frontmatter = '${FrontmatterService.generate(created: now, updated: now)}\n';
+      await file.writeAsString(frontmatter);
+    } else {
+      // 如果文件已存在但内容为空或无frontmatter，也补充frontmatter
+      final content = await file.readAsString();
+      if (!content.trim().startsWith('---')) {
+        final now = DateTime.now();
+        final frontmatter = '${FrontmatterService.generate(created: now, updated: now)}\n';
+        await file.writeAsString(frontmatter + content);
+      }
+    }
+  }
+
+  /// Append content to today's diary file
+  static Future<void> appendToDailyDiary(String contentToAppend) async {
+    final now = DateTime.now();
+    final fileName = getDiaryFileName();
+    final diaryDir = await getDiaryDir();
+    final file = File('$diaryDir/$fileName');
+
+    if (!await file.exists()) {
+      // 如果文件不存在，创建并写入初始内容
+      final initialContent =
+          '# ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} 日记\n\n$contentToAppend';
+      await saveDiaryMarkdown(initialContent, fileName: fileName);
+    } else {
+      // 如果文件存在，追加内容（不添加额外的分割线，因为formatDiaryContent已经包含了）
+      final currentContent = await file.readAsString();
+      final newContent = '$currentContent$contentToAppend';
+      await saveDiaryMarkdown(newContent, fileName: fileName);
+    }
+  }
+
+  /// 获取指定日期的日记文件名，不指定则为当天
+  static String getDiaryFileName([DateTime? date]) {
+    final now = date ?? DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.md';
   }
 }

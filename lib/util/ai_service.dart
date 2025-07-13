@@ -16,9 +16,7 @@ class AiService {
       messages.add({'role': 'system', 'content': systemPrompt.trim()});
     }
     // 兼容 q/a 结构和 role/content 结构
-    if (history.isNotEmpty &&
-        history.first.containsKey('role') &&
-        history.first.containsKey('content')) {
+    if (history.isNotEmpty && history.first.containsKey('role') && history.first.containsKey('content')) {
       messages.addAll(history);
     } else {
       for (final h in history) {
@@ -66,15 +64,8 @@ class AiService {
     }
 
     final url = Uri.parse('${active.baseUrl}/chat/completions');
-    final body = jsonEncode({
-      'model': active.model,
-      'messages': messages,
-      'stream': true,
-    });
-    final headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${active.apiKey}',
-    };
+    final body = jsonEncode({'model': active.model, 'messages': messages, 'stream': true});
+    final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${active.apiKey}'};
     try {
       final request = http.Request('POST', url)
         ..headers.addAll(headers)
@@ -90,153 +81,159 @@ class AiService {
       String buffer = '';
       String? reasoning;
 
-      client.send(request).then((streamedResponse) {
-        // 检查HTTP状态码
-        if (streamedResponse.statusCode != 200) {
-          print('[AI-ERROR] HTTP错误: ${streamedResponse.statusCode}');
-          String errorMessage = '大模型服务响应错误 (${streamedResponse.statusCode})';
-          if (streamedResponse.statusCode == 401) {
-            errorMessage = '大模型API密钥无效，请检查配置';
-          } else if (streamedResponse.statusCode == 403) {
-            errorMessage = '大模型API访问被拒绝，请检查配置';
-          } else if (streamedResponse.statusCode == 404) {
-            errorMessage = '大模型服务地址不存在，请检查配置';
-          } else if (streamedResponse.statusCode == 405) {
-            errorMessage = '大模型服务响应错误 (405)';
-          } else if (streamedResponse.statusCode == 429) {
-            errorMessage = '大模型服务请求过于频繁 (429)，请稍后重试';
-          } else if (streamedResponse.statusCode >= 500) {
-            errorMessage = '大模型服务器内部错误，请稍后重试或检查配置';
-          }
-          onError?.call(Exception(errorMessage));
-          return;
-        }
-        streamedResponse.stream.transform(utf8.decoder).listen(
-          (chunk) {
-            buffer += chunk;
-            while (true) {
-              final dataPrefix = 'data: ';
-              final dataIndex = buffer.indexOf(dataPrefix);
-              if (dataIndex == -1) {
-                break;
+      client
+          .send(request)
+          .then((streamedResponse) {
+            // 检查HTTP状态码
+            if (streamedResponse.statusCode != 200) {
+              print('[AI-ERROR] HTTP错误: ${streamedResponse.statusCode}');
+              String errorMessage = '大模型服务响应错误 (${streamedResponse.statusCode})';
+              if (streamedResponse.statusCode == 401) {
+                errorMessage = '大模型API密钥无效，请检查配置';
+              } else if (streamedResponse.statusCode == 403) {
+                errorMessage = '大模型API访问被拒绝，请检查配置';
+              } else if (streamedResponse.statusCode == 404) {
+                errorMessage = '大模型服务地址不存在，请检查配置';
+              } else if (streamedResponse.statusCode == 405) {
+                errorMessage = '大模型服务响应错误 (405)';
+              } else if (streamedResponse.statusCode == 429) {
+                errorMessage = '大模型服务请求过于频繁 (429)，请稍后重试';
+              } else if (streamedResponse.statusCode >= 500) {
+                errorMessage = '大模型服务器内部错误，请稍后重试或检查配置';
               }
-
-              final jsonEndIndex = buffer.indexOf('\n\n', dataIndex);
-              if (jsonEndIndex == -1) {
-                break;
-              }
-
-              final jsonString = buffer.substring(dataIndex + dataPrefix.length, jsonEndIndex).trim();              if (jsonString.startsWith('[DONE]')) {
-                print('[AI-STREAM] Stream finished with [DONE]');
-              } else if (jsonString.isNotEmpty) {
-                try {
-                  final data = jsonDecode(jsonString);
-
-                  if (data['choices'] != null && data['choices'].isNotEmpty) {
-                    final choice = data['choices'][0];
-                    final delta = choice['delta'];
-                    final message = choice['message'];
-                    String? content;
-
-                    if (delta != null && delta['content'] != null) {
-                      content = delta['content'] as String;
-                      fullResponse.write(content);
-                    }                    // 检查reasoning字段（可能在delta或message中）
-                    if (delta != null) {
-                      if (delta['reasoning'] != null) {
-                        final deltaReasoning = delta['reasoning'] as String;
-                        fullReasoning.write(deltaReasoning); // 累加reasoning内容
-                        reasoning = fullReasoning.toString();
-                      }
-                      // 检查其他可能的reasoning字段名
-                      if (delta['thoughts'] != null) {
-                        final deltaThoughts = delta['thoughts'] as String;
-                        fullReasoning.write(deltaThoughts);
-                        reasoning = fullReasoning.toString();
-                      }
-                      if (delta['thinking'] != null) {
-                        final deltaThinking = delta['thinking'] as String;
-                        fullReasoning.write(deltaThinking);
-                        reasoning = fullReasoning.toString();
-                      }
-                    }
-                    if (message != null) {
-                      if (message['reasoning'] != null) {
-                        reasoning = message['reasoning'] as String;
-                      }
-                      // 检查其他可能的reasoning字段名
-                      if (message['thoughts'] != null) {
-                        reasoning = message['thoughts'] as String;
-                      }
-                      if (message['thinking'] != null) {
-                        reasoning = message['thinking'] as String;
-                      }
-                    }
-
-                    // 也检查choice级别的reasoning字段
-                    if (choice['reasoning'] != null) {
-                      reasoning = choice['reasoning'] as String;
-                    }
-
-                    if (content != null || reasoning != null) {
-                      final deltaData = {
-                        'content': fullResponse.toString(),
-                        if (reasoning != null) 'reasoning': reasoning!,
-                      };
-                      onDelta(deltaData);
-                    }
-                  }
-                } catch (e) {
-                  print('[AI-WARN] JSON parsing failed for chunk: $jsonString. Error: $e');
-                }
-              }
-
-              buffer = buffer.substring(jsonEndIndex + 2);
+              onError?.call(Exception(errorMessage));
+              return;
             }
-          },
-          onDone: () {
-            // 确保使用完整的reasoning内容
-            final finalReasoning = fullReasoning.toString().isNotEmpty ? fullReasoning.toString() : reasoning;
-            print('[AI-STREAM] Final Output: content=${fullResponse.toString()}, reasoning=$finalReasoning');
-            final finalData = {
-              'content': fullResponse.toString(),
-              if (finalReasoning != null && finalReasoning.isNotEmpty) 'reasoning': finalReasoning,
-            };
-            print('[AI-STREAM] Calling onDone with: $finalData');
-            onDone(finalData);
-          },
-          onError: (error) {
-            print('[AI-ERROR] 流式响应处理异常: $error');
-            String errorMessage = '大模型响应处理失败';
+            streamedResponse.stream
+                .transform(utf8.decoder)
+                .listen(
+                  (chunk) {
+                    buffer += chunk;
+                    while (true) {
+                      final dataPrefix = 'data: ';
+                      final dataIndex = buffer.indexOf(dataPrefix);
+                      if (dataIndex == -1) {
+                        break;
+                      }
+
+                      final jsonEndIndex = buffer.indexOf('\n\n', dataIndex);
+                      if (jsonEndIndex == -1) {
+                        break;
+                      }
+
+                      final jsonString = buffer.substring(dataIndex + dataPrefix.length, jsonEndIndex).trim();
+                      if (jsonString.startsWith('[DONE]')) {
+                        print('[AI-STREAM] Stream finished with [DONE]');
+                      } else if (jsonString.isNotEmpty) {
+                        try {
+                          final data = jsonDecode(jsonString);
+
+                          if (data['choices'] != null && data['choices'].isNotEmpty) {
+                            final choice = data['choices'][0];
+                            final delta = choice['delta'];
+                            final message = choice['message'];
+                            String? content;
+
+                            if (delta != null && delta['content'] != null) {
+                              content = delta['content'] as String;
+                              fullResponse.write(content);
+                            } // 检查reasoning字段（可能在delta或message中）
+                            if (delta != null) {
+                              if (delta['reasoning'] != null) {
+                                final deltaReasoning = delta['reasoning'] as String;
+                                fullReasoning.write(deltaReasoning); // 累加reasoning内容
+                                reasoning = fullReasoning.toString();
+                              }
+                              // 检查其他可能的reasoning字段名
+                              if (delta['thoughts'] != null) {
+                                final deltaThoughts = delta['thoughts'] as String;
+                                fullReasoning.write(deltaThoughts);
+                                reasoning = fullReasoning.toString();
+                              }
+                              if (delta['thinking'] != null) {
+                                final deltaThinking = delta['thinking'] as String;
+                                fullReasoning.write(deltaThinking);
+                                reasoning = fullReasoning.toString();
+                              }
+                            }
+                            if (message != null) {
+                              if (message['reasoning'] != null) {
+                                reasoning = message['reasoning'] as String;
+                              }
+                              // 检查其他可能的reasoning字段名
+                              if (message['thoughts'] != null) {
+                                reasoning = message['thoughts'] as String;
+                              }
+                              if (message['thinking'] != null) {
+                                reasoning = message['thinking'] as String;
+                              }
+                            }
+
+                            // 也检查choice级别的reasoning字段
+                            if (choice['reasoning'] != null) {
+                              reasoning = choice['reasoning'] as String;
+                            }
+
+                            if (content != null || reasoning != null) {
+                              final deltaData = {
+                                'content': fullResponse.toString(),
+                                if (reasoning != null) 'reasoning': reasoning!,
+                              };
+                              onDelta(deltaData);
+                            }
+                          }
+                        } catch (e) {
+                          print('[AI-WARN] JSON parsing failed for chunk: $jsonString. Error: $e');
+                        }
+                      }
+
+                      buffer = buffer.substring(jsonEndIndex + 2);
+                    }
+                  },
+                  onDone: () {
+                    // 确保使用完整的reasoning内容
+                    final finalReasoning = fullReasoning.toString().isNotEmpty ? fullReasoning.toString() : reasoning;
+                    print('[AI-STREAM] Final Output: content=${fullResponse.toString()}, reasoning=$finalReasoning');
+                    final finalData = {
+                      'content': fullResponse.toString(),
+                      if (finalReasoning != null && finalReasoning.isNotEmpty) 'reasoning': finalReasoning,
+                    };
+                    print('[AI-STREAM] Calling onDone with: $finalData');
+                    onDone(finalData);
+                  },
+                  onError: (error) {
+                    print('[AI-ERROR] 流式响应处理异常: $error');
+                    String errorMessage = '大模型响应处理失败';
+                    if (error.toString().contains('Connection') ||
+                        error.toString().contains('timeout') ||
+                        error.toString().contains('refused')) {
+                      errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
+                    } else if (error.toString().contains('certificate') ||
+                        error.toString().contains('SSL') ||
+                        error.toString().contains('TLS')) {
+                      errorMessage = '大模型服务SSL证书验证失败，请检查服务配置';
+                    }
+                    onError?.call(Exception(errorMessage));
+                  },
+                  cancelOnError: true,
+                );
+          })
+          .catchError((error) {
+            print('[AI-ERROR] 请求发送异常: $error');
+            String errorMessage = '大模型请求发送失败';
             if (error.toString().contains('Connection') ||
                 error.toString().contains('timeout') ||
                 error.toString().contains('refused')) {
               errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
             } else if (error.toString().contains('certificate') ||
-                      error.toString().contains('SSL') ||
-                      error.toString().contains('TLS')) {
+                error.toString().contains('SSL') ||
+                error.toString().contains('TLS')) {
               errorMessage = '大模型服务SSL证书验证失败，请检查服务配置';
+            } else if (error.toString().contains('format')) {
+              errorMessage = '大模型服务地址格式错误，请检查配置';
             }
             onError?.call(Exception(errorMessage));
-          },
-          cancelOnError: true,
-        );
-      }).catchError((error) {
-        print('[AI-ERROR] 请求发送异常: $error');
-        String errorMessage = '大模型请求发送失败';
-        if (error.toString().contains('Connection') ||
-            error.toString().contains('timeout') ||
-            error.toString().contains('refused')) {
-          errorMessage = '无法连接到大模型服务，请检查网络连接和服务地址配置';
-        } else if (error.toString().contains('certificate') ||
-                  error.toString().contains('SSL') ||
-                  error.toString().contains('TLS')) {
-          errorMessage = '大模型服务SSL证书验证失败，请检查服务配置';
-        } else if (error.toString().contains('format')) {
-          errorMessage = '大模型服务地址格式错误，请检查配置';
-        }
-        onError?.call(Exception(errorMessage));
-      });
+          });
     } catch (e) {
       print('[AI-ERROR] Request exception: $e');
       String errorMessage = '大模型服务调用异常';
@@ -263,11 +260,7 @@ class AiService {
         orElse: () => PromptCategory.chat,
       );
       final systemPrompt = await getActivePromptContent(promptCategory);
-      final messages = buildMessages(
-        systemPrompt: systemPrompt,
-        history: [],
-        userInput: content,
-      );
+      final messages = buildMessages(systemPrompt: systemPrompt, history: [], userInput: content);
 
       await askStream(
         messages: messages,
@@ -310,8 +303,7 @@ class AiService {
       if (configs.isEmpty) {
         throw Exception('没有可用的大模型配置，请先配置大模型服务');
       }
-      final active = configs.firstWhere((e) => e.active,
-          orElse: () => configs.first);
+      final active = configs.firstWhere((e) => e.active, orElse: () => configs.first);
 
       // 验证配置完整性
       if (active.baseUrl.isEmpty) {
@@ -326,22 +318,11 @@ class AiService {
 
       final url = Uri.parse('${active.baseUrl}/chat/completions');
 
-      final body = {
-        'model': active.model,
-        'messages': messages,
-        'stream': stream,
-      };
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${active.apiKey}',
-      };
+      final body = {'model': active.model, 'messages': messages, 'stream': stream};
+      final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${active.apiKey}'};
       // 日志打印
       print('[AI-DEBUG] 请求参数: ${jsonEncode(body)}');
-      return {
-        'url': url.toString(),
-        'headers': headers,
-        'body': body,
-      };
+      return {'url': url.toString(), 'headers': headers, 'body': body};
     } catch (e) {
       print('[AI-ERROR] 构造请求参数异常: $e');
       rethrow;

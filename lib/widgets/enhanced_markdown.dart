@@ -28,10 +28,7 @@ class EnhancedMarkdown extends StatelessWidget {
       h4: theme.textTheme.titleLarge?.copyWith(color: context.primaryTextColor),
       h5: theme.textTheme.titleMedium?.copyWith(color: context.primaryTextColor),
       h6: theme.textTheme.titleSmall?.copyWith(color: context.primaryTextColor),
-      em: theme.textTheme.bodyMedium?.copyWith(
-        color: context.secondaryTextColor,
-        fontStyle: FontStyle.italic,
-      ),
+      em: theme.textTheme.bodyMedium?.copyWith(color: context.secondaryTextColor, fontStyle: FontStyle.italic),
       listBullet: theme.textTheme.bodyMedium?.copyWith(color: context.primaryTextColor),
     );
     return Padding(
@@ -42,16 +39,10 @@ class EnhancedMarkdown extends StatelessWidget {
           if (b['type'] == 'mermaid') {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: SizedBox(
-                height: 180,
-                child: MermaidWidget(mermaidSource: b['content']!),
-              ),
+              child: SizedBox(height: 180, child: MermaidWidget(mermaidSource: b['content']!)),
             );
           } else {
-            return MarkdownBody(
-              data: b['content']!,
-              styleSheet: styleSheet ?? defaultStyleSheet,
-            );
+            return MarkdownBody(data: b['content']!, styleSheet: styleSheet ?? defaultStyleSheet);
           }
         }).toList(),
       ),

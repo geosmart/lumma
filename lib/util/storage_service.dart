@@ -106,17 +106,14 @@ class StorageService {
       } else {
         // 如果默认配置文件不存在，创建一个包含 workDir 的配置
         final defaultConfig = {
-          'sync': {'work_dir': dirPath}
+          'sync': {'work_dir': dirPath},
         };
         await defaultConfigFile.writeAsString(jsonEncode(defaultConfig));
         print('创建默认配置文件并设置工作目录: $dirPath');
       }
 
       // 2. 然后迁移所有文件到新的工作目录
-      await migrateConfigDir(
-        from: currentWorkDir,
-        to: dirPath,
-      );
+      await migrateConfigDir(from: currentWorkDir, to: dirPath);
 
       // 3. 修复：强制刷新配置缓存，确保后续读取新 workDir
       await AppConfigService.clearCache();
@@ -144,9 +141,7 @@ class StorageService {
     try {
       final appConfig = await AppConfigService.load();
       final uri = appConfig.sync.syncUri;
-      print(
-        '获取同步URI: {uri.isEmpty ? "null" : uri}',
-      );
+      print('获取同步URI: {uri.isEmpty ? "null" : uri}');
       return uri.isEmpty ? null : uri;
     } catch (e) {
       print('获取同步URI失败: $e');
@@ -183,9 +178,7 @@ class StorageService {
     try {
       final appConfig = await AppConfigService.load();
       final dir = appConfig.sync.webdavLocalDir;
-      print(
-        '获取 WebDAV 本地目录: ${dir.isEmpty ? "null" : dir}',
-      );
+      print('获取 WebDAV 本地目录: ${dir.isEmpty ? "null" : dir}');
       return dir.isEmpty ? null : dir;
     } catch (e) {
       print('获取 WebDAV 本地目录失败: $e');
@@ -266,9 +259,7 @@ class StorageService {
         return;
       }
 
-      print(
-        '开始数据迁移: 从 $oldRootDir 到 $newRootDir',
-      );
+      print('开始数据迁移: 从 $oldRootDir 到 $newRootDir');
 
       // 1. 迁移配置文件
       final oldConfigFile = File('$oldRootDir/$kLummaConfigFileName');
@@ -277,14 +268,10 @@ class StorageService {
         if (!await newConfigDir.exists()) {
           await newConfigDir.create(recursive: true);
         }
-        final newConfigFile = File(
-          '${newConfigDir.path}/$kLummaConfigFileName',
-        );
+        final newConfigFile = File('${newConfigDir.path}/$kLummaConfigFileName');
         if (!await newConfigFile.exists()) {
           await oldConfigFile.copy(newConfigFile.path);
-          print(
-            '迁移配置文件: ${oldConfigFile.path} -> ${newConfigFile.path}',
-          );
+          print('迁移配置文件: ${oldConfigFile.path} -> ${newConfigFile.path}');
         }
       }
 
@@ -304,9 +291,7 @@ class StorageService {
             final newPath = '${newDiaryDir.path}/${path.basename(entity.path)}';
             if (!await File(newPath).exists()) {
               await entity.copy(newPath);
-              print(
-                '迁移默认日记文件: ${entity.path} -> $newPath',
-              );
+              print('迁移默认日记文件: ${entity.path} -> $newPath');
             }
           }
         }
@@ -317,26 +302,19 @@ class StorageService {
         if (await oldConfigFile.exists()) {
           final content = await oldConfigFile.readAsString();
           final map = jsonDecode(content);
-          if (map is Map &&
-              map['sync'] is Map &&
-              map['sync']['diary_dir'] is String) {
+          if (map is Map && map['sync'] is Map && map['sync']['diary_dir'] is String) {
             final customDiaryDir = map['sync']['diary_dir'] as String;
             if (customDiaryDir.isNotEmpty) {
               // 如果存在自定义日记目录，也迁移其中的文件
               final customDir = Directory(customDiaryDir);
               if (await customDir.exists()) {
-                print(
-                  '发现自定义日记目录: $customDiaryDir',
-                );
+                print('发现自定义日记目录: $customDiaryDir');
                 await for (final entity in customDir.list()) {
                   if (entity is File && entity.path.endsWith('.md')) {
-                    final newPath =
-                        '${newDiaryDir.path}/${path.basename(entity.path)}';
+                    final newPath = '${newDiaryDir.path}/${path.basename(entity.path)}';
                     if (!await File(newPath).exists()) {
                       await entity.copy(newPath);
-                      print(
-                        '迁移自定义目录日记文件: ${entity.path} -> $newPath',
-                      );
+                      print('迁移自定义目录日记文件: ${entity.path} -> $newPath');
                     }
                   }
                 }
@@ -358,13 +336,10 @@ class StorageService {
         // 复制文件
         await for (final entity in oldPromptDir.list()) {
           if (entity is File) {
-            final newPath =
-                '${newPromptDir.path}/${path.basename(entity.path)}';
+            final newPath = '${newPromptDir.path}/${path.basename(entity.path)}';
             if (!await File(newPath).exists()) {
               await entity.copy(newPath);
-              print(
-                '迁移 prompt 文件: ${entity.path} -> $newPath',
-              );
+              print('迁移 prompt 文件: ${entity.path} -> $newPath');
             }
           }
         }
@@ -377,16 +352,12 @@ class StorageService {
   }
 
   /// 迁移配置目录（包括 AppConfig 和 prompt 文件，以及日记文件）
-  static Future<void> migrateConfigDir({
-    required String? from,
-    required String? to,
-  }) async {
+  static Future<void> migrateConfigDir({required String? from, required String? to}) async {
     // 1. 迁移 AppConfig
     final appConfigFileName = kLummaConfigFileName;
     String? fromDir = from;
     String? toDir = to;
-    if ((fromDir == null || fromDir.isEmpty) &&
-        (toDir == null || toDir.isEmpty)) {
+    if ((fromDir == null || fromDir.isEmpty) && (toDir == null || toDir.isEmpty)) {
       // 都是默认目录，无需迁移
       return;
     }
@@ -456,9 +427,7 @@ class StorageService {
             final fileName = path.basename(entity.path);
             final targetPath = path.join(toPromptDir, fileName);
             await entity.copy(targetPath);
-            print(
-              '迁移 prompt 文件: ${entity.path} -> $targetPath',
-            );
+            print('迁移 prompt 文件: ${entity.path} -> $targetPath');
           }
         }
       }
@@ -485,9 +454,7 @@ class StorageService {
             final targetPath = path.join(toDiaryDir, fileName);
             if (!await File(targetPath).exists()) {
               await entity.copy(targetPath);
-              print(
-                '迁移日记文件: ${entity.path} -> $targetPath',
-              );
+              print('迁移日记文件: ${entity.path} -> $targetPath');
             }
           }
         }

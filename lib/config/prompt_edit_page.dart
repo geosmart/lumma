@@ -60,11 +60,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
       (p) => p.type == type && p.active,
       orElse: () => config.prompt.firstWhere(
         (p) => p.type == type,
-        orElse: () => PromptConfig(
-          name: '',
-          type: type,
-          content: '',
-        ),
+        orElse: () => PromptConfig(name: '', type: type, content: ''),
       ),
     );
     setState(() {
@@ -84,7 +80,9 @@ class _PromptEditPageState extends State<PromptEditPage> {
   }
 
   Future<void> _savePrompt() async {
-    final name = _nameCtrl.text.trim().isEmpty ? 'prompt_${DateTime.now().millisecondsSinceEpoch}' : _nameCtrl.text.trim();
+    final name = _nameCtrl.text.trim().isEmpty
+        ? 'prompt_${DateTime.now().millisecondsSinceEpoch}'
+        : _nameCtrl.text.trim();
     final prompt = PromptConfig(
       name: name,
       type: _selectedCategory,
@@ -98,7 +96,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
       await setActivePrompt(_selectedCategory, name);
     }
     if (mounted) {
-       Navigator.of(context).pop(true); // Return true to indicate save
+      Navigator.of(context).pop(true); // Return true to indicate save
     }
   }
 
@@ -107,13 +105,15 @@ class _PromptEditPageState extends State<PromptEditPage> {
     final bool isReadOnly = widget.readOnly || _isSystem;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.file == null
-            ? AppLocalizations.of(context)!.promptEditAddTitle
-            : _isSystem
-                ? AppLocalizations.of(context)!.promptEditSystemTitle
-                : (widget.readOnly
+        title: Text(
+          widget.file == null
+              ? AppLocalizations.of(context)!.promptEditAddTitle
+              : _isSystem
+              ? AppLocalizations.of(context)!.promptEditSystemTitle
+              : (widget.readOnly
                     ? AppLocalizations.of(context)!.promptEditViewTitle
-                    : AppLocalizations.of(context)!.promptEditEditTitle)),
+                    : AppLocalizations.of(context)!.promptEditEditTitle),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -128,10 +128,12 @@ class _PromptEditPageState extends State<PromptEditPage> {
             DropdownButtonFormField<PromptCategory>(
               value: _selectedCategory,
               items: PromptCategory.values
-                  .map((category) => DropdownMenuItem<PromptCategory>(
-                        value: category,
-                        child: Text(promptCategoryToDisplayName(category,context)),
-                      ))
+                  .map(
+                    (category) => DropdownMenuItem<PromptCategory>(
+                      value: category,
+                      child: Text(promptCategoryToDisplayName(category, context)),
+                    ),
+                  )
                   .toList(),
               onChanged: isReadOnly
                   ? null
@@ -174,9 +176,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
                 onPressed: isReadOnly ? null : _savePrompt,
                 icon: const Icon(Icons.save),
                 label: Text(AppLocalizations.of(context)!.promptEditSave),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                ),
+                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
               ),
             ),
           ],

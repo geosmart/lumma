@@ -6,18 +6,20 @@ class QaQuestionsService {
   static Future<void> init(BuildContext context) async {
     final config = await AppConfigService.load();
     if (config.qaQuestions.isEmpty) {
-      await AppConfigService.update((c) => c.qaQuestions = [
-            AppLocalizations.of(context)!.qaQuestion1,
-            AppLocalizations.of(context)!.qaQuestion2,
-            AppLocalizations.of(context)!.qaQuestion3,
-            AppLocalizations.of(context)!.qaQuestion4,
-            AppLocalizations.of(context)!.qaQuestion5,
-            AppLocalizations.of(context)!.qaQuestion6,
-            AppLocalizations.of(context)!.qaQuestion7,
-            AppLocalizations.of(context)!.qaQuestion8,
-            AppLocalizations.of(context)!.qaQuestion9,
-            AppLocalizations.of(context)!.qaQuestion10,
-          ]);
+      await AppConfigService.update(
+        (c) => c.qaQuestions = [
+          AppLocalizations.of(context)!.qaQuestion1,
+          AppLocalizations.of(context)!.qaQuestion2,
+          AppLocalizations.of(context)!.qaQuestion3,
+          AppLocalizations.of(context)!.qaQuestion4,
+          AppLocalizations.of(context)!.qaQuestion5,
+          AppLocalizations.of(context)!.qaQuestion6,
+          AppLocalizations.of(context)!.qaQuestion7,
+          AppLocalizations.of(context)!.qaQuestion8,
+          AppLocalizations.of(context)!.qaQuestion9,
+          AppLocalizations.of(context)!.qaQuestion10,
+        ],
+      );
     }
   }
 

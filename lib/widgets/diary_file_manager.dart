@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../generated/l10n/app_localizations.dart';
-import '../util/markdown_service.dart';
+import '../dao/diary_dao.dart';
 import '../util/diary_frontmatter_util.dart';
 import '../config/theme_service.dart';
 import '../diary/diary_content_page.dart';
@@ -30,7 +30,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
   Future<void> _loadFiles() async {
     setState(() => _loading = true);
     try {
-      final files = await MarkdownService.listDiaryFiles();
+      final files = await DiaryDao.listDiaryFiles();
       // Sort by filename in descending order (YYYY-MM-DD.md format)
       // This is more efficient than reading frontmatter for each file
       files.sort((a, b) {
@@ -54,7 +54,11 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
         _loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppLocalizations.of(context)!.loading}${AppLocalizations.of(context)!.noFilesFound}: ${e.toString()}')),
+        SnackBar(
+          content: Text(
+            '${AppLocalizations.of(context)!.loading}${AppLocalizations.of(context)!.noFilesFound}: ${e.toString()}',
+          ),
+        ),
       );
     }
   }
@@ -67,15 +71,20 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
         content: Text('${AppLocalizations.of(context)!.deleteConfirmMessage} "$file"?'),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(AppLocalizations.of(context)!.cancel)),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
     if (confirm == true) {
-      await MarkdownService.deleteDiaryFile(file);
+      await DiaryDao.deleteDiaryFile(file);
       await _loadFiles();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.ok}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.ok}')),
+        );
       }
     }
   }
@@ -90,13 +99,14 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
 
     if (selectedDate != null) {
       // 生成日期格式的文件名，格式为 YYYY-MM-DD.md
-      final fileName = '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}.md';
+      final fileName =
+          '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}.md';
 
       print('Creating diary file: $fileName'); // Debug log
 
       try {
-        await MarkdownService.createDiaryFile(fileName);
-        final diaryDir = await MarkdownService.getDiaryDir();
+        await DiaryDao.createDiaryFile(fileName);
+        final diaryDir = await DiaryDao.getDiaryDir();
         final file = File('$diaryDir/$fileName');
 
         print('File path: ${file.path}'); // Debug log
@@ -104,18 +114,24 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
 
         if (await file.exists()) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createSuccess)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createSuccess)));
           }
           await _loadFiles();
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedFileNotCreated)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedFileNotCreated)));
           }
         }
       } catch (e) {
         print('Error creating file: $e'); // Debug log
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))));
         }
       }
     }
@@ -164,10 +180,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           decoration: BoxDecoration(
             color: context.cardBackgroundColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: context.borderColor,
-              width: 1,
-            ),
+            border: Border.all(color: context.borderColor, width: 1),
           ),
           child: Row(
             children: [
@@ -181,17 +194,9 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                 ),
               ),
               const Spacer(),
-              _ActionButton(
-                icon: Icons.refresh,
-                tooltip: AppLocalizations.of(context)!.refresh,
-                onPressed: _loadFiles,
-              ),
+              _ActionButton(icon: Icons.refresh, tooltip: AppLocalizations.of(context)!.refresh, onPressed: _loadFiles),
               const SizedBox(width: 8),
-              _ActionButton(
-                icon: Icons.add,
-                tooltip: AppLocalizations.of(context)!.newDiary,
-                onPressed: _createFile,
-              ),
+              _ActionButton(icon: Icons.add, tooltip: AppLocalizations.of(context)!.newDiary, onPressed: _createFile),
             ],
           ),
         ),
@@ -200,9 +205,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
           Expanded(
             child: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary,
-                ),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
               ),
             ),
           ),
@@ -212,21 +215,14 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
               decoration: BoxDecoration(
                 color: context.cardBackgroundColor,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: context.borderColor,
-                  width: 1,
-                ),
+                border: Border.all(color: context.borderColor, width: 1),
               ),
               child: _files.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.auto_stories_outlined,
-                            size: 64,
-                            color: context.secondaryTextColor,
-                          ),
+                          Icon(Icons.auto_stories_outlined, size: 64, color: context.secondaryTextColor),
                           const SizedBox(height: 16),
                           Text(
                             AppLocalizations.of(context)!.noDiaryYet,
@@ -239,10 +235,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                           const SizedBox(height: 8),
                           Text(
                             AppLocalizations.of(context)!.clickToCreateFirstDiary,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: context.secondaryTextColor,
-                            ),
+                            style: TextStyle(fontSize: 14, color: context.secondaryTextColor),
                           ),
                         ],
                       ),
@@ -253,10 +246,7 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                         primary: true,
                         padding: const EdgeInsets.all(8),
                         itemCount: _files.length,
-                        separatorBuilder: (context, index) => Divider(
-                          color: context.borderColor,
-                          height: 1,
-                        ),
+                        separatorBuilder: (context, index) => Divider(color: context.borderColor, height: 1),
                         itemBuilder: (ctx, i) {
                           final f = _files[i];
                           return FutureBuilder<DateTime?>(
@@ -270,11 +260,9 @@ class _DiaryFileManagerState extends State<DiaryFileManager> {
                                   if (widget.onFileSelected != null) {
                                     widget.onFileSelected!(f);
                                   } else {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => DiaryContentPage(fileName: f),
-                                      ),
-                                    );
+                                    Navigator.of(
+                                      context,
+                                    ).push(MaterialPageRoute(builder: (_) => DiaryContentPage(fileName: f)));
                                   }
                                 },
                                 onDelete: () => _deleteFile(f),
@@ -297,11 +285,7 @@ class _ActionButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onPressed;
 
-  const _ActionButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-  });
+  const _ActionButton({required this.icon, required this.tooltip, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -311,21 +295,14 @@ class _ActionButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.secondaryTextColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: context.borderColor, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
           onTap: onPressed,
-          child: Icon(
-            icon,
-            size: 18,
-            color: context.primaryTextColor,
-          ),
+          child: Icon(icon, size: 18, color: context.primaryTextColor),
         ),
       ),
     );
@@ -364,11 +341,7 @@ class _DiaryListItem extends StatelessWidget {
                   color: context.secondaryTextColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  Icons.auto_stories,
-                  size: 20,
-                  color: context.secondaryTextColor,
-                ),
+                child: Icon(Icons.auto_stories, size: 20, color: context.secondaryTextColor),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -378,11 +351,7 @@ class _DiaryListItem extends StatelessWidget {
                   children: [
                     Text(
                       fileName,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                        color: context.primaryTextColor,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: context.primaryTextColor),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -390,10 +359,7 @@ class _DiaryListItem extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${AppLocalizations.of(context)!.monthDay(createdTime!.month, createdTime!.day)}  ${createdTime!.hour.toString().padLeft(2, '0')}:${createdTime!.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.secondaryTextColor,
-                        ),
+                        style: TextStyle(fontSize: 12, color: context.secondaryTextColor),
                       ),
                     ],
                   ],
@@ -402,20 +368,13 @@ class _DiaryListItem extends StatelessWidget {
               Container(
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
+                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(6),
                     onTap: onDelete,
-                    child: const Icon(
-                      Icons.delete_outline,
-                      size: 16,
-                      color: Colors.red,
-                    ),
+                    child: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
                   ),
                 ),
               ),

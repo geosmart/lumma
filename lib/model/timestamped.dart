@@ -4,6 +4,6 @@ abstract class Timestamped {
   DateTime updated;
 
   Timestamped({DateTime? created, DateTime? updated})
-      : created = created ?? DateTime.now(),
-        updated = updated ?? DateTime.now();
+    : created = created ?? DateTime.now(),
+      updated = updated ?? DateTime.now();
 }

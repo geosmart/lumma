@@ -24,9 +24,7 @@ class DiaryFileListPage extends StatelessWidget {
         ),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: context.primaryTextColor,
-        ),
+        iconTheme: IconThemeData(color: context.primaryTextColor),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -36,10 +34,7 @@ class DiaryFileListPage extends StatelessWidget {
             colors: context.backgroundGradient,
           ),
         ),
-        child: const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: DiaryFileManager(),
-        ),
+        child: const Padding(padding: EdgeInsets.all(16.0), child: DiaryFileManager()),
       ),
     );
   }

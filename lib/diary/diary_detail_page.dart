@@ -10,10 +10,7 @@ class DiaryDetailPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.diaryDetail)),
-      body: const Padding(
-        padding: EdgeInsets.all(8.0),
-        child: DiaryFileManager(),
-      ),
+      body: const Padding(padding: EdgeInsets.all(8.0), child: DiaryFileManager()),
     );
   }
 }

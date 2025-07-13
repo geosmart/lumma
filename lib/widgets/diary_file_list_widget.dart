@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../util/markdown_service.dart';
+import '../dao/diary_dao.dart';
 import '../generated/l10n/app_localizations.dart';
 
 /// Diary file list component for managing diary files (create, read, update, delete)
@@ -24,7 +24,7 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
   Future<void> _loadFiles() async {
     setState(() => _loading = true);
     try {
-      final files = await MarkdownService.listDiaryFiles();
+      final files = await DiaryDao.listDiaryFiles();
       // Sort by filename in descending order (YYYY-MM-DD.md format)
       files.sort((a, b) {
         final dateA = _extractDateFromFilename(a);
@@ -46,9 +46,9 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
         _loading = false;
       });
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${l10n.loadDiaryFilesFailed}: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${l10n.loadDiaryFilesFailed}: ${e.toString()}')));
     }
   }
 
@@ -65,19 +65,20 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
         content: Text(l10n.confirmDeleteFile(file)),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.cancel)),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.delete, style: const TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
     if (confirm == true) {
       try {
-        await MarkdownService.deleteDiaryFile(file);
+        await DiaryDao.deleteDiaryFile(file);
         await _loadFiles();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.deleteSuccess)));
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.deleteFailed}: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.deleteFailed}: ${e.toString()}')));
       }
     }
   }
@@ -93,16 +94,15 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
 
     if (selectedDate != null) {
       // 生成日期格式的文件名，格式为 YYYY-MM-DD.md
-      final fileName = '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}.md';
+      final fileName =
+          '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}.md';
 
       try {
-        await MarkdownService.createDiaryFile(fileName);
+        await DiaryDao.createDiaryFile(fileName);
         await _loadFiles();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.createSuccess)));
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.createFailed}: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.createFailed}: ${e.toString()}')));
       }
     }
   }
@@ -143,24 +143,21 @@ class _DiaryFileListWidgetState extends State<DiaryFileListWidget> {
           children: [
             Text(l10n.diaryFiles, style: const TextStyle(fontWeight: FontWeight.bold)),
             const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: l10n.newDiaryTooltip,
-              onPressed: _onCreate,
-            ),
+            IconButton(icon: const Icon(Icons.add), tooltip: l10n.newDiaryTooltip, onPressed: _onCreate),
           ],
         ),
-        if (_loading)
-          const Center(child: CircularProgressIndicator()),
+        if (_loading) const Center(child: CircularProgressIndicator()),
         if (!_loading)
-          ..._files.map((f) => ListTile(
-                title: Text(f),
-                onTap: () => _onTap(f),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _onDelete(f),
-                ),
-              )),
+          ..._files.map(
+            (f) => ListTile(
+              title: Text(f),
+              onTap: () => _onTap(f),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _onDelete(f),
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -41,7 +41,9 @@ class ThemeService extends ChangeNotifier {
 
   /// 保存主题设置
   Future<void> _saveTheme() async {
-    await AppConfigService.update((c) => c.theme = _themeMode == ThemeMode.dark ? ThemeModeType.dark : ThemeModeType.light);
+    await AppConfigService.update(
+      (c) => c.theme = _themeMode == ThemeMode.dark ? ThemeModeType.dark : ThemeModeType.light,
+    );
   }
 
   /// 新增: 持久化主题配置到 lumma_config.json
@@ -88,11 +90,7 @@ class AppTheme {
         surface: Color(0xFF1a1a2e),
       ),
       scaffoldBackgroundColor: const Color(0xFF1a1a2e),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1a1a2e),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
+      appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF1a1a2e), foregroundColor: Colors.white, elevation: 0),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF9FA8DA), // 更淡雅的蓝紫色
@@ -151,10 +149,7 @@ extension ThemeColors on BuildContext {
   List<Color> get primaryButtonGradient {
     final isDark = Theme.of(this).brightness == Brightness.dark;
     if (isDark) {
-      return const [
-        Color(0xFF667eea),
-        Color(0xFF764ba2),
-      ];
+      return const [Color(0xFF667eea), Color(0xFF764ba2)];
     } else {
       return const [
         Color(0xFFd4a574), // 温暖金棕

@@ -21,12 +21,9 @@ class StoragePermissionHandler {
 
       if (!hasPermission) {
         // 显示一个提示，告诉用户正在请求权限
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('请授予应用文件访问权限，以便导出日记文件'),
-            duration: Duration(seconds: 3),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('请授予应用文件访问权限，以便导出日记文件'), duration: Duration(seconds: 3)));
       }
 
       return hasPermission;

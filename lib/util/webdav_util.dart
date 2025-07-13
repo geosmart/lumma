@@ -16,12 +16,9 @@ class WebdavUtil {
       print('请求方法: PROPFIND');
       print('请求 URL: $uri');
       final request = http.Request('PROPFIND', uri)
-        ..headers.addAll({
-          'Authorization': 'Basic $auth',
-          'Content-Type': 'application/xml',
-          'Depth': '0',
-        })
-        ..body = '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n  </D:prop>\n</D:propfind>''';
+        ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '0'})
+        ..body =
+            '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n  </D:prop>\n</D:propfind>''';
       final response = await http.Client().send(request);
       print('响应状态码: ${response.statusCode}');
       return response.statusCode == 207 || response.statusCode == 200;
@@ -49,12 +46,9 @@ class WebdavUtil {
       print('远程目录: $remoteDir');
       print('本地目录: $localDir');
       final request = http.Request('PROPFIND', uri)
-        ..headers.addAll({
-          'Authorization': 'Basic $auth',
-          'Content-Type': 'application/xml',
-          'Depth': '1',
-        })
-        ..body = '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
+        ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
+        ..body =
+            '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
       final response = await http.Client().send(request);
       print('响应状态码: ${response.statusCode}');
       if (response.statusCode != 207) {
@@ -116,9 +110,7 @@ class WebdavUtil {
       print('请求 URL: $uri');
       print('远程路径: $remotePath');
       print('本地路径: $localPath');
-      final response = await http.get(uri, headers: {
-        'Authorization': 'Basic $auth',
-      });
+      final response = await http.get(uri, headers: {'Authorization': 'Basic $auth'});
       print('响应状态码: ${response.statusCode}');
       print('响应体长度: ${response.bodyBytes.length} 字节');
       if (response.statusCode == 200) {
@@ -198,13 +190,7 @@ class WebdavUtil {
       print('请求方法: PUT');
       print('请求 URL: $uri');
       print('上传文件: ${file.path} -> $remotePath');
-      final response = await http.put(
-        uri,
-        headers: {
-          'Authorization': 'Basic $auth',
-        },
-        body: bytes,
-      );
+      final response = await http.put(uri, headers: {'Authorization': 'Basic $auth'}, body: bytes);
       print('响应状态码: ${response.statusCode}');
       if (response.statusCode == 201 || response.statusCode == 200 || response.statusCode == 204) {
         print('上传成功: $remotePath');
@@ -234,11 +220,7 @@ class WebdavUtil {
       final auth = base64Encode(utf8.encode('$username:$password'));
 
       final request = http.Request('PROPFIND', uri)
-        ..headers.addAll({
-          'Authorization': 'Basic $auth',
-          'Content-Type': 'application/xml',
-          'Depth': '0',
-        })
+        ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '0'})
         ..body = '''<?xml version="1.0" encoding="utf-8" ?>
 <D:propfind xmlns:D="DAV:">
   <D:prop>
@@ -250,7 +232,9 @@ class WebdavUtil {
       if (response.statusCode == 207) {
         final responseBody = await response.stream.bytesToString();
         // 解析 XML 获取最后修改时间
-        final lastModifiedMatch = RegExp(r'<D:getlastmodified[^>]*>([^<]+)</D:getlastmodified>').firstMatch(responseBody);
+        final lastModifiedMatch = RegExp(
+          r'<D:getlastmodified[^>]*>([^<]+)</D:getlastmodified>',
+        ).firstMatch(responseBody);
         if (lastModifiedMatch != null) {
           try {
             return DateTime.parse(lastModifiedMatch.group(1)!);
@@ -354,11 +338,7 @@ class WebdavUtil {
       final auth = base64Encode(utf8.encode('$username:$password'));
 
       final request = http.Request('PROPFIND', uri)
-        ..headers.addAll({
-          'Authorization': 'Basic $auth',
-          'Content-Type': 'application/xml',
-          'Depth': '1',
-        })
+        ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
         ..body = '''<?xml version="1.0" encoding="utf-8" ?>
 <D:propfind xmlns:D="DAV:">
   <D:prop>

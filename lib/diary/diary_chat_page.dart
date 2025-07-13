@@ -64,21 +64,11 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             decoration: BoxDecoration(
               color: Colors.black87,
               borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))],
             ),
             child: Text(
               _currentModelName.isEmpty ? AppLocalizations.of(context)!.loading : _currentModelName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -250,10 +240,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                               ],
                             ),
                             child: IconButton(
-                              icon: Icon(
-                                Icons.arrow_back_ios_new_rounded,
-                                color: context.primaryTextColor,
-                              ),
+                              icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.primaryTextColor),
                               onPressed: () => Navigator.of(context).maybePop(),
                               tooltip: AppLocalizations.of(context)!.back,
                               padding: const EdgeInsets.all(8),
@@ -302,13 +289,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF2D5A2B)  // Dark mode deep green
-                                                : Colors.green[50],        // Light mode light green
+                                                ? const Color(0xFF2D5A2B) // Dark mode deep green
+                                                : Colors.green[50], // Light mode light green
                                             borderRadius: BorderRadius.circular(16),
                                             border: Border.all(
                                               color: Theme.of(context).brightness == Brightness.dark
-                                                  ? const Color(0xFF4CAF50)  // Dark mode green border
-                                                  : Colors.green[100]!,     // Light mode light green border
+                                                  ? const Color(0xFF4CAF50) // Dark mode green border
+                                                  : Colors.green[100]!, // Light mode light green border
                                             ),
                                           ),
                                           child: EnhancedMarkdown(data: h['q'] ?? ''),
@@ -317,13 +304,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                       const SizedBox(width: 8),
                                       CircleAvatar(
                                         backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                            ? const Color(0xFF2D5A2B)  // Dark mode deep green
+                                            ? const Color(0xFF2D5A2B) // Dark mode deep green
                                             : const Color(0xFFE8F5E9), // Light mode light green
                                         child: Icon(
                                           Icons.person,
                                           color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF4CAF50)  // Dark mode green icon
-                                              : Colors.green,           // Light mode green icon
+                                              ? const Color(0xFF4CAF50) // Dark mode green icon
+                                              : Colors.green, // Light mode green icon
                                         ),
                                       ),
                                     ],
@@ -338,13 +325,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         },
                                         child: CircleAvatar(
                                           backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF37474F)    // Dark mode deep blue-grey
-                                              : Colors.blueGrey[50],       // Light mode light blue-grey
+                                              ? const Color(0xFF37474F) // Dark mode deep blue-grey
+                                              : Colors.blueGrey[50], // Light mode light blue-grey
                                           child: Icon(
                                             Icons.smart_toy,
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF90A4AE)  // Dark mode blue-grey icon
-                                                : Colors.blueGrey,         // Light mode blue-grey icon
+                                                ? const Color(0xFF90A4AE) // Dark mode blue-grey icon
+                                                : Colors.blueGrey, // Light mode blue-grey icon
                                           ),
                                         ),
                                       ),
@@ -363,13 +350,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
                                                 color: Theme.of(context).brightness == Brightness.dark
-                                                    ? const Color(0xFF1E3A8A)  // Dark mode deep blue
-                                                    : Colors.blue[50],         // Light mode light blue
+                                                    ? const Color(0xFF1E3A8A) // Dark mode deep blue
+                                                    : Colors.blue[50], // Light mode light blue
                                                 borderRadius: BorderRadius.circular(16),
                                                 border: Border.all(
                                                   color: Theme.of(context).brightness == Brightness.dark
-                                                      ? const Color(0xFF3B82F6)  // Dark mode blue border
-                                                      : Colors.blue[100]!,      // Light mode light blue border
+                                                      ? const Color(0xFF3B82F6) // Dark mode blue border
+                                                      : Colors.blue[100]!, // Light mode light blue border
                                                 ),
                                               ),
                                               child: EnhancedMarkdown(data: h['a'] ?? ''),
@@ -393,13 +380,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                   },
                                   child: CircleAvatar(
                                     backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                        ? const Color(0xFF37474F)    // Dark mode deep blue-grey
-                                        : Colors.blueGrey[50],       // Light mode light blue-grey
+                                        ? const Color(0xFF37474F) // Dark mode deep blue-grey
+                                        : Colors.blueGrey[50], // Light mode light blue-grey
                                     child: Icon(
                                       Icons.smart_toy,
                                       color: Theme.of(context).brightness == Brightness.dark
-                                          ? const Color(0xFF90A4AE)  // Dark mode blue-grey icon
-                                          : Colors.blueGrey,         // Light mode blue-grey icon
+                                          ? const Color(0xFF90A4AE) // Dark mode blue-grey icon
+                                          : Colors.blueGrey, // Light mode blue-grey icon
                                     ),
                                   ),
                                 ),
@@ -420,16 +407,20 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
                                           color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF374151)  // Dark mode deep grey
-                                              : Colors.grey[100],        // Light mode light grey
+                                              ? const Color(0xFF374151) // Dark mode deep grey
+                                              : Colors.grey[100], // Light mode light grey
                                           borderRadius: BorderRadius.circular(16),
                                           border: Border.all(
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF6B7280)  // Dark mode grey border
-                                                : Colors.grey[200]!,       // Light mode light grey border
+                                                ? const Color(0xFF6B7280) // Dark mode grey border
+                                                : Colors.grey[200]!, // Light mode light grey border
                                           ),
                                         ),
-                                        child: EnhancedMarkdown(data: _askStreaming.isEmpty ? AppLocalizations.of(context)!.aiThinking : _askStreaming),
+                                        child: EnhancedMarkdown(
+                                          data: _askStreaming.isEmpty
+                                              ? AppLocalizations.of(context)!.aiThinking
+                                              : _askStreaming,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -465,9 +456,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                             icon: const Icon(Icons.menu_book, color: Colors.teal),
                             tooltip: AppLocalizations.of(context)!.viewDiaryList,
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                              );
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
                             },
                           ),
                         ],
@@ -570,11 +559,7 @@ class _ReasoningCollapse extends StatefulWidget {
   final bool initiallyExpanded;
   final bool hasMainContent; // Whether there is main content
 
-  const _ReasoningCollapse({
-    required this.content,
-    this.initiallyExpanded = false,
-    this.hasMainContent = false,
-  });
+  const _ReasoningCollapse({required this.content, this.initiallyExpanded = false, this.hasMainContent = false});
 
   @override
   State<_ReasoningCollapse> createState() => _ReasoningCollapseState();
@@ -613,19 +598,11 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
             onTap: () => setState(() => _expanded = !_expanded),
             child: Row(
               children: [
-                Icon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
-                  size: 18,
-                  color: context.secondaryTextColor,
-                ),
+                Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 18, color: context.secondaryTextColor),
                 const SizedBox(width: 2),
                 Text(
                   AppLocalizations.of(context)!.aiSummaryResult,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: context.secondaryTextColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 12, color: context.secondaryTextColor, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -636,17 +613,11 @@ class _ReasoningCollapseState extends State<_ReasoningCollapse> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF374151)  // Dark mode deep grey
-                    : Colors.grey[100],        // Light mode light grey
+                    ? const Color(0xFF374151) // Dark mode deep grey
+                    : Colors.grey[100], // Light mode light grey
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                widget.content,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: context.secondaryTextColor,
-                ),
-              ),
+              child: Text(widget.content, style: TextStyle(fontSize: 12, color: context.secondaryTextColor)),
             ),
         ],
       ),

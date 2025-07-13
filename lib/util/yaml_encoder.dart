@@ -1,4 +1,3 @@
-
 String mapToYaml(Map data, {int indent = 0}) {
   final buffer = StringBuffer();
   final spaces = '  ' * indent;

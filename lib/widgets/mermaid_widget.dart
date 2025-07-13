@@ -18,7 +18,8 @@ class _MermaidWidgetState extends State<MermaidWidget> {
   @override
   void initState() {
     super.initState();
-    final html = '''
+    final html =
+        '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,26 +52,17 @@ class _MermaidWidgetState extends State<MermaidWidget> {
       return Container(
         height: 180,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
         child: Text(l10n.mermaidMobileOnly),
       );
     }
     try {
-      return SizedBox(
-        height: 180,
-        child: WebViewWidget(controller: _controller),
-      );
+      return SizedBox(height: 180, child: WebViewWidget(controller: _controller));
     } catch (e) {
       return Container(
         height: 180,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
         child: Text('${l10n.mermaidRenderError}: \\n$e'),
       );
     }

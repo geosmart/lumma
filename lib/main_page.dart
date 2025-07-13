@@ -55,10 +55,7 @@ class _MainTabPageState extends State<MainTabPage> {
                 child: Container(
                   width: 200,
                   height: 200,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.decorationColor,
-                  ),
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: context.decorationColor),
                 ),
               ),
               Positioned(
@@ -67,10 +64,7 @@ class _MainTabPageState extends State<MainTabPage> {
                 child: Container(
                   width: 160,
                   height: 160,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.decorationColor,
-                  ),
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: context.decorationColor),
                 ),
               ),
 
@@ -93,18 +87,10 @@ class _MainTabPageState extends State<MainTabPage> {
                         ),
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
+                          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 8)),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.auto_stories,
-                        size: 60,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.auto_stories, size: 60, color: Colors.white),
                     ),
 
                     const SizedBox(height: 32),
@@ -117,13 +103,7 @@ class _MainTabPageState extends State<MainTabPage> {
                         fontWeight: FontWeight.bold,
                         color: context.primaryTextColor,
                         letterSpacing: 2.0,
-                        shadows: const [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                            color: Colors.black12,
-                          ),
-                        ],
+                        shadows: const [Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black12)],
                       ),
                     ),
 
@@ -155,11 +135,7 @@ class _MainTabPageState extends State<MainTabPage> {
                         ),
                         borderRadius: BorderRadius.circular(32),
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
+                          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
                         ],
                       ),
                       child: Material(
@@ -169,24 +145,16 @@ class _MainTabPageState extends State<MainTabPage> {
                           onTap: () async {
                             final mode = await DiaryModeConfigService.loadDiaryMode();
                             if (mode == DiaryMode.chat) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const DiaryChatPage()),
-                              );
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryChatPage()));
                             } else {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const DiaryQaPage()),
-                              );
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryQaPage()));
                             }
                           },
                           child: Center(
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.edit_note,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
+                                const Icon(Icons.edit_note, color: Colors.white, size: 28),
                                 const SizedBox(width: 12),
                                 Text(
                                   AppLocalizations.of(context)!.startWritingDiary,
@@ -215,26 +183,20 @@ class _MainTabPageState extends State<MainTabPage> {
                             icon: Icons.list_alt,
                             label: AppLocalizations.of(context)!.diaryList,
                             onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                              );
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
                             },
                           ),
                         ),
                         const SizedBox(width: 8),
                         // 用 _SyncButton 替换原来的“数据同步”按钮
-                        const Expanded(
-                          child: _SyncButton(),
-                        ),
+                        const Expanded(child: _SyncButton()),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _SecondaryButton(
                             icon: Icons.settings,
                             label: AppLocalizations.of(context)!.settings,
                             onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const SettingsPage()),
-                              );
+                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
                             },
                           ),
                         ),
@@ -259,11 +221,7 @@ class _SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _SecondaryButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _SecondaryButton({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -277,11 +235,7 @@ class _SecondaryButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: context.primaryTextColor,
-                size: 16,
-              ),
+              Icon(icon, color: context.primaryTextColor, size: 16),
               const SizedBox(width: 6),
               Text(
                 label,
@@ -321,12 +275,7 @@ class _SyncButton extends StatelessWidget {
           builder: (context) => AlertDialog(
             title: Text(l10n.cannotStartSync),
             content: Text(l10n.cannotStartSyncMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.ok),
-              ),
-            ],
+            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ok))],
           ),
         );
       }
@@ -347,7 +296,8 @@ class _SyncButton extends StatelessWidget {
 
       void addLog(String message) {
         final now = DateTime.now();
-        final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+        final timeStr =
+            '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
         logs.insert(0, '$timeStr $message');
       }
 
@@ -385,12 +335,7 @@ class _SyncButton extends StatelessWidget {
               builder: (context) => AlertDialog(
                 title: Text(l10n.syncSuccess),
                 content: Text(l10n.syncSuccessMessage),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.ok),
-                  ),
-                ],
+                actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ok))],
               ),
             );
           } else {
@@ -399,12 +344,7 @@ class _SyncButton extends StatelessWidget {
               builder: (context) => AlertDialog(
                 title: Text(l10n.syncFailed),
                 content: Text(l10n.syncFailedMessage),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.ok),
-                  ),
-                ],
+                actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.ok))],
               ),
             );
           }
@@ -444,10 +384,8 @@ class _SyncButton extends StatelessWidget {
       // 未知同步模式
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l10n.syncNotConfigured),
-          content: Text(l10n.syncNotConfiguredMessage),
-        ),
+        builder: (context) =>
+            AlertDialog(title: Text(l10n.syncNotConfigured), content: Text(l10n.syncNotConfiguredMessage)),
       );
     }
   }
@@ -455,10 +393,6 @@ class _SyncButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return _SecondaryButton(
-      icon: Icons.sync,
-      label: l10n.dataSync,
-      onTap: () => _syncData(context),
-    );
+    return _SecondaryButton(icon: Icons.sync, label: l10n.dataSync, onTap: () => _syncData(context));
   }
 }

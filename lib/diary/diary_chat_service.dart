@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import '../util/ai_service.dart';
-import '../util/markdown_service.dart';
+import '../dao/diary_dao.dart';
 import '../util/llm_error_dialog.dart';
 import '../diary/chat_history_service.dart';
 import '../config/config_service.dart';
@@ -25,15 +25,22 @@ class DiaryChatService {
   }
 
   // Let AI extract category and title
-  static Future<Map<String, String>> extractCategoryAndTitle(BuildContext context, String question, String answer) async {
+  static Future<Map<String, String>> extractCategoryAndTitle(
+    BuildContext context,
+    String question,
+    String answer,
+  ) async {
     try {
       final prompt = PromptConstants.getExtractCategoryAndTitlePrompt()
-        .replaceAll(r'{{question}}', question)
-        .replaceAll(r'{{answer}}', answer);
+          .replaceAll(r'{{question}}', question)
+          .replaceAll(r'{{answer}}', answer);
       final messages = [
-        {'role': 'user', 'content': prompt}
+        {'role': 'user', 'content': prompt},
       ];
-      Map<String, String> result = {AppLocalizations.of(context)!.category: AppLocalizations.of(context)!.aiContentPlaceholder, AppLocalizations.of(context)!.diaryContent: ''};
+      Map<String, String> result = {
+        AppLocalizations.of(context)!.category: AppLocalizations.of(context)!.aiContentPlaceholder,
+        AppLocalizations.of(context)!.diaryContent: '',
+      };
       bool completed = false;
 
       await AiService.askStream(
@@ -80,7 +87,7 @@ class DiaryChatService {
             if (map[categoryKey] is String && map[titleKey] is String) {
               result = {
                 AppLocalizations.of(context)!.category: map[categoryKey],
-                AppLocalizations.of(context)!.diaryContent: map[titleKey]
+                AppLocalizations.of(context)!.diaryContent: map[titleKey],
               };
             }
           } catch (e) {
@@ -100,7 +107,10 @@ class DiaryChatService {
       return result;
     } catch (e) {
       print(AppLocalizations.of(context)!.loadingFailed);
-      return {AppLocalizations.of(context)!.category: AppLocalizations.of(context)!.aiContentPlaceholder, AppLocalizations.of(context)!.diaryContent: ''};
+      return {
+        AppLocalizations.of(context)!.category: AppLocalizations.of(context)!.aiContentPlaceholder,
+        AppLocalizations.of(context)!.diaryContent: '',
+      };
     }
   }
 
@@ -119,7 +129,7 @@ class DiaryChatService {
         final categoryKey = AppLocalizations.of(context)!.category;
         final titleKey = AppLocalizations.of(context)!.diaryContent;
         history[history.length - 1]['category'] = result[categoryKey] ?? '';
-        history[history.length - 1]['title'] = result[titleKey] ?? '';  // This should be the extracted title
+        history[history.length - 1]['title'] = result[titleKey] ?? ''; // This should be the extracted title
 
         // Save to diary file after extraction
         final content = DiaryDao.formatDiaryContent(
@@ -130,13 +140,15 @@ class DiaryChatService {
           category: history.last['category'] ?? '',
           time: history.last['time'],
         );
-        await MarkdownService.appendToDailyDiary(content);
+        await DiaryDao.appendToDailyDiary(content);
 
         // Print save path (for debug)
-        final fileName = MarkdownService.getDiaryFileName();
-        final diaryDir = await MarkdownService.getDiaryDir();
+        final fileName = DiaryDao.getDiaryFileName();
+        final diaryDir = await DiaryDao.getDiaryDir();
         final filePath = '$diaryDir/$fileName';
-        print('Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}');
+        print(
+          'Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}',
+        );
       }
     } catch (e) {
       print('Auto-save failed: ${e.toString()}');
@@ -173,17 +185,10 @@ class DiaryChatService {
   }
 
   // 处理LLM配置错误，显示用户友好的错误对话框
-  static Future<void> handleLlmConfigurationError(
-    BuildContext context,
-    String errorMessage
-  ) async {
+  static Future<void> handleLlmConfigurationError(BuildContext context, String errorMessage) async {
     if (LlmErrorDialog.isLlmConfigurationError(errorMessage)) {
       final statusCode = LlmErrorDialog.extractStatusCode(errorMessage);
-      await LlmErrorDialog.showLlmConfigurationError(
-        context,
-        errorMessage: errorMessage,
-        statusCode: statusCode,
-      );
+      await LlmErrorDialog.showLlmConfigurationError(context, errorMessage: errorMessage, statusCode: statusCode);
     }
   }
 
@@ -201,19 +206,16 @@ class DiaryChatService {
   }
 
   // 构建聊天请求
-  static Future<Map<String, dynamic>> buildChatRequest(BuildContext context, List<Map<String, String>> history, String userInput) async {
+  static Future<Map<String, dynamic>> buildChatRequest(
+    BuildContext context,
+    List<Map<String, String>> history,
+    String userInput,
+  ) async {
     final historyWindow = ChatHistoryService.getRecent(history);
     final systemPrompt = await getActivePromptContent(PromptCategory.chat);
-    final messages = AiService.buildMessages(
-      systemPrompt: systemPrompt,
-      history: historyWindow,
-      userInput: userInput,
-    );
+    final messages = AiService.buildMessages(systemPrompt: systemPrompt, history: historyWindow, userInput: userInput);
 
-    return await AiService.buildChatRequestRaw(
-      messages: messages,
-      stream: true,
-    );
+    return await AiService.buildChatRequestRaw(messages: messages, stream: true);
   }
 
   // 格式化请求JSON用于调试
@@ -232,17 +234,8 @@ class DiaryChatService {
   }) async {
     final historyWindow = ChatHistoryService.getRecent(history);
     final systemPrompt = await getActivePromptContent(PromptCategory.chat);
-    final messages = AiService.buildMessages(
-      systemPrompt: systemPrompt,
-      history: historyWindow,
-      userInput: userInput,
-    );
+    final messages = AiService.buildMessages(systemPrompt: systemPrompt, history: historyWindow, userInput: userInput);
 
-    await AiService.askStream(
-      messages: messages,
-      onDelta: onDelta,
-      onDone: onDone,
-      onError: onError,
-    );
+    await AiService.askStream(messages: messages, onDelta: onDelta, onDone: onDone, onError: onError);
   }
 }

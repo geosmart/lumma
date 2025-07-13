@@ -52,19 +52,13 @@ class LlmErrorDialog {
         return AlertDialog(
           title: Text(
             dialogTitle,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: is429Error ? Colors.orange : Colors.red,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: is429Error ? Colors.orange : Colors.red),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                dialogMessage,
-                style: const TextStyle(fontSize: 16),
-              ),
+              Text(dialogMessage, style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 12),
               Icon(
                 is429Error ? Icons.hourglass_empty : Icons.info_outline,
@@ -72,13 +66,7 @@ class LlmErrorDialog {
                 size: 20,
               ),
               const SizedBox(height: 8),
-              Text(
-                troubleshootingTips.join('\n'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
+              Text(troubleshootingTips.join('\n'), style: TextStyle(fontSize: 14, color: Colors.grey[600])),
             ],
           ),
           actions: [
@@ -114,19 +102,19 @@ class LlmErrorDialog {
   /// Check if error message indicates an LLM configuration issue
   static bool isLlmConfigurationError(String errorMessage) {
     return errorMessage.contains('405') ||
-           errorMessage.contains('429') ||
-           errorMessage.contains('API') ||
-           errorMessage.contains('配置') ||
-           errorMessage.contains('configuration') ||
-           errorMessage.contains('密钥') ||
-           errorMessage.contains('key') ||
-           errorMessage.contains('地址') ||
-           errorMessage.contains('URL') ||
-           errorMessage.contains('模型') ||
-           errorMessage.contains('model') ||
-           errorMessage.contains('rate limit') ||
-           errorMessage.contains('限流') ||
-           errorMessage.contains('频繁');
+        errorMessage.contains('429') ||
+        errorMessage.contains('API') ||
+        errorMessage.contains('配置') ||
+        errorMessage.contains('configuration') ||
+        errorMessage.contains('密钥') ||
+        errorMessage.contains('key') ||
+        errorMessage.contains('地址') ||
+        errorMessage.contains('URL') ||
+        errorMessage.contains('模型') ||
+        errorMessage.contains('model') ||
+        errorMessage.contains('rate limit') ||
+        errorMessage.contains('限流') ||
+        errorMessage.contains('频繁');
   }
 
   /// Extract status code from error message

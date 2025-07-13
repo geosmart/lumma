@@ -7,10 +7,7 @@ Future<String?> getActivePromptContent(PromptCategory category) async {
   final config = await AppConfigService.load();
   final prompt = config.prompt.firstWhere(
     (p) => p.type == category && p.active,
-    orElse: () => config.prompt.firstWhere(
-      (p) => p.type == category,
-      orElse: () => PromptConfig.chatDefault(),
-    ),
+    orElse: () => config.prompt.firstWhere((p) => p.type == category, orElse: () => PromptConfig.chatDefault()),
   );
   return prompt.content;
 }
@@ -20,10 +17,7 @@ Future<String?> getActivePromptName(PromptCategory category) async {
   final config = await AppConfigService.load();
   final prompt = config.prompt.firstWhere(
     (p) => p.type == category && p.active,
-    orElse: () => config.prompt.firstWhere(
-      (p) => p.type == category,
-      orElse: () => PromptConfig.chatDefault(),
-    ),
+    orElse: () => config.prompt.firstWhere((p) => p.type == category, orElse: () => PromptConfig.chatDefault()),
   );
   return prompt.name;
 }

@@ -42,9 +42,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
     if (_loading) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).colorScheme.primary,
-          ),
+          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
         ),
       );
     }
@@ -65,11 +63,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               children: [
-                Icon(
-                  Icons.auto_stories,
-                  color: context.primaryTextColor,
-                  size: 24,
-                ),
+                Icon(Icons.auto_stories, color: context.primaryTextColor, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   AppLocalizations.of(context)!.diaryMode,
@@ -82,18 +76,13 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(4),
-          ),
+          const Padding(padding: EdgeInsets.all(4)),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: context.cardBackgroundColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: context.borderColor,
-                width: 1,
-              ),
+              border: Border.all(color: context.borderColor, width: 1),
             ),
             child: ListTile(
               leading: Icon(
@@ -106,10 +95,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 children: [
                   Text(
                     AppLocalizations.of(context)!.aiChat,
-                    style: TextStyle(
-                      fontSize: SettingsUiConfig.titleFontSize,
-                      color: context.primaryTextColor,
-                    ),
+                    style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, color: context.primaryTextColor),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
@@ -117,10 +103,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               ),
               subtitle: Text(
                 AppLocalizations.of(context)!.aiChatDescription,
-                style: TextStyle(
-                  color: context.secondaryTextColor,
-                  fontSize: SettingsUiConfig.subtitleFontSize,
-                ),
+                style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.subtitleFontSize),
               ),
               onTap: () => _setMode(model_enums.DiaryMode.chat),
             ),
@@ -130,10 +113,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
             decoration: BoxDecoration(
               color: context.cardBackgroundColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: context.borderColor,
-                width: 1,
-              ),
+              border: Border.all(color: context.borderColor, width: 1),
             ),
             child: ListTile(
               leading: Icon(
@@ -146,10 +126,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 children: [
                   Text(
                     AppLocalizations.of(context)!.fixedQA,
-                    style: TextStyle(
-                      fontSize: SettingsUiConfig.titleFontSize,
-                      color: context.primaryTextColor,
-                    ),
+                    style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, color: context.primaryTextColor),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
@@ -157,10 +134,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               ),
               subtitle: Text(
                 AppLocalizations.of(context)!.fixedQADescription,
-                style: TextStyle(
-                  color: context.secondaryTextColor,
-                  fontSize: SettingsUiConfig.subtitleFontSize,
-                ),
+                style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.subtitleFontSize),
               ),
               onTap: () => _setMode(model_enums.DiaryMode.qa),
             ),

@@ -23,21 +23,21 @@ class PromptConfig extends Timestamped {
 
   /// 问答提示词默认配置
   factory PromptConfig.chatDefault() => PromptConfig(
-        name: getDefaultFileName(PromptCategory.chat),
-        type: PromptCategory.chat,
-        active: true,
-        content: PromptConstants.getDefaultChatPrompt(),
-        isSystem: true, // 系统级提示词
-      );
+    name: getDefaultFileName(PromptCategory.chat),
+    type: PromptCategory.chat,
+    active: true,
+    content: PromptConstants.getDefaultChatPrompt(),
+    isSystem: true, // 系统级提示词
+  );
 
   /// 总结提示词默认配置
   factory PromptConfig.summaryDefault() => PromptConfig(
-        name: getDefaultFileName(PromptCategory.summary),
-        type: PromptCategory.summary,
-        active: false,
-        content: PromptConstants.getDefaultSummaryPrompt(),
-        isSystem: true, // 系统级提示词
-      );
+    name: getDefaultFileName(PromptCategory.summary),
+    type: PromptCategory.summary,
+    active: false,
+    content: PromptConstants.getDefaultSummaryPrompt(),
+    isSystem: true, // 系统级提示词
+  );
 
   /// 获取提示词类型对应的默认文件名
   static String getDefaultFileName(PromptCategory type) {
@@ -56,24 +56,22 @@ class PromptConfig extends Timestamped {
   }
 
   factory PromptConfig.fromMap(Map map) => PromptConfig(
-        name: map['name'] ?? '',
-        type: map['type'] is PromptCategory
-            ? map['type']
-            : promptCategoryFromString(map['type'] ?? 'qa'),
-        active: map['active'] ?? false,
-        content: map['content'] ?? '',
-        isSystem: map['isSystem'] == true, // 更安全的处理，默认为false
-        created: DateTime.tryParse(map['created'] ?? '') ?? DateTime.now(),
-        updated: DateTime.tryParse(map['updated'] ?? '') ?? DateTime.now(),
-      );
+    name: map['name'] ?? '',
+    type: map['type'] is PromptCategory ? map['type'] : promptCategoryFromString(map['type'] ?? 'qa'),
+    active: map['active'] ?? false,
+    content: map['content'] ?? '',
+    isSystem: map['isSystem'] == true, // 更安全的处理，默认为false
+    created: DateTime.tryParse(map['created'] ?? '') ?? DateTime.now(),
+    updated: DateTime.tryParse(map['updated'] ?? '') ?? DateTime.now(),
+  );
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'type': promptCategoryToString(type),
-        'active': active,
-        'content': content,
-        'isSystem': isSystem, // 新增字段
-        'created': created.toIso8601String(),
-        'updated': updated.toIso8601String(),
-      };
+    'name': name,
+    'type': promptCategoryToString(type),
+    'active': active,
+    'content': content,
+    'isSystem': isSystem, // 新增字段
+    'created': created.toIso8601String(),
+    'updated': updated.toIso8601String(),
+  };
 }

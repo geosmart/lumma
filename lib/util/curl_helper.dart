@@ -1,6 +1,7 @@
 /// curl_helper.dart
 /// 提供 curl 命令生成与相关工具跳转功能
 library;
+
 import 'dart:convert';
 
 class CurlHelper {
@@ -11,14 +12,10 @@ class CurlHelper {
     final body = JsonEncoder.withIndent('  ').convert(raw['body']);
     final headerStr = headers.entries
         .where((e) => e.key.toLowerCase() == 'authorization' || e.key.toLowerCase() == 'content-type')
-        .map((e) => "  -H '${e.key}: ${e.value}' ").join(' \\n');
+        .map((e) => "  -H '${e.key}: ${e.value}' ")
+        .join(' \\n');
     // 多行拼接 curl
-    return [
-      'curl -X POST \\',
-      if (headerStr.isNotEmpty) '$headerStr\\n',
-      "  -d '$body' \\",
-      "  '$url'"
-    ].join('\n');
+    return ['curl -X POST \\', if (headerStr.isNotEmpty) '$headerStr\\n', "  -d '$body' \\", "  '$url'"].join('\n');
   }
 
   /// 生成 curlconverter.com 的跳转 URL

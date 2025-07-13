@@ -54,9 +54,9 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
     } catch (e) {
       setState(() => _loading = false);
       // Handle errors
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppLocalizations.of(context)!.loadingFailed}: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.loadingFailed}: $e')));
     }
   }
 
@@ -86,15 +86,15 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           if (match.start > lastEnd) {
             final beforeText = line.substring(lastEnd, match.start);
             if (beforeText.isNotEmpty) {
-              lineWidgets.add(Text(
-                beforeText,
-                style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[300]
-                    : Colors.grey[700],
-                  fontSize: 14,
+              lineWidgets.add(
+                Text(
+                  beforeText,
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
+                    fontSize: 14,
+                  ),
                 ),
-              ));
+              );
             }
           }
 
@@ -109,26 +109,25 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
         if (lastEnd < line.length) {
           final afterText = line.substring(lastEnd);
           if (afterText.isNotEmpty) {
-            lineWidgets.add(Text(
-              afterText,
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[300]
-                  : Colors.grey[700],
-                fontSize: 14,
+            lineWidgets.add(
+              Text(
+                afterText,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
+                  fontSize: 14,
+                ),
               ),
-            ));
+            );
           }
         }
 
         // Wrap all widgets in this line in a Wrap
-        parts.add(Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: lineWidgets,
+        parts.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: lineWidgets),
           ),
-        ));
+        );
       } else {
         // If line does not contain tags, render with Markdown
         if (line.isNotEmpty) {
@@ -139,10 +138,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: parts,
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: parts);
   }
 
   // Special rendering for daily summary content
@@ -178,30 +174,22 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                   const SizedBox(width: 8),
                   Text(
                     info['title'] as String,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               // Group content
-              ...items.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _buildSummaryItem(item, color),
-              )),
+              ...items.map(
+                (item) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildSummaryItem(item, color)),
+              ),
             ],
           ),
         ),
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: summaryWidgets,
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: summaryWidgets);
   }
 
   // Build summary item
@@ -212,9 +200,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       finalContent,
       style: TextStyle(
         fontSize: 14,
-        color: Theme.of(context).brightness == Brightness.dark
-          ? Colors.grey[300]
-          : Colors.grey[700],
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700],
       ),
     );
   }
@@ -233,11 +219,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       ),
       child: Text(
         '#$tag',
-        style: TextStyle(
-          fontSize: 11,
-          color: colors['text'],
-          fontWeight: FontWeight.w500,
-        ),
+        style: TextStyle(fontSize: 11, color: colors['text'], fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -300,58 +282,57 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _editMode
-              ? Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          maxLines: null,
-                          expands: true,
-                          textAlignVertical: TextAlignVertical.top,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            labelText: AppLocalizations.of(context)!.editDiary,
-                            alignLabelWithHint: true,
-                            contentPadding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
-                            isDense: true,
-                          ),
-                          strutStyle: const StrutStyle(
-                            height: 1.0,
-                            forceStrutHeight: true,
-                          ),
-                        ),
+          ? Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      maxLines: null,
+                      expands: true,
+                      textAlignVertical: TextAlignVertical.top,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: AppLocalizations.of(context)!.editDiary,
+                        alignLabelWithHint: true,
+                        contentPadding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
+                        isDense: true,
                       ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            try {
-                              await DiaryContentService.saveDiaryContent(_controller.text, widget.fileName);
-                              setState(() {
-                                _content = _controller.text;
-                                _editMode = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)));
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.saveFailed}: $e')));
-                            }
-                          },
-                          icon: const Icon(Icons.save),
-                          label: Text(AppLocalizations.of(context)!.save),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 48),
-                          ),
-                        ),
-                      ),
-                    ],
+                      strutStyle: const StrutStyle(height: 1.0, forceStrutHeight: true),
+                    ),
                   ),
-                )
-              : _content == null
-                  ? Center(child: Text(AppLocalizations.of(context)!.noContent))
-                  : _buildChatView(context),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        try {
+                          await DiaryContentService.saveDiaryContent(_controller.text, widget.fileName);
+                          setState(() {
+                            _content = _controller.text;
+                            _editMode = false;
+                          });
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)));
+                        } catch (e) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.saveFailed}: $e')));
+                        }
+                      },
+                      icon: const Icon(Icons.save),
+                      label: Text(AppLocalizations.of(context)!.save),
+                      style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : _content == null
+          ? Center(child: Text(AppLocalizations.of(context)!.noContent))
+          : _buildChatView(context),
     );
   }
 
@@ -369,13 +350,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF23272A) : Colors.white,
             borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4, offset: const Offset(0, 2))],
             border: Border.all(color: Colors.grey.withOpacity(0.08)),
           ),
           child: Column(
@@ -399,8 +374,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                             ),
                           ),
                         if ((h['title'] ?? '').isNotEmpty && _shouldShowTimeAndTitle(h)) ...[
-                          if (h['time'] != null)
-                            const SizedBox(width: 8),
+                          if (h['time'] != null) const SizedBox(width: 8),
                           Text(
                             h['title']!,
                             style: TextStyle(
@@ -417,8 +391,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                     ),
                   ),
                   // 右侧：标签（日总结时不显示标签，避免重复）
-                  if (h['category'] != null && h['category']!.isNotEmpty &&
-                      _shouldShowTimeAndTitle(h))
+                  if (h['category'] != null && h['category']!.isNotEmpty && _shouldShowTimeAndTitle(h))
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                       decoration: BoxDecoration(
@@ -431,7 +404,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                         style: TextStyle(
                           fontSize: 11,
                           color: _getCategoryColors(h['category']!)['text'],
-                          fontWeight: FontWeight.w500
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -442,54 +415,51 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: _isSummaryContent(h['q']!)
-                    ? Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.amber.withOpacity(0.1),
-                              Colors.orange.withOpacity(0.05),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      ? Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.amber.withOpacity(0.1), Colors.orange.withOpacity(0.05)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.orange.withOpacity(0.2)),
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.orange.withOpacity(0.2)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.auto_awesome, color: Colors.orange[600], size: 18),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)!.dailySummary,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange[700],
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (h['time'] != null)
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.auto_awesome, color: Colors.orange[600], size: 18),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    h['time']!,
+                                    AppLocalizations.of(context)!.dailySummary,
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).brightness == Brightness.dark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[500],
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange[700],
                                     ),
                                   ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            _buildSummaryContent(h['q']!),
-                          ],
-                        ),
-                      )
-                    : _buildContentWithTags(h['q']!),
+                                  const Spacer(),
+                                  if (h['time'] != null)
+                                    Text(
+                                      h['time']!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.grey[400]
+                                            : Colors.grey[500],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSummaryContent(h['q']!),
+                            ],
+                          ),
+                        )
+                      : _buildContentWithTags(h['q']!),
                 ),
               if (h['a'] != null && h['a']!.isNotEmpty)
                 Container(
@@ -501,59 +471,53 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                     border: Border(left: BorderSide(color: Colors.blueGrey[200]!, width: 3)),
                   ),
                   child: DefaultTextStyle(
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                     child: _isSummaryContent(h['a']!)
-                      ? Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.amber.withOpacity(0.1),
-                                Colors.orange.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                        ? Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.amber.withOpacity(0.1), Colors.orange.withOpacity(0.05)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.orange.withOpacity(0.2)),
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.orange.withOpacity(0.2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.auto_awesome, color: Colors.orange[600], size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    AppLocalizations.of(context)!.dailySummary,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange[700],
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  if (h['time'] != null)
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.auto_awesome, color: Colors.orange[600], size: 16),
+                                    const SizedBox(width: 6),
                                     Text(
-                                      h['time']!,
+                                      AppLocalizations.of(context)!.dailySummary,
                                       style: TextStyle(
-                                        fontSize: 10,
-                                        color: Theme.of(context).brightness == Brightness.dark
-                                            ? Colors.grey[400]
-                                            : Colors.grey[500],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange[700],
                                       ),
                                     ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              _buildSummaryContent(h['a']!),
-                            ],
-                          ),
-                        )
-                      : _buildContentWithTags(h['a']!),
+                                    const Spacer(),
+                                    if (h['time'] != null)
+                                      Text(
+                                        h['time']!,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? Colors.grey[400]
+                                              : Colors.grey[500],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                _buildSummaryContent(h['a']!),
+                              ],
+                            ),
+                          )
+                        : _buildContentWithTags(h['a']!),
                   ),
                 ),
             ],

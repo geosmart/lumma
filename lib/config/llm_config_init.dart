@@ -28,17 +28,21 @@ Future<void> ensureConfig() async {
 
   // 系统提示词初始化（不可删除）
   final existingPromptNames = config.prompt.map((p) => p.name).toSet();
-  final missingPrompts = PromptConstants.getSystemChatPrompts().where(
-    (e) => !existingPromptNames.contains(e['name']!)
-    ).toList();
+  final missingPrompts = PromptConstants.getSystemChatPrompts()
+      .where((e) => !existingPromptNames.contains(e['name']!))
+      .toList();
   if (missingPrompts.isNotEmpty) {
-    config.prompt.addAll(missingPrompts.map((e) => PromptConfig(
-      name: e['name']!,
-      type: PromptCategory.chat,
-      active: false,
-      content: e['content']!,
-      isSystem: true, // 系统级提示词
-    )));
+    config.prompt.addAll(
+      missingPrompts.map(
+        (e) => PromptConfig(
+          name: e['name']!,
+          type: PromptCategory.chat,
+          active: false,
+          content: e['content']!,
+          isSystem: true, // 系统级提示词
+        ),
+      ),
+    );
     updated = true;
     debugPrint('[ensureLlmAndPromptConfigFromEnv] 已补全缺失的系统提示词');
   }

@@ -44,7 +44,10 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
     super.didUpdateWidget(oldWidget);
     final newValue = widget.total > 0 ? widget.current / widget.total : 0.0;
     if (newValue != _lastValue) {
-      _animation = Tween<double>(begin: _lastValue, end: newValue.toDouble()).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+      _animation = Tween<double>(
+        begin: _lastValue,
+        end: newValue.toDouble(),
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
       _controller.forward(from: 0);
       _lastValue = newValue.toDouble();
     }
@@ -53,11 +56,7 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
     if (widget.logs.length > oldWidget.logs.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            0,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-          );
+          _scrollController.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
         }
       });
     }
@@ -81,18 +80,12 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              l10n.syncDialogTitle,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            Text(l10n.syncDialogTitle, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             AnimatedBuilder(
               animation: _animation,
               builder: (context, child) {
-                return LinearProgressIndicator(
-                  value: _animation.value,
-                  minHeight: 8,
-                );
+                return LinearProgressIndicator(value: _animation.value, minHeight: 8);
               },
             ),
             const SizedBox(height: 16),
@@ -126,10 +119,7 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
                     final log = widget.logs[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      child: Text(
-                        '$logIndex. $log',
-                        style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-                      ),
+                      child: Text('$logIndex. $log', style: const TextStyle(fontSize: 12, fontFamily: 'monospace')),
                     );
                   },
                 ),
@@ -145,10 +135,7 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
                 ),
                 if (widget.isDone) ...[
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.commonDone),
-                  ),
+                  ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonDone)),
                 ],
               ],
             ),

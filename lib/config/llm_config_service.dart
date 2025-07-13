@@ -33,11 +33,13 @@ class LlmConfigService {
 
     for (final systemConfig in systemConfigs) {
       // 检查是否已经存在相同的系统配置
-      final exists = config.model.any((llm) =>
-          llm.provider == systemConfig.provider &&
-          llm.baseUrl == systemConfig.baseUrl &&
-          llm.model == systemConfig.model &&
-          llm.isSystem == true);
+      final exists = config.model.any(
+        (llm) =>
+            llm.provider == systemConfig.provider &&
+            llm.baseUrl == systemConfig.baseUrl &&
+            llm.model == systemConfig.model &&
+            llm.isSystem == true,
+      );
 
       if (!exists) {
         print('[LlmConfigService] 创建缺少的系统LLM配置: ${systemConfig.provider} - ${systemConfig.model}');

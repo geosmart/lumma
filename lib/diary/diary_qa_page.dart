@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import '../util/markdown_service.dart';
+import '../dao/diary_dao.dart';
 import 'diary_qa_title_service.dart';
 import '../config/config_service.dart';
 import '../config/theme_service.dart';
@@ -59,24 +59,24 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.loadingFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.loadingFailed)));
       }
     }
   }
 
   Future<void> _createDiary() async {
     try {
-      final fileName = MarkdownService.getDiaryFileName();
+      final fileName = DiaryDao.getDiaryFileName();
       _diaryFileName = fileName;
 
-      final diaryDir = await MarkdownService.getDiaryDir();
+      final diaryDir = await DiaryDao.getDiaryDir();
       final file = File('$diaryDir/$fileName');
 
       if (!await file.exists()) {
         final initialContent = '# 今日问答日记\n\n---\n\n';
-        await MarkdownService.saveDiaryMarkdown(initialContent, fileName: fileName);
+        await DiaryDao.saveDiaryMarkdown(initialContent, fileName: fileName);
       }
 
       setState(() {
@@ -84,27 +84,20 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.createFailedWithError(e.toString()))));
       }
     }
   }
-
-
 
   // Auto-save Q&A to diary file
   Future<void> _autoSaveToDiary(String question, String answer) async {
     if (!_diaryCreated || _diaryFileName == null) return;
 
     try {
-      final content = DiaryDao.formatDiaryContent(
-        context: context,
-        title: question,
-        content: answer,
-        analysis: '',
-      );
-      await MarkdownService.appendToDailyDiary(content);
+      final content = DiaryDao.formatDiaryContent(context: context, title: question, content: answer, analysis: '');
+      await DiaryDao.appendToDailyDiary(content);
 
       // Print save path (for debug)
       print(AppLocalizations.of(context)!.saveSuccess);
@@ -141,7 +134,10 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
               onPressed: () => Navigator.of(context).maybePop(),
               tooltip: '返回',
             ),
-            title: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.primaryTextColor)),
+            title: Text(
+              title,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.primaryTextColor),
+            ),
           ),
           body: Column(
             children: [
@@ -184,8 +180,10 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                         : Colors.grey.shade200,
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: Text('Q${i + 1}: ${_questions[i]}',
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: context.primaryTextColor)),
+                                  child: Text(
+                                    'Q${i + 1}: ${_questions[i]}',
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: context.primaryTextColor),
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 32),
@@ -261,7 +259,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                         },
                                         getContent: () async {
                                           if (!_diaryCreated || _diaryFileName == null) return null;
-                                          final diaryDir = await MarkdownService.getDiaryDir();
+                                          final diaryDir = await DiaryDao.getDiaryDir();
                                           final file = File('$diaryDir/$_diaryFileName');
                                           return await file.readAsString();
                                         },
@@ -282,9 +280,9 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                 icon: const Icon(Icons.menu_book, color: Colors.teal),
                                 tooltip: AppLocalizations.of(context)!.viewDiaryList,
                                 onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                                  );
+                                  Navigator.of(
+                                    context,
+                                  ).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
                                 },
                               ),
                             ],
@@ -313,8 +311,8 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                     style: TextStyle(color: context.primaryTextColor),
                                     decoration: InputDecoration(
                                       hintText: _current < _questions.length
-                                        ? AppLocalizations.of(context)!.aiContentPlaceholder
-                                        : AppLocalizations.of(context)!.qaNone,
+                                          ? AppLocalizations.of(context)!.aiContentPlaceholder
+                                          : AppLocalizations.of(context)!.qaNone,
                                       hintStyle: TextStyle(color: context.secondaryTextColor),
                                       border: InputBorder.none,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -358,9 +356,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   void _onSubmit() async {
     // Check if there are more questions to answer
     if (_current >= _questions.length) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已完成所有问题')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已完成所有问题')));
       return;
     }
 
@@ -369,9 +365,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
 
     if (answer.isEmpty) {
       // No input, do not advance or save
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入内容后再提交')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请输入内容后再提交')));
       return;
     }
 

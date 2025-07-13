@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../util/markdown_service.dart';
+import '../dao/diary_dao.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class DiaryFileEditor extends StatefulWidget {
@@ -26,7 +26,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
   }
 
   Future<void> _loadFileContent() async {
-    final diaryDir = await MarkdownService.getDiaryDir();
+    final diaryDir = await DiaryDao.getDiaryDir();
     final f = File('$diaryDir/${widget.fileName}');
     if (await f.exists()) {
       _editCtrl.text = await f.readAsString();
@@ -38,7 +38,7 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
     setState(() => _saving = true);
     try {
       final newName = _nameCtrl.text.trim();
-      final diaryDir = await MarkdownService.getDiaryDir();
+      final diaryDir = await DiaryDao.getDiaryDir();
       final oldFile = File('$diaryDir/${widget.fileName}');
       final newFile = File('$diaryDir/$newName');
 

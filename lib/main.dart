@@ -26,9 +26,7 @@ void main() async {
   try {
     print('[lumma] 当前目录: \\${Directory.current.path}');
     print('[lumma] .env.local exists: \\${File('.env.local').existsSync()}');
-    print(
-      '[lumma] .env.release exists: \\${File('.env.release').existsSync()}',
-    );
+    print('[lumma] .env.release exists: \\${File('.env.release').existsSync()}');
     await dotenv.load(fileName: '.env.local');
     print('[lumma] 加载 .env.local 成功');
     loaded = true;
@@ -63,10 +61,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([
-        ThemeService.instance,
-        LanguageService.instance,
-      ]),
+      listenable: Listenable.merge([ThemeService.instance, LanguageService.instance]),
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,

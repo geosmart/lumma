@@ -37,12 +37,7 @@ class SyncService {
       builder: (ctx) => AlertDialog(
         title: const Text('同步结果'),
         content: Text(result.toString()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('关闭'),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('关闭'))],
       ),
     );
   }
@@ -72,9 +67,7 @@ class SyncService {
       final syncConfig = config.sync;
 
       // 检查 WebDAV 配置是否完整
-      if (syncConfig.webdavUrl.isEmpty ||
-          syncConfig.webdavUsername.isEmpty ||
-          syncConfig.webdavPassword.isEmpty) {
+      if (syncConfig.webdavUrl.isEmpty || syncConfig.webdavUsername.isEmpty || syncConfig.webdavPassword.isEmpty) {
         print('WebDAV 配置不完整');
         return false;
       }
@@ -144,9 +137,7 @@ class SyncService {
       print('开始 WebDAV 同步(进度)');
       final config = await AppConfigService.load();
       final syncConfig = config.sync;
-      if (syncConfig.webdavUrl.isEmpty ||
-          syncConfig.webdavUsername.isEmpty ||
-          syncConfig.webdavPassword.isEmpty) {
+      if (syncConfig.webdavUrl.isEmpty || syncConfig.webdavUsername.isEmpty || syncConfig.webdavPassword.isEmpty) {
         print('WebDAV 配置不完整');
         return false;
       }
@@ -232,15 +223,19 @@ class SyncService {
   static Future<int> getRemoteWebdavFileCount() async {
     final config = await AppConfigService.load();
     final syncConfig = config.sync;
-    final uri = Uri.parse(syncConfig.webdavUrl + (syncConfig.webdavRemoteDir.isEmpty ? '/' : syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : '${syncConfig.webdavRemoteDir}/'));
+    final uri = Uri.parse(
+      syncConfig.webdavUrl +
+          (syncConfig.webdavRemoteDir.isEmpty
+              ? '/'
+              : syncConfig.webdavRemoteDir.endsWith('/')
+              ? syncConfig.webdavRemoteDir
+              : '${syncConfig.webdavRemoteDir}/'),
+    );
     final auth = base64Encode(utf8.encode('${syncConfig.webdavUsername}:${syncConfig.webdavPassword}'));
     final request = http.Request('PROPFIND', uri)
-      ..headers.addAll({
-        'Authorization': 'Basic $auth',
-        'Content-Type': 'application/xml',
-        'Depth': '1',
-      })
-      ..body = '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
+      ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
+      ..body =
+          '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
     final response = await http.Client().send(request);
     if (response.statusCode != 207) return 0;
     final responseBody = await response.stream.bytesToString();

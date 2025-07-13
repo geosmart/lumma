@@ -10,10 +10,7 @@ class DiaryEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(fileName)),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: DiaryFileManager(),
-      ),
+      body: Padding(padding: const EdgeInsets.all(8.0), child: DiaryFileManager()),
     );
   }
 }

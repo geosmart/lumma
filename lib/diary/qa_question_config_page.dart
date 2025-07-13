@@ -58,13 +58,9 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
     try {
       final questions = _controllers.map((c) => c.text).toList();
       await AppConfigService.update((c) => c.qaQuestions = List<String>.from(questions));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Questions saved successfully!')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Questions saved successfully!')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save questions: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save questions: $e')));
     } finally {
       setState(() {
         _isLoading = false;
@@ -90,11 +86,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               children: [
-                Icon(
-                  Icons.question_answer,
-                  color: context.primaryTextColor,
-                  size: 24,
-                ),
+                Icon(Icons.question_answer, color: context.primaryTextColor, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   AppLocalizations.of(context)!.qaQuestionList,
@@ -114,9 +106,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.primary,
-                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                     ),
                   );
                 }
@@ -124,10 +114,7 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                   return Center(
                     child: Text(
                       'Error: ${snapshot.error}',
-                      style: TextStyle(
-                        color: context.primaryTextColor,
-                        fontSize: SettingsUiConfig.titleFontSize,
-                      ),
+                      style: TextStyle(color: context.primaryTextColor, fontSize: SettingsUiConfig.titleFontSize),
                     ),
                   );
                 }
@@ -135,92 +122,76 @@ class _QaQuestionConfigPageState extends State<QaQuestionConfigPage> {
                 return _isLoading
                     ? Center(
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.primary,
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                         ),
                       )
                     : _controllers.isEmpty
-                        ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.qaNone,
-                              style: TextStyle(
-                                color: context.secondaryTextColor,
-                                fontSize: SettingsUiConfig.titleFontSize,
+                    ? Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.qaNone,
+                          style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.titleFontSize),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: _controllers.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: context.cardBackgroundColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: context.borderColor, width: 1),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _controllers[index],
+                                      style: TextStyle(
+                                        color: context.primaryTextColor,
+                                        fontSize: SettingsUiConfig.titleFontSize,
+                                      ),
+                                      decoration: InputDecoration(
+                                        labelText: AppLocalizations.of(context)!.qaQuestionLabel(index + 1),
+                                        labelStyle: TextStyle(
+                                          color: context.secondaryTextColor,
+                                          fontSize: SettingsUiConfig.subtitleFontSize,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(color: context.borderColor),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(color: context.borderColor),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: BorderSide(
+                                            color: Theme.of(context).colorScheme.primary,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red, size: 20),
+                                    onPressed: () => _removeQuestion(index),
+                                    tooltip: AppLocalizations.of(context)!.qaDelete,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16.0),
-                            itemCount: _controllers.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: context.cardBackgroundColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: context.borderColor,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _controllers[index],
-                                          style: TextStyle(
-                                            color: context.primaryTextColor,
-                                            fontSize: SettingsUiConfig.titleFontSize,
-                                          ),
-                                          decoration: InputDecoration(
-                                            labelText: AppLocalizations.of(context)!.qaQuestionLabel(index + 1),
-                                            labelStyle: TextStyle(
-                                              color: context.secondaryTextColor,
-                                              fontSize: SettingsUiConfig.subtitleFontSize,
-                                            ),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: context.borderColor,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: context.borderColor,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Theme.of(context).colorScheme.primary,
-                                                width: 2,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                          size: 20,
-                                        ),
-                                        onPressed: () => _removeQuestion(index),
-                                        tooltip: AppLocalizations.of(context)!.qaDelete,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
                           );
+                        },
+                      );
               },
             ),
           ),

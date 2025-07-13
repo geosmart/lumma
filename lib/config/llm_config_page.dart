@@ -60,8 +60,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
         SnackBar(
           content: Text(
             Localizations.localeOf(context).languageCode == 'zh'
-              ? '系统配置不可删除'
-              : 'System configuration cannot be deleted'
+                ? '系统配置不可删除'
+                : 'System configuration cannot be deleted',
           ),
         ),
       );
@@ -123,8 +123,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
             SnackBar(
               content: Text(
                 Localizations.localeOf(context).languageCode == 'zh'
-                  ? '成功重置了 $createdCount 个系统模型配置'
-                  : 'Successfully reset $createdCount system model configurations'
+                    ? '成功重置了 $createdCount 个系统模型配置'
+                    : 'Successfully reset $createdCount system model configurations',
               ),
               backgroundColor: Colors.green,
             ),
@@ -137,8 +137,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
             SnackBar(
               content: Text(
                 Localizations.localeOf(context).languageCode == 'zh'
-                  ? '所有系统模型配置都已存在'
-                  : 'All system model configurations already exist'
+                    ? '所有系统模型配置都已存在'
+                    : 'All system model configurations already exist',
               ),
             ),
           );
@@ -151,8 +151,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
           SnackBar(
             content: Text(
               Localizations.localeOf(context).languageCode == 'zh'
-                ? '重置系统模型配置失败: $e'
-                : 'Failed to reset system model configurations: $e'
+                  ? '重置系统模型配置失败: $e'
+                  : 'Failed to reset system model configurations: $e',
             ),
             backgroundColor: Colors.red,
           ),
@@ -174,9 +174,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
       child: _loading
           ? Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary,
-                ),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
               ),
             )
           : Stack(
@@ -189,11 +187,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.memory,
-                            color: context.primaryTextColor,
-                            size: 24,
-                          ),
+                          Icon(Icons.memory, color: context.primaryTextColor, size: 24),
                           const SizedBox(width: 12),
                           Text(
                             AppLocalizations.of(context)!.llmManage,
@@ -206,15 +200,11 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                           const Spacer(),
                           // 重置系统模型按钮
                           IconButton(
-                            icon: Icon(
-                              Icons.refresh,
-                              color: context.primaryTextColor,
-                              size: 20,
-                            ),
+                            icon: Icon(Icons.refresh, color: context.primaryTextColor, size: 20),
                             onPressed: _createMissingSystemConfigs,
                             tooltip: Localizations.localeOf(context).languageCode == 'zh'
-                              ? '重置系统默认模型'
-                              : 'Reset System Default Models',
+                                ? '重置系统默认模型'
+                                : 'Reset System Default Models',
                           ),
                         ],
                       ),
@@ -224,10 +214,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                           ? Center(
                               child: Text(
                                 AppLocalizations.of(context)!.llmNone,
-                                style: TextStyle(
-                                  color: context.secondaryTextColor,
-                                  fontSize: 16,
-                                ),
+                                style: TextStyle(color: context.secondaryTextColor, fontSize: 16),
                               ),
                             )
                           : ListView.builder(
@@ -240,10 +227,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                   decoration: BoxDecoration(
                                     color: context.cardBackgroundColor,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: context.borderColor,
-                                      width: 1,
-                                    ),
+                                    border: Border.all(color: context.borderColor, width: 1),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 0),
@@ -300,7 +284,9 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                     border: Border.all(color: Colors.blue.withOpacity(0.3)),
                                                   ),
                                                   child: Text(
-                                                    Localizations.localeOf(context).languageCode == 'zh' ? '系统' : 'System',
+                                                    Localizations.localeOf(context).languageCode == 'zh'
+                                                        ? '系统'
+                                                        : 'System',
                                                     style: TextStyle(
                                                       fontSize: 10,
                                                       color: Colors.blue,
@@ -315,11 +301,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                             children: [
                                               Spacer(),
                                               IconButton(
-                                                icon: Icon(
-                                                  Icons.copy,
-                                                  size: 20,
-                                                  color: context.secondaryTextColor,
-                                                ),
+                                                icon: Icon(Icons.copy, size: 20, color: context.secondaryTextColor),
                                                 onPressed: () {
                                                   final copy = LLMConfig(
                                                     provider: c.provider,
@@ -341,11 +323,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                               if (!c.isSystem) ...[
                                                 const SizedBox(width: 8),
                                                 IconButton(
-                                                  icon: Icon(
-                                                    Icons.edit,
-                                                    size: 20,
-                                                    color: context.secondaryTextColor,
-                                                  ),
+                                                  icon: Icon(Icons.edit, size: 20, color: context.secondaryTextColor),
                                                   onPressed: () => _showEditDialog(config: c, index: i),
                                                   tooltip: AppLocalizations.of(context)!.llmEdit,
                                                   padding: EdgeInsets.zero,
@@ -360,9 +338,11 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                   color: c.isSystem ? Colors.red.withOpacity(0.5) : Colors.red,
                                                 ),
                                                 onPressed: c.isSystem ? null : () => _deleteConfig(i),
-                                                tooltip: c.isSystem ?
-                                                  (Localizations.localeOf(context).languageCode == 'zh' ? '系统配置不可删除' : 'System configuration cannot be deleted') :
-                                                  AppLocalizations.of(context)!.llmDelete,
+                                                tooltip: c.isSystem
+                                                    ? (Localizations.localeOf(context).languageCode == 'zh'
+                                                          ? '系统配置不可删除'
+                                                          : 'System configuration cannot be deleted')
+                                                    : AppLocalizations.of(context)!.llmDelete,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
