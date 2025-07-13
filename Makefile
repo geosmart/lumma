@@ -1,11 +1,9 @@
 codestyle:
 	@echo "Formatting Dart code with 120 character line length..."
 	dart format . -l 120
-	@echo "Code formatting completed!"
-
-# Alias for codestyle
-format: codestyle
-
+	@echo "Removing unused imports..."
+	dart fix --apply
+	@echo "Code formatting and cleanup completed!"
 # Run static analysis
 lint:
 	@echo "Running Dart analyzer..."

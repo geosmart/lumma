@@ -154,4 +154,43 @@ class PromptConfigService {
 
     return newPrompt;
   }
+
+  /// 重置提示词到默认内容
+  static Future<void> resetPrompt(PromptConfig prompt) async {
+    final config = await AppConfigService.load();
+
+    // 找到对应的提示词
+    final index = config.prompt.indexWhere(
+      (p) => p.name == prompt.name && p.type == prompt.type
+    );
+
+    if (index == -1) {
+      throw Exception('Prompt not found');
+    }
+
+    // 获取默认内容
+    String defaultContent;
+    switch (prompt.type) {
+      case PromptCategory.chat:
+        defaultContent = PromptConstants.getDefaultChatPrompt();
+        break;
+      case PromptCategory.summary:
+        defaultContent = PromptConstants.getDefaultSummaryPrompt();
+        break;
+    }
+
+    // 更新提示词内容
+    config.prompt[index] = PromptConfig(
+      name: prompt.name,
+      type: prompt.type,
+      content: defaultContent,
+      isSystem: prompt.isSystem,
+      active: prompt.active,
+      created: prompt.created,
+      updated: DateTime.now(),
+    );
+
+    await AppConfigService.save();
+    print('[PromptConfigService] 已重置提示词: ${prompt.name}');
+  }
 }

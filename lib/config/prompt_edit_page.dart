@@ -102,17 +102,12 @@ class _PromptEditPageState extends State<PromptEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isReadOnly = widget.readOnly || _isSystem;
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.file == null
               ? AppLocalizations.of(context)!.promptEditAddTitle
-              : _isSystem
-              ? AppLocalizations.of(context)!.promptEditSystemTitle
-              : (widget.readOnly
-                    ? AppLocalizations.of(context)!.promptEditViewTitle
-                    : AppLocalizations.of(context)!.promptEditEditTitle),
+              : AppLocalizations.of(context)!.promptEditEditTitle,
         ),
       ),
       body: Padding(
@@ -122,7 +117,6 @@ class _PromptEditPageState extends State<PromptEditPage> {
             TextField(
               controller: _nameCtrl,
               decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditRoleName),
-              readOnly: isReadOnly,
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<PromptCategory>(
@@ -135,9 +129,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
                     ),
                   )
                   .toList(),
-              onChanged: isReadOnly
-                  ? null
-                  : (v) {
+              onChanged: (v) {
                       if (v != null) setState(() => _selectedCategory = v);
                     },
               decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditCategory),
@@ -147,9 +139,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
               children: [
                 Checkbox(
                   value: _isActive,
-                  onChanged: isReadOnly
-                      ? null
-                      : (v) {
+                  onChanged: (v) {
                           setState(() => _isActive = v ?? false);
                         },
                 ),
@@ -167,13 +157,12 @@ class _PromptEditPageState extends State<PromptEditPage> {
                   labelText: AppLocalizations.of(context)!.promptEditContent,
                   border: OutlineInputBorder(),
                 ),
-                readOnly: isReadOnly,
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
               child: ElevatedButton.icon(
-                onPressed: isReadOnly ? null : _savePrompt,
+                onPressed: _savePrompt,
                 icon: const Icon(Icons.save),
                 label: Text(AppLocalizations.of(context)!.promptEditSave),
                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),

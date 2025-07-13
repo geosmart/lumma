@@ -73,30 +73,64 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     }
   }
 
-  void _deletePrompt(PromptConfig prompt) async {
-    // 系统级提示词不可删除
-    if (prompt.isSystem) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.promptSystemNotDeletable)));
-      return;
-    }
-    // 检查是否为激活中的提示词
-    final activeContent = await getActivePromptContent(_activeCategory);
-    final isActivePrompt = prompt.content == activeContent;
-    // 删除prompt
-    await deletePrompt(prompt.type, prompt.name);
-    // 如果删除的是激活中的提示词，需要重新设置激活项
-    if (isActivePrompt) {
-      final remainingPrompts = await listPrompts(category: _activeCategory);
-      if (remainingPrompts.isNotEmpty) {
-        final firstPrompt = remainingPrompts.first;
-        await setActivePrompt(_activeCategory, firstPrompt.name);
+  void _resetPrompt(PromptConfig prompt) async {
+    // 显示确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.confirm),
+        content: Text(AppLocalizations.of(context)!.promptResetConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.promptCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(AppLocalizations.of(context)!.promptReset),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // 重置提示词
+      await PromptConfigService.resetPrompt(prompt);
+
+      // 重新加载提示词列表
+      await _loadPrompts();
+      await _loadActivePrompt();
+
+      // 显示成功消息
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '提示词已重置到默认内容'
+                  : 'Prompt has been reset to default content',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('[PromptConfigPage] 重置提示词失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '重置提示词失败: $e'
+                  : 'Failed to reset prompt: $e',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
-    // 重新加载提示词列表和激活状态
-    await _loadPrompts();
-    await _loadActivePrompt();
   }
 
   Future<void> _createMissingSystemPrompts() async {
@@ -186,6 +220,32 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
         );
       }
     }
+  }
+
+  void _deletePrompt(PromptConfig prompt) async {
+    // 系统级提示词不可删除
+    if (prompt.isSystem) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.promptSystemNotDeletable)));
+      return;
+    }
+    // 检查是否为激活中的提示词
+    final activeContent = await getActivePromptContent(_activeCategory);
+    final isActivePrompt = prompt.content == activeContent;
+    // 删除prompt
+    await deletePrompt(prompt.type, prompt.name);
+    // 如果删除的是激活中的提示词，需要重新设置激活项
+    if (isActivePrompt) {
+      final remainingPrompts = await listPrompts(category: _activeCategory);
+      if (remainingPrompts.isNotEmpty) {
+        final firstPrompt = remainingPrompts.first;
+        await setActivePrompt(_activeCategory, firstPrompt.name);
+      }
+    }
+    // 重新加载提示词列表和激活状态
+    await _loadPrompts();
+    await _loadActivePrompt();
   }
 
   @override
@@ -278,7 +338,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                             child: ListTile(
                               dense: true,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                              onTap: prompt.isSystem ? () => _showPrompt(prompt, readOnly: true) : null,
+                              onTap: prompt.isSystem ? () => _showPrompt(prompt, readOnly: true) : () => _showPrompt(prompt),
                               title: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -368,27 +428,27 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      // 系统提示词：只显示查看和复制按钮
+                                      // 系统提示词：显示复制和重置按钮
                                       if (prompt.isSystem) ...[
-                                        IconButton(
-                                          icon: Icon(Icons.visibility, size: 20, color: context.secondaryTextColor),
-                                          onPressed: () => _showPrompt(prompt, readOnly: true),
-                                          tooltip: Localizations.localeOf(context).languageCode == 'zh' ? '查看' : 'View',
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                        const SizedBox(width: 8),
                                         IconButton(
                                           icon: Icon(Icons.copy, size: 20, color: context.secondaryTextColor),
                                           onPressed: () async {
                                             await _copyPrompt(prompt);
                                           },
                                           tooltip: AppLocalizations.of(context)!.promptCopy,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(Icons.refresh, size: 20, color: Colors.orange),
+                                          onPressed: () => _resetPrompt(prompt),
+                                          tooltip: AppLocalizations.of(context)!.promptReset,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
                                         ),
                                       ] else ...[
-                                        // 非系统提示词：显示复制、编辑和删除按钮
+                                        // 非系统提示词：显示复制和删除按钮
                                         IconButton(
                                           icon: Icon(Icons.copy, size: 20, color: context.secondaryTextColor),
                                           onPressed: () async {
@@ -399,14 +459,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           constraints: const BoxConstraints(),
                                         ),
                                         const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: Icon(Icons.edit, size: 20, color: context.secondaryTextColor),
-                                          onPressed: () => _showPrompt(prompt),
-                                          tooltip: AppLocalizations.of(context)!.promptEdit,
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                        const SizedBox(width: 8),
+                                        // 删除按钮
                                         IconButton(
                                           icon: Icon(Icons.delete, size: 20, color: Colors.red),
                                           onPressed: () => _deletePrompt(prompt),

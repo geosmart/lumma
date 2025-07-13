@@ -10,7 +10,6 @@ import '../config/language_service.dart';
 import '../model/enums.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_constants.dart';
-import '../dao/diary_dao.dart';
 import '../generated/l10n/app_localizations.dart';
 
 class DiaryChatService {
