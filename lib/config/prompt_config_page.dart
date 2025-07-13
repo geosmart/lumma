@@ -51,7 +51,23 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
   }
 
   Future<List<PromptConfig>> _filteredPrompts() async {
-    return _allPrompts.where((p) => p.type == _activeCategory).toList();
+    final filtered = _allPrompts.where((p) => p.type == _activeCategory).toList();
+
+    // 排序：激活的提示词排在最前面，然后按创建时间降序排列
+    filtered.sort((a, b) {
+      final aActive = _activePrompt[_activeCategory] == a.name;
+      final bActive = _activePrompt[_activeCategory] == b.name;
+
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
+
+      // 如果都是激活或都不是激活，按创建时间降序排列
+      final aCreated = a.created;
+      final bCreated = b.created;
+      return bCreated.compareTo(aCreated);
+    });
+
+    return filtered;
   }
 
   void _showPrompt(PromptConfig? prompt, {bool readOnly = false, String? initialContent}) async {
@@ -248,6 +264,15 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     await _loadActivePrompt();
   }
 
+  String _formatDateTime(DateTime dateTime) {
+    final year = dateTime.year;
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    return '$year-$month-$day $hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -423,11 +448,23 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
-                                  // 第二排：右下角操作按钮
+                                  // 第二排：创建时间 + 操作按钮
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
+                                      // 创建时间
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 46, top: 2),
+                                          child: Text(
+                                            '${Localizations.localeOf(context).languageCode == 'zh' ? '创建时间: ' : 'Created: '}${_formatDateTime(prompt.created)}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: context.secondaryTextColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // 操作按钮
                                       // 系统提示词：显示复制和重置按钮
                                       if (prompt.isSystem) ...[
                                         IconButton(

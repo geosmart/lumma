@@ -316,6 +316,8 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                       border: InputBorder.none,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                                     ),
+                                    minLines: 1,
+                                    maxLines: 4,
                                     onSubmitted: (value) => _onSubmit(),
                                   ),
                                 ),

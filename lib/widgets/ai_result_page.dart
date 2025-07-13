@@ -152,23 +152,6 @@ class _AiResultPageState extends State<AiResultPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Action button area, placed above the input field
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.refresh),
-                  label: Text(AppLocalizations.of(context)!.regenerate),
-                  onPressed: _isProcessing ? null : () => _handleAction('regenerate'),
-                ),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: Text(AppLocalizations.of(context)!.save),
-                  onPressed: _isProcessing ? null : () => _handleAction('save'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
             if (_isProcessing)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
@@ -205,6 +188,23 @@ class _AiResultPageState extends State<AiResultPage> {
                 ),
                 strutStyle: const StrutStyle(height: 1.0, forceStrutHeight: true),
               ),
+            ),
+            const SizedBox(height: 16),
+            // Action button area, placed at the bottom
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.refresh),
+                  label: Text(AppLocalizations.of(context)!.regenerate),
+                  onPressed: _isProcessing ? null : () => _handleAction('regenerate'),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.save),
+                  label: Text(AppLocalizations.of(context)!.save),
+                  onPressed: _isProcessing ? null : () => _handleAction('save'),
+                ),
+              ],
             ),
           ],
         ),
