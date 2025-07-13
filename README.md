@@ -1,53 +1,33 @@
-# Lumma — Hear. Heal. Hold.
+# Lumma
 
 [中文说明 (Chinese Version)](./README.zh.md)
 
-A free AI-native journal for your inner reflections.
+**Lumma is an AI-native diary app** for your inner reflections.
 
 Journal freely. Reflect deeply. Powered by AI.
 
-## 🌟 Main Features
+> As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins. That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
 
-### 📝 Smart Diary Modes
-- **Q&A Mode**: Guide users to reflect and record through preset questions
-- **Chat Mode**: Freely talk with AI, confide as with a friend
+## ✨ Key Features
 
-### 🤖 AI Integration
-- Supports multiple large language model (LLM) configurations
-- Intelligent Q&A generation and conversation understanding
-- Automatic extraction of diary categories and titles
-- Customizable prompt templates
+### 📝 Smart Journaling Modes
 
-### 📱 User Experience
-- Modern gradient UI design
-- Light and dark theme switching
-- Smooth chat interface with markdown rendering
-- Responsive layout adaptation
+- **Q&A Mode**: Answer guided prompts that help you reflect on your day—your observations, emotions, challenges, and insights
+- **Chat Mode**: Talk freely with the AI, just like having a supportive conversation with a friend
 
-### 💾 Data Management
-- Local storage of diary content
-- WebDAV cloud sync support
-- Diary file list management
-- Front-matter metadata support
+### 🤖 Built-in AI Capabilities
 
-### ⚙️ Configuration System
-- Flexible LLM model configuration
-- Custom prompt management
-- Q&A question configuration
-- Sync settings management
+- Support for multiple LLM backends
+- Auto-generated journal entries and summaries
+- Smart title and tag extraction
+- Fully customizable prompts and conversation styles
 
-## 🏗️ Tech Stack
+### 💾 Secure and Syncable
 
-### Framework
-- **Flutter**: Cross-platform mobile app development
-- **Dart**: Programming language
+- All journals are saved locally in Markdown format
+- Supports WebDAV for cloud backup and sync
+- Compatible with Obsidian sync via Advanced URI
 
-## 🎨 Highlights
+## 🛠 How It Works
 
-1. **Emotional Design**: "Hear. Heal. Hold." embodies the ideas of listening, healing, and companionship
-2. **AI-Enhanced Experience**: More than a recording tool, it's an intelligent conversation partner
-3. **Flexible Recording**: Q&A and chat modes for different needs
-4. **Privacy Protection**: Local storage by default, optional cloud sync
-5. **Highly Customizable**: From UI themes to AI prompts, everything is configurable
-
-*Lumma - Record every moment of life with the warmth of AI* 💝
+Use voice input (e.g. via WeChat keyboard) to capture your thoughts. Lumma uses AI to structure the content into clean Markdown files, ready to sync with your Obsidian vault.

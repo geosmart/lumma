@@ -4,6 +4,7 @@ codestyle:
 	@echo "Removing unused imports..."
 	dart fix --apply
 	@echo "Code formatting and cleanup completed!"
+
 # Run static analysis
 lint:
 	@echo "Running Dart analyzer..."
@@ -16,13 +17,5 @@ clean:
 	flutter clean
 	@echo "Clean completed!"
 
-# Build the Flutter app
-build:
-	@echo "Building Flutter app..."
-	flutter build apk
-	@echo "Build completed!"
-
-
-# Development workflow - format, lint, and test
 dev:
-	flutter run -d linux
+	flutter build apk --release

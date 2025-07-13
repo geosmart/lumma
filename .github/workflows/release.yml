@@ -108,12 +108,205 @@ jobs:
           echo "📦 Release files:"
           ls -la release-files/
 
-      - name: Create Release
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: release-files/*.apk
+          retention-days: 30
+
+  releaseiOS:
+    name: Release iOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Verify Flutter Installation
+        run: |
+          flutter config --no-analytics
+          flutter doctor -v
+          flutter --version
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Extract Version Info
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION=$(echo $TAG | sed 's/^v//')
+          BUILD_NUM="${{ github.run_number }}"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+
+          echo "=== Build Info ==="
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "Build Number: $BUILD_NUM"
+
+      - name: Create Environment File
+        run: |
+          cat > .env.release << EOF
+          MODEL_PROVIDER=openrouter
+          MODEL_BASE_URL=https://openrouter.ai/api/v1
+          MODEL_API_KEY=sk-or-v1
+          MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+          USE_LOCAL_CONFIG=false
+          EOF
+
+      - name: Setup iOS Environment
+        run: |
+          # 检查Xcode版本和iOS模拟器
+          echo "Setting up iOS build environment"
+          xcodebuild -version
+          xcrun simctl list devices | head -10
+
+          # 安装CocoaPods依赖
+          cd ios
+          sudo gem install cocoapods --version 1.15.2
+          pod install --repo-update
+
+      - name: Clean iOS Build
+        run: |
+          cd ios
+          xcodebuild clean -workspace Runner.xcworkspace -scheme Runner -configuration Release
+          rm -rf build/
+
+      - name: Build iOS Release App
+        run: |
+          flutter build ios \
+            --release \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.build_number }}" \
+            --no-codesign \
+            --verbose
+
+      - name: Create iOS Archive
+        run: |
+          cd ios
+
+          # 创建archive
+          xcodebuild \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -archivePath build/Runner.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE="" \
+            archive
+
+      - name: Create IPA from Archive
+        run: |
+          cd ios
+
+          # 检查archive是否创建成功
+          if [ ! -d "build/Runner.xcarchive" ]; then
+            echo "❌ Archive not found!"
+            exit 1
+          fi
+
+          # 提取.app文件并创建IPA
+          APP_PATH="build/Runner.xcarchive/Products/Applications/Runner.app"
+          if [ -d "$APP_PATH" ]; then
+            echo "✅ Found Runner.app"
+
+            # 创建Payload目录结构
+            mkdir -p build/Payload
+            cp -r "$APP_PATH" build/Payload/
+
+            # 创建IPA文件
+            cd build
+            zip -r Runner.ipa Payload/
+            echo "✅ IPA created successfully"
+          else
+            echo "❌ Runner.app not found in archive"
+            ls -la build/Runner.xcarchive/Products/ || echo "Products directory not found"
+            exit 1
+          fi
+
+      - name: Prepare iOS Release Files
+        run: |
+          mkdir -p release-files-ios
+
+          # 查找并复制IPA文件
+          if [ -f "ios/build/Runner.ipa" ]; then
+            cp "ios/build/Runner.ipa" \
+               "release-files-ios/${{ env.APP_NAME }}_${{ steps.version.outputs.version }}_ios.ipa"
+            echo "✅ iOS IPA ready"
+          else
+            echo "❌ iOS IPA not found"
+            echo "Available files in ios/build/:"
+            ls -la ios/build/ || echo "Build directory not found"
+            exit 1
+          fi
+
+          echo "📦 iOS Release files:"
+          ls -la release-files-ios/
+
+      - name: Upload iOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: release-files-ios/*.ipa
+          retention-days: 30
+
+  createRelease:
+    name: Create Unified Release
+    runs-on: ubuntu-22.04
+    needs: [releaseAndroid, releaseiOS]
+    if: always() && (needs.releaseAndroid.result == 'success' || needs.releaseiOS.result == 'success')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Version Info
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION=$(echo $TAG | sed 's/^v//')
+          BUILD_NUM="${{ github.run_number }}"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+
+      - name: Download Android Artifacts
+        if: needs.releaseAndroid.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release
+          path: ./artifacts/android/
+        continue-on-error: true
+
+      - name: Download iOS Artifacts
+        if: needs.releaseiOS.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-release
+          path: ./artifacts/ios/
+        continue-on-error: true
+
+      - name: Create Unified Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
-          files: release-files/*.apk
+          files: |
+            ./artifacts/android/*.apk
+            ./artifacts/ios/*.ipa
           body: |
             # 🌟 ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
 
@@ -124,6 +317,24 @@ jobs:
             - **Build Number / 构建号**: ${{ steps.version.outputs.build_number }}
             - **Commit / 提交**: ${{ github.sha }}
             - **Flutter Version / Flutter版本**: 3.32.5
+
+            ## 📱 Platform Support / 平台支持
+
+            ### Android
+            ${{ needs.releaseAndroid.result == 'success' && '✅ APK available for download' || '❌ Android build failed' }}
+
+            ### iOS
+            ${{ needs.releaseiOS.result == 'success' && '✅ IPA available for download' || '❌ iOS build failed' }}
+
+            ## 📝 Installation Notes / 安装说明
+
+            ### Android
+            - Direct installation from APK file
+            - 直接从APK文件安装
+
+            ### iOS
+            > ⚠️ This is an unsigned development build. You may need to trust the developer certificate in iOS Settings > General > VPN & Device Management.
+            > ⚠️ 这是未签名的开发版本，你可能需要在iOS设置 > 通用 > VPN与设备管理中信任开发者证书。
 
             ---
 
