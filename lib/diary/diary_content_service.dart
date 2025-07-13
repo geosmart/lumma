@@ -44,7 +44,56 @@ class DiaryContentService {
 
   /// Save diary content
   static Future<void> saveDiaryContent(String content, String fileName) async {
+    print('=== DiaryContentService.saveDiaryContent ===');
+    print('接收到的文件名: $fileName');
+    print('内容长度: ${content.length} 字符');
+    print('是否包含日总结: ${content.contains('## 日总结')}');
     await MarkdownService.saveDiaryMarkdown(content, fileName: fileName);
+    print('保存完成');
+  }
+
+  /// Handle saving diary content with daily summary section
+  static Future<void> saveOrReplaceDiarySummary(String content, String fileName, BuildContext context) async {
+    print('=== saveOrReplaceDiarySummary ===');
+    final diaryDir = await MarkdownService.getDiaryDir();
+    final file = File('$diaryDir/$fileName');
+    print('完整文件路径: ${file.path}');
+    print('传入的日总结内容长度: ${content.length} 字符');
+
+    // Create new daily summary entry using DiaryDao.formatDiaryContent
+    final newSummaryEntry = DiaryDao.formatDiaryContent(
+      context: context,
+      title: '日总结',
+      content: content,
+      analysis: '',
+      category: '日总结',
+    );
+
+    if (!await file.exists()) {
+      final newFileContent = '---\n\n$newSummaryEntry';
+      await file.writeAsString(newFileContent);
+      print('新文件创建完成，日总结已保存');
+      return;
+    }
+    // Read current content
+    final currentContent = await file.readAsString();
+
+    // Remove existing daily summary sections using the new method
+    final contentWithoutSummary = DiaryDao.removeDailySummarySection(context, currentContent);
+    print('移除日总结后内容长度: ${contentWithoutSummary.length} 字符');
+
+    String finalContent;
+    if (contentWithoutSummary.trim().isEmpty) {
+      // If after removing summary, nothing is left, just create frontmatter + new summary
+      finalContent = '---\n\n$newSummaryEntry';
+    } else {
+      // Append new summary to the remaining content
+      finalContent = '${contentWithoutSummary.trim()}\n\n$newSummaryEntry';
+    }
+
+    print('最终内容长度: ${finalContent.length} 字符');
+    await file.writeAsString(finalContent);
+    print('日总结章节保存完成');
   }
 
   /// Get chat history and sort, placing summary content first

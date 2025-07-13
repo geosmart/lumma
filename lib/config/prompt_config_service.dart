@@ -2,6 +2,7 @@ import '../model/enums.dart';
 import '../model/prompt_config.dart';
 import '../model/prompt_constants.dart';
 import 'config_service.dart';
+import 'language_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import '../util/storage_service.dart';
@@ -110,5 +111,47 @@ class PromptConfigService {
     }
 
     return createdCount;
+  }
+
+  /// 复制提示词（创建一个可编辑的副本）
+  static Future<PromptConfig> copyPrompt(PromptConfig originalPrompt) async {
+    // 生成新的名称（添加"副本"后缀）
+    String newName = originalPrompt.name;
+    if (newName.endsWith('.md')) {
+      newName = newName.substring(0, newName.length - 3);
+    }
+
+    // 检查是否已经有副本，如果有则添加数字后缀
+    final config = await AppConfigService.load();
+    final existingPrompts = config.prompt.where((p) => p.type == originalPrompt.type).toList();
+
+    // 根据语言设置生成副本名称
+    final languageService = LanguageService.instance;
+    final isZh = languageService.currentLocale.languageCode == 'zh';
+    final copyText = isZh ? '副本' : 'Copy';
+
+    String baseName = '$newName $copyText';
+    String finalName = baseName;
+    int counter = 1;
+
+    while (existingPrompts.any((p) => p.name == '$finalName.md')) {
+      finalName = '$baseName $counter';
+      counter++;
+    }
+
+    // 创建新的prompt配置
+    final newPrompt = PromptConfig(
+      name: '$finalName.md',
+      type: originalPrompt.type,
+      content: originalPrompt.content,
+      isSystem: false, // 复制的提示词不是系统级的，可以编辑和删除
+      active: false, // 默认不激活
+    );
+
+    // 保存新的prompt
+    config.prompt.add(newPrompt);
+    await AppConfigService.save();
+
+    return newPrompt;
   }
 }

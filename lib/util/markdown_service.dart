@@ -30,21 +30,35 @@ class MarkdownService {
   /// Save diary content, automatically update the updated field in frontmatter
   static Future<File> saveDiaryMarkdown(String content, {BuildContext? context, String? fileName}) async {
     try {
+      print('=== MarkdownService.saveDiaryMarkdown ===');
       final diaryDir = await getDiaryDir();
+      print('日记目录: $diaryDir');
+
       File file;
       if (fileName != null && fileName.isNotEmpty) {
         file = File('$diaryDir/$fileName');
+        print('使用指定文件名: $fileName');
       } else {
         // 默认用未命名+时间戳
         final now = DateTime.now();
         final nowStr = now.toIso8601String().substring(0,19).replaceAll('T', 'T');
-        file = File('$diaryDir/${nowStr.replaceAll(RegExp(r"[\-:T]"), "")}.md');
+        final generatedFileName = '${nowStr.replaceAll(RegExp(r"[\-:T]"), "")}.md';
+        file = File('$diaryDir/$generatedFileName');
+        print('生成文件名: $generatedFileName');
       }
+
+      print('最终文件路径: ${file.path}');
+      print('保存内容长度: ${content.length} 字符');
+
       final now = DateTime.now();
       final newContent = FrontmatterService.upsert(content, updated: now);
+      print('添加frontmatter后内容长度: ${newContent.length} 字符');
+
       await file.writeAsString(newContent);
+      print('文件写入成功');
       return file;
     } catch (e) {
+      print('保存失败，错误: $e');
       if (context != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('保存日记失败: \n${e.toString()}')),

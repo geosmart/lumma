@@ -268,6 +268,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                   MaterialPageRoute(
                     builder: (context) => AiResultPage(
                       title: AppLocalizations.of(context)!.aiSummaryResult,
+                      fileName: widget.fileName, // Pass current file name
                       onBack: () {
                         Navigator.of(context).pop();
                       },

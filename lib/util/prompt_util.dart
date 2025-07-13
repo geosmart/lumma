@@ -58,6 +58,44 @@ Future<void> deletePrompt(PromptCategory category, String name) async {
   });
 }
 
+/// 复制prompt（创建一个可编辑的副本）
+Future<PromptConfig> copyPrompt(PromptConfig originalPrompt) async {
+  // 生成新的名称（添加"副本"后缀）
+  String newName = originalPrompt.name;
+  if (newName.endsWith('.md')) {
+    newName = newName.substring(0, newName.length - 3);
+  }
+
+  // 检查是否已经有副本，如果有则添加数字后缀
+  final config = await AppConfigService.load();
+  final existingPrompts = config.prompt.where((p) => p.type == originalPrompt.type).toList();
+
+  // 根据语言设置生成副本名称
+  // 简单的语言检测，避免导入太多依赖
+  String baseName = '$newName 副本'; // 默认中文，因为这是中文项目
+  String finalName = baseName;
+  int counter = 1;
+
+  while (existingPrompts.any((p) => p.name == '$finalName.md')) {
+    finalName = '$baseName $counter';
+    counter++;
+  }
+
+  // 创建新的prompt配置
+  final newPrompt = PromptConfig(
+    name: '$finalName.md',
+    type: originalPrompt.type,
+    content: originalPrompt.content,
+    isSystem: false, // 复制的提示词不是系统级的，可以编辑和删除
+    active: false, // 默认不激活
+  );
+
+  // 保存新的prompt
+  await savePrompt(newPrompt);
+
+  return newPrompt;
+}
+
 /// 获取所有prompt（可选按类型过滤）
 Future<List<PromptConfig>> listPrompts({PromptCategory? category}) async {
   final config = await AppConfigService.load();

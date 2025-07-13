@@ -255,6 +255,7 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
                                     MaterialPageRoute(
                                       builder: (context) => AiResultPage(
                                         title: AppLocalizations.of(context)!.aiSummaryResult,
+                                        fileName: _diaryFileName, // Pass current diary file name
                                         onBack: () {
                                           Navigator.of(context).pop();
                                         },

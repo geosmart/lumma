@@ -5,6 +5,7 @@ import '../util/prompt_util.dart';
 import '../model/enums.dart';
 import '../dao/diary_dao.dart';
 import '../util/markdown_service.dart';
+import '../diary/diary_content_service.dart';
 import '../generated/l10n/app_localizations.dart';
 
 /// AI result page common component
@@ -14,6 +15,7 @@ class AiResultPage extends StatefulWidget {
   final String? processingText;
   final String? hintText;
   final Future<String?> Function() getContent; // Callback to get content
+  final String? fileName; // Add fileName parameter for saving to specific file
 
   const AiResultPage({
     super.key,
@@ -22,6 +24,7 @@ class AiResultPage extends StatefulWidget {
     required this.getContent,
     this.processingText,
     this.hintText,
+    this.fileName, // Add fileName parameter
   });
 
   @override
@@ -35,7 +38,7 @@ class _AiResultPageState extends State<AiResultPage> {
   @override
   void initState() {
     super.initState();
-    _startSummaryStream(); // Automatically start AI summary
+    _startSummaryStream(context); // Automatically start AI summary
   }
 
   @override
@@ -44,10 +47,13 @@ class _AiResultPageState extends State<AiResultPage> {
     super.dispose();
   }
 
-  Future<void> _startSummaryStream() async {
+  Future<void> _startSummaryStream(BuildContext context) async {
     final content = await widget.getContent();
     if (content == null) return;
-
+    final processedContent = DiaryDao.removeDailySummarySection(
+      context,
+      content,
+    );
     setState(() {
       _isProcessing = true;
       _controller.text = '';
@@ -58,7 +64,8 @@ class _AiResultPageState extends State<AiResultPage> {
       final messages = AiService.buildMessages(
         systemPrompt: systemPrompt,
         history: [],
-        userInput: content,
+        userInput:
+            processedContent, // Use processed content without daily summary
       );
 
       await AiService.askStream(
@@ -84,7 +91,11 @@ class _AiResultPageState extends State<AiResultPage> {
               _isProcessing = false;
             });
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${AppLocalizations.of(context)!.aiSummaryFailed}: ${error.toString()}')),
+              SnackBar(
+                content: Text(
+                  '${AppLocalizations.of(context)!.aiSummaryFailed}: ${error.toString()}',
+                ),
+              ),
             );
           }
         },
@@ -95,7 +106,11 @@ class _AiResultPageState extends State<AiResultPage> {
           _isProcessing = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.aiSummaryFailed}: ${e.toString()}')),
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.aiSummaryFailed}: ${e.toString()}',
+            ),
+          ),
         );
       }
     }
@@ -105,23 +120,24 @@ class _AiResultPageState extends State<AiResultPage> {
     try {
       switch (action) {
         case 'regenerate':
-          await _startSummaryStream();
+          await _startSummaryStream(context);
           break;
         case 'save':
           final editedResult = _controller.text;
-          final content = DiaryDao.formatDiaryContent(
-            context: context,
-            title: AppLocalizations.of(context)!.dailySummary,
-            content: editedResult,
-            analysis: '',
-            category: '',
+
+          await DiaryContentService.saveOrReplaceDiarySummary(
+            editedResult,
+            widget.fileName!,
+            context,
           );
-          await MarkdownService.saveOrUpdateDailySummary(context,content);
+          print('AI总结保存到指定文件: ${widget.fileName}');
 
           // Show success message first
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!.dailySummarySaved)),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.dailySummarySaved),
+              ),
             );
           }
 
@@ -132,7 +148,11 @@ class _AiResultPageState extends State<AiResultPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.operationFailed}: ${e.toString()}')),
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.operationFailed}: ${e.toString()}',
+            ),
+          ),
         );
       }
     }
@@ -144,7 +164,10 @@ class _AiResultPageState extends State<AiResultPage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: context.cardBackgroundColor,
-        title: Text(widget.title, style: TextStyle(color: context.primaryTextColor)),
+        title: Text(
+          widget.title,
+          style: TextStyle(color: context.primaryTextColor),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.primaryTextColor),
           onPressed: widget.onBack,
@@ -162,7 +185,9 @@ class _AiResultPageState extends State<AiResultPage> {
                 ElevatedButton.icon(
                   icon: const Icon(Icons.refresh),
                   label: Text(AppLocalizations.of(context)!.regenerate),
-                  onPressed: _isProcessing ? null : () => _handleAction('regenerate'),
+                  onPressed: _isProcessing
+                      ? null
+                      : () => _handleAction('regenerate'),
                 ),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.save),
@@ -178,11 +203,16 @@ class _AiResultPageState extends State<AiResultPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                     const SizedBox(width: 8),
                     Text(
-                      widget.processingText ?? AppLocalizations.of(context)!.aiGenerating,
-                      style: TextStyle(color: context.secondaryTextColor)
+                      widget.processingText ??
+                          AppLocalizations.of(context)!.aiGenerating,
+                      style: TextStyle(color: context.secondaryTextColor),
                     ),
                   ],
                 ),
@@ -202,9 +232,13 @@ class _AiResultPageState extends State<AiResultPage> {
                     borderSide: BorderSide(color: context.borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
-                  hintText: widget.hintText ?? AppLocalizations.of(context)!.aiContentPlaceholder,
+                  hintText:
+                      widget.hintText ??
+                      AppLocalizations.of(context)!.aiContentPlaceholder,
                   hintStyle: TextStyle(color: context.secondaryTextColor),
                   fillColor: context.cardBackgroundColor,
                   filled: true,

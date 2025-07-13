@@ -113,10 +113,11 @@ class DiaryDao {
     // Helper function to get section type from header text
     String? getSectionType(String headerText) {
       final lower = headerText.toLowerCase();
-      if (lower.contains('时间') || lower.contains('time')) return 'time';
-      if (lower.contains('分类') || lower.contains('category')) return 'category';
-      if (lower.contains('日记内容') || lower.contains('diary content')) return 'q';
-      if (lower.contains('内容分析') || lower.contains('content analysis')) return 'a';
+      // Only match exact section headers, not partial matches
+      if (lower == '时间' || lower == 'time') return 'time';
+      if (lower == '分类' || lower == 'category') return 'category';
+      if (lower == '日记内容' || lower == 'diary content') return 'q';
+      if (lower == '内容分析' || lower == 'content analysis') return 'a';
       return null;
     }
 
@@ -133,7 +134,7 @@ class DiaryDao {
         currentSection = null;
       } else if (trimmed.startsWith('### ')) {
         // Section header with ### prefix
-        currentSection = getSectionType(trimmed);
+        currentSection = getSectionType(trimmed.substring(4));
       } else if (trimmed == '---') {
         // End of diary entry
         if (currentItem.isNotEmpty) {
@@ -142,12 +143,18 @@ class DiaryDao {
         currentItem = {};
         currentSection = null;
       } else if (trimmed.isNotEmpty && !trimmed.startsWith('#')) {
-        // Check if it's a section header without ### prefix
-        final sectionType = getSectionType(trimmed);
-        if (sectionType != null) {
-          currentSection = sectionType;
-        } else if (currentSection != null) {
-          // Add content to current section
+        // Check if it's a standalone section header (without ### prefix)
+        // Only consider it a section header if it's an exact match and not part of content
+        if (currentSection == null || currentItem[currentSection] == null) {
+          final sectionType = getSectionType(trimmed);
+          if (sectionType != null) {
+            currentSection = sectionType;
+            continue; // Skip adding this line as content
+          }
+        }
+
+        // Add content to current section
+        if (currentSection != null) {
           if (currentItem[currentSection] != null) {
             currentItem[currentSection] = '${currentItem[currentSection]}\n$trimmed';
           } else {
@@ -180,5 +187,67 @@ class DiaryDao {
 
     print('DEBUG: Parsed ${entries.length} diary entries, sorted by time desc');
     return entries;
+  }
+
+  /// Parse diary markdown content to List<DiaryEntry>, sorted by time descending
+  /// This is a more intuitive alias for parseDiaryMarkdownToChatHistory
+  /// [content] Diary markdown content to parse
+  /// Returns List<DiaryEntry> sorted by time in descending order (newest first)
+  static List<DiaryEntry> parseDiaryContent(BuildContext context, String content) {
+    return parseDiaryMarkdownToChatHistory(context, content);
+  }
+
+  /// Remove daily summary section from diary content
+  /// This is useful when we want to process diary content without existing summaries
+  /// Uses parseDiaryContent to parse entries and filters out summary entries by category
+  static String removeDailySummarySection(BuildContext context, String content) {
+    if (content.isEmpty) return content;
+
+    try {
+      // Parse content to diary entries
+      final entries = parseDiaryContent(context, content);
+
+      // Filter out entries with category '日总结' or title '日总结'
+      final filteredEntries = entries.where((entry) {
+        final category = entry.category?.trim().toLowerCase() ?? '';
+        final title = entry.title.trim().toLowerCase();
+        return category != '日总结' && title != '日总结';
+      }).toList();
+
+      // Convert back to markdown
+      return diaryContentToMarkdown(context, filteredEntries);
+    } catch (e) {
+      print('Failed to parse diary content, falling back to regex approach: $e');
+      // Fall back to regex-based approach if parsing fails
+      final summaryRegex = RegExp(r'## 日总结\n(?:(?!## [^#]).)*?---\n?', multiLine: true, dotAll: true);
+      String processedContent = content.replaceAll(summaryRegex, '').trim();
+      processedContent = processedContent.replaceAll(RegExp(r'^---\s*\n+', multiLine: true), '').trim();
+      processedContent = processedContent.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+      return processedContent;
+    }
+  }
+
+  /// Convert List<DiaryEntry> back to markdown format
+  /// [entries] List of diary entries to convert
+  /// Returns formatted markdown string
+  static String diaryContentToMarkdown(BuildContext context, List<DiaryEntry> entries) {
+    if (entries.isEmpty) return '';
+
+    final buffer = StringBuffer();
+
+    for (final entry in entries) {
+      // Use formatDiaryContent to ensure consistent formatting
+      final entryMarkdown = formatDiaryContent(
+        context: context,
+        title: entry.title,
+        content: entry.q ?? '',
+        analysis: entry.a ?? '',
+        category: entry.category,
+        time: entry.time,
+      );
+      buffer.write(entryMarkdown);
+    }
+
+    return buffer.toString().trim();
   }
 }

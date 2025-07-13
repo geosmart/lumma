@@ -150,6 +150,44 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
     }
   }
 
+  Future<void> _copyPrompt(PromptConfig prompt) async {
+    try {
+      final newPrompt = await PromptConfigService.copyPrompt(prompt);
+
+      // 重新加载提示词列表
+      await _loadPrompts();
+      await _loadActivePrompt();
+
+      // 显示成功消息
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                ? '已复制提示词: ${newPrompt.name}'
+                : 'Copied prompt: ${newPrompt.name}'
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('[PromptConfigPage] 复制提示词失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                ? '复制提示词失败: $e'
+                : 'Failed to copy prompt: $e'
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -331,21 +369,48 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.copy,
-                                          size: 20,
-                                          color: context.secondaryTextColor,
+                                      // 系统提示词：只显示查看和复制按钮
+                                      if (prompt.isSystem) ...[
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.visibility,
+                                            size: 20,
+                                            color: context.secondaryTextColor,
+                                          ),
+                                          onPressed: () => _showPrompt(prompt, readOnly: true),
+                                          tooltip: Localizations.localeOf(context).languageCode == 'zh' ? '查看' : 'View',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                         ),
-                                        onPressed: () async {
-                                          _showPrompt(prompt, readOnly: true);
-                                        },
-                                        tooltip: AppLocalizations.of(context)!.promptCopy,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      // 只有非系统提示词才显示编辑按钮
-                                      if (!prompt.isSystem) ...[
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.copy,
+                                            size: 20,
+                                            color: context.secondaryTextColor,
+                                          ),
+                                          onPressed: () async {
+                                            await _copyPrompt(prompt);
+                                          },
+                                          tooltip: AppLocalizations.of(context)!.promptCopy,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ] else ...[
+                                        // 非系统提示词：显示复制、编辑和删除按钮
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.copy,
+                                            size: 20,
+                                            color: context.secondaryTextColor,
+                                          ),
+                                          onPressed: () async {
+                                            await _copyPrompt(prompt);
+                                          },
+                                          tooltip: AppLocalizations.of(context)!.promptCopy,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
                                         const SizedBox(width: 8),
                                         IconButton(
                                           icon: Icon(
@@ -358,21 +423,19 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
                                         ),
-                                      ],
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.delete,
-                                          size: 20,
-                                          color: prompt.isSystem ? Colors.red.withOpacity(0.5) : Colors.red,
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            size: 20,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () => _deletePrompt(prompt),
+                                          tooltip: AppLocalizations.of(context)!.promptDelete,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                         ),
-                                        onPressed: prompt.isSystem ? null : () => _deletePrompt(prompt),
-                                        tooltip: prompt.isSystem ?
-                                          AppLocalizations.of(context)!.promptSystemNotDeletable :
-                                          AppLocalizations.of(context)!.promptDelete,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
+                                      ],
                                     ],
                                   ),
                                 ],
