@@ -275,7 +275,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewDiaryList => '查看日记列表';
 
   @override
-  String get llmManage => '模型管理';
+  String get llmManage => 'AI模型';
 
   @override
   String get llmNone => '暂无模型';

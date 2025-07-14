@@ -87,7 +87,7 @@
   "startWritingDiary": "开始写日记",
   "diaryList": "日记列表",
   "sync": "同步",
-  "llmManage": "模型管理",
+  "llmManage": "AI模型",
   "llmNone": "暂无模型",
   "llmSetActive": "设为激活",
   "llmCopy": "复制",
