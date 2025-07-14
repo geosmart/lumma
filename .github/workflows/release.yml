@@ -28,28 +28,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-versi            ## 📱 Platform Support / 平台支持
-
-            ### Android
-            ${{ needs.releaseAndroid.result == 'success' && '✅ APK available for download' || '❌ Android build failed' }}
-
-            ### Linux
-            ${{ needs.releaseLinux.result == 'success' && '✅ AppImage available for download' || '❌ Linux build failed' }}
-
-            ### iOS
-            ${{ needs.releaseiOS.result == 'success' && '✅ IPA available for download' || '❌ iOS build failed' }}
-
-            ## 📝 Installation Notes / 安装说明
-
-            ### Android
-            - Direct installation from APK file
-            - 直接从APK文件安装
-
-            ### Linux
-            - Download the AppImage file
-            - Make it executable: `chmod +x lumma_*.AppImage`
-            - Run directly: `./lumma_*.AppImage`
-            - 下载AppImage文件，设置可执行权限后直接运行          channel: 'stable'
+          flutter-version: '3.32.5'
+          channel: 'stable'
           cache: true
 
       - name: Verify Flutter Installation
