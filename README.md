@@ -1,6 +1,6 @@
 # Lumma
 
-[中文说明 (Chinese Version)](./README.zh.md)
+[zh-cn](./README.zh.md)
 
 **Lumma is an AI-native diary app** for your inner reflections.
 

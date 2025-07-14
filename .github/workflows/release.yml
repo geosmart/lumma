@@ -28,8 +28,28 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.5'
-          channel: 'stable'
+          flutter-versi            ## 📱 Platform Support / 平台支持
+
+            ### Android
+            ${{ needs.releaseAndroid.result == 'success' && '✅ APK available for download' || '❌ Android build failed' }}
+
+            ### Linux
+            ${{ needs.releaseLinux.result == 'success' && '✅ AppImage available for download' || '❌ Linux build failed' }}
+
+            ### iOS
+            ${{ needs.releaseiOS.result == 'success' && '✅ IPA available for download' || '❌ iOS build failed' }}
+
+            ## 📝 Installation Notes / 安装说明
+
+            ### Android
+            - Direct installation from APK file
+            - 直接从APK文件安装
+
+            ### Linux
+            - Download the AppImage file
+            - Make it executable: `chmod +x lumma_*.AppImage`
+            - Run directly: `./lumma_*.AppImage`
+            - 下载AppImage文件，设置可执行权限后直接运行          channel: 'stable'
           cache: true
 
       - name: Verify Flutter Installation
@@ -113,6 +133,235 @@ jobs:
         with:
           name: android-release
           path: release-files/*.apk
+          retention-days: 30
+
+  releaseLinux:
+    name: Release Linux AppImage
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.5'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libgtk-3-dev \
+            liblzma-dev \
+            libstdc++-12-dev \
+            wget \
+            file \
+            imagemagick \
+            fuse
+
+      - name: Verify Flutter Installation
+        run: |
+          flutter config --no-analytics
+          flutter doctor -v
+          flutter --version
+          flutter config --enable-linux-desktop
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Extract Version Info
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION=$(echo $TAG | sed 's/^v//')
+          BUILD_NUM="${{ github.run_number }}"
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+
+          echo "=== Build Info ==="
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "Build Number: $BUILD_NUM"
+
+      - name: Create Environment File
+        run: |
+          cat > .env.release << EOF
+          MODEL_PROVIDER=openrouter
+          MODEL_BASE_URL=https://openrouter.ai/api/v1
+          MODEL_API_KEY=sk-or-v1
+          MODEL_NAME=deepseek/deepseek-chat-v3-0324:free
+          USE_LOCAL_CONFIG=false
+          EOF
+
+      - name: Build Linux Release
+        run: |
+          flutter build linux \
+            --release \
+            --build-name="${{ steps.version.outputs.version }}" \
+            --build-number="${{ steps.version.outputs.build_number }}" \
+            --verbose
+
+      - name: Verify Linux Build
+        run: |
+          echo "🔍 Verifying Linux build output..."
+          if [ -d "build/linux/x64/release/bundle" ]; then
+            echo "✅ Linux build directory exists"
+            ls -la build/linux/x64/release/bundle/
+
+            if [ -f "build/linux/x64/release/bundle/lumma" ]; then
+              echo "✅ Lumma executable found"
+              file build/linux/x64/release/bundle/lumma
+            else
+              echo "❌ Lumma executable not found"
+              exit 1
+            fi
+          else
+            echo "❌ Linux build directory not found"
+            exit 1
+          fi
+
+      - name: Download AppImageTool
+        run: |
+          mkdir -p linux/build
+          wget -O linux/build/appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x linux/build/appimagetool
+
+      - name: Create AppImage Structure
+        run: |
+          APP_NAME="${{ env.APP_NAME }}"
+          APP_DIR="linux/build/${APP_NAME}.AppDir"
+
+          # Create AppDir structure
+          mkdir -p $APP_DIR/usr/bin
+          mkdir -p $APP_DIR/usr/lib
+          mkdir -p $APP_DIR/usr/share/applications
+          mkdir -p $APP_DIR/usr/share/icons/hicolor/256x256/apps
+
+          # Copy the built application
+          cp -r build/linux/x64/release/bundle/* $APP_DIR/usr/bin/
+
+          # Copy required libraries
+          echo "📚 Copying required libraries..."
+          # Copy system libraries that might be needed
+          mkdir -p $APP_DIR/usr/lib/x86_64-linux-gnu
+
+          # Find and copy Flutter engine libraries
+          if [ -d "build/linux/x64/release/bundle/lib" ]; then
+            cp -r build/linux/x64/release/bundle/lib/* $APP_DIR/usr/lib/ 2>/dev/null || true
+          fi
+
+          # Create desktop file
+          cat > $APP_DIR/usr/share/applications/$APP_NAME.desktop << EOF
+          [Desktop Entry]
+          Name=Lumma
+          Comment=AI-powered Q&A Diary App
+          Exec=$APP_NAME
+          Icon=$APP_NAME
+          Type=Application
+          Categories=Office;
+          StartupNotify=true
+          EOF
+
+          # Create AppRun script
+          cat > $APP_DIR/AppRun << 'EOF'
+          #!/bin/bash
+
+          # Get the directory where this AppImage is located
+          HERE="$(dirname "$(readlink -f "${0}")")"
+
+          # Set up library paths
+          export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+
+          # Change to the application directory
+          cd "${HERE}/usr/bin"
+
+          # Execute the application
+          exec "${HERE}/usr/bin/lumma" "$@"
+          EOF
+          chmod +x $APP_DIR/AppRun
+
+          # Copy icon (use a default icon if app icon doesn't exist)
+          if [ -f "assets/icon/icon.jpg" ]; then
+            # Convert JPG to PNG for better AppImage support
+            convert "assets/icon/icon.jpg" -resize 256x256 "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png"
+            echo "✅ Application icon converted and copied"
+          else
+            # Create a simple placeholder icon
+            echo "⚠️ App icon not found, creating placeholder..."
+            convert -size 256x256 xc:lightblue -pointsize 72 -fill darkblue -gravity center -annotate +0+0 "L" "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png" || \
+            wget -O "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png" https://via.placeholder.com/256x256/lightblue/darkblue?text=L
+          fi
+
+          # Create symlinks for desktop file and icon at root level
+          ln -sf usr/share/applications/$APP_NAME.desktop $APP_DIR/
+          ln -sf usr/share/icons/hicolor/256x256/apps/$APP_NAME.png $APP_DIR/
+
+          echo "AppDir structure created:"
+          find $APP_DIR -type f | head -20
+
+      - name: Create AppImage
+        run: |
+          APP_NAME="${{ env.APP_NAME }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          APP_DIR="linux/build/${APP_NAME}.AppDir"
+
+          # Create AppImage
+          ./linux/build/appimagetool "${APP_DIR}" "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage"
+
+          # Verify AppImage was created
+          if [ -f "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage" ]; then
+            echo "✅ AppImage created successfully"
+            ls -la "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage"
+            file "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage"
+
+            # Test AppImage structure
+            echo "🔍 Testing AppImage structure..."
+            ./linux/build/appimagetool --appimage-extract-and-run "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage" --help 2>/dev/null || echo "AppImage help test completed"
+
+            # Make the AppImage executable
+            chmod +x "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage"
+
+            echo "📊 AppImage size: $(du -h "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage" | cut -f1)"
+          else
+            echo "❌ AppImage creation failed"
+            echo "Available files in linux/build/:"
+            ls -la linux/build/ || echo "Build directory not found"
+            exit 1
+          fi
+
+      - name: Prepare Linux Release Files
+        run: |
+          mkdir -p release-files-linux
+
+          VERSION="${{ steps.version.outputs.version }}"
+          APP_NAME="${{ env.APP_NAME }}"
+
+          # Copy AppImage
+          if [ -f "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage" ]; then
+            cp "linux/build/${APP_NAME}-${VERSION}-x86_64.AppImage" \
+               "release-files-linux/${APP_NAME}_${VERSION}_linux_x86_64.AppImage"
+            echo "✅ Linux AppImage ready"
+          else
+            echo "❌ Linux AppImage not found"
+            exit 1
+          fi
+
+          echo "📦 Linux Release files:"
+          ls -la release-files-linux/
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: release-files-linux/*.AppImage
           retention-days: 30
 
   releaseiOS:
@@ -266,8 +515,8 @@ jobs:
   createRelease:
     name: Create Unified Release
     runs-on: ubuntu-22.04
-    needs: [releaseAndroid, releaseiOS]
-    if: always() && (needs.releaseAndroid.result == 'success' || needs.releaseiOS.result == 'success')
+    needs: [releaseAndroid, releaseLinux, releaseiOS]
+    if: always() && (needs.releaseAndroid.result == 'success' || needs.releaseLinux.result == 'success' || needs.releaseiOS.result == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -291,6 +540,14 @@ jobs:
           path: ./artifacts/android/
         continue-on-error: true
 
+      - name: Download Linux Artifacts
+        if: needs.releaseLinux.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: ./artifacts/linux/
+        continue-on-error: true
+
       - name: Download iOS Artifacts
         if: needs.releaseiOS.result == 'success'
         uses: actions/download-artifact@v4
@@ -306,6 +563,7 @@ jobs:
           name: ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
           files: |
             ./artifacts/android/*.apk
+            ./artifacts/linux/*.AppImage
             ./artifacts/ios/*.ipa
           body: |
             # 🌟 ${{ env.APP_NAME }} ${{ steps.version.outputs.tag }}
@@ -326,6 +584,9 @@ jobs:
             ### iOS
             ${{ needs.releaseiOS.result == 'success' && '✅ IPA available for download' || '❌ iOS build failed' }}
 
+            ### Linux
+            ${{ needs.releaseLinux.result == 'success' && '✅ AppImage available for download' || '❌ Linux build failed' }}
+
             ## 📝 Installation Notes / 安装说明
 
             ### Android
@@ -336,6 +597,11 @@ jobs:
             > ⚠️ This is an unsigned development build. You may need to trust the developer certificate in iOS Settings > General > VPN & Device Management.
             > ⚠️ 这是未签名的开发版本，你可能需要在iOS设置 > 通用 > VPN与设备管理中信任开发者证书。
 
+            ### Linux
+            - Download the AppImage file
+            - Make it executable: `chmod +x lumma_*.AppImage`
+            - Run directly: `./lumma_*.AppImage`
+            - 下载AppImage文件，设置可执行权限后直接运行
             ---
 
             > 💡 If you encounter installation or usage issues, please report them in Issues.

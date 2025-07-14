@@ -45,6 +45,11 @@ app.*.map.json
 /android/app/release
 .kotlin
 
+# Linux AppImage build artifacts
+/linux/build/
+*.AppImage
+lumma.AppDir/
+
 # Local model configuration
 test/sample_data
 .env.local
