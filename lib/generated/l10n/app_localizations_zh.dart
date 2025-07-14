@@ -305,7 +305,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get llmCancel => '取消';
 
   @override
-  String get promptManage => '提示词';
+  String get promptManage => '对话角色';
 
   @override
   String get promptSystemNotDeletable => '系统提示词不可删除';

@@ -291,7 +291,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               children: [
-                Icon(Icons.chat, color: context.primaryTextColor, size: 24),
+                Icon(Icons.person, color: context.primaryTextColor, size: 24), // 使用人物角色图标
                 const SizedBox(width: 12),
                 Text(
                   AppLocalizations.of(context)!.promptManage,

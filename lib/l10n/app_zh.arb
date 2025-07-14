@@ -104,7 +104,7 @@
   "llmEditApiKey": "API密钥",
   "llmEditModel": "模型名称",
   "llmEditSave": "保存",
-  "promptManage": "提示词",
+  "promptManage": "对话角色",
   "promptSystemNotDeletable": "系统提示词不可删除",
   "promptSetActive": "设为激活",
   "promptCopy": "复制",

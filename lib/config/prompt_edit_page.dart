@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../model/enums.dart';
 import '../util/prompt_util.dart';
 import '../model/prompt_config.dart';
+import '../model/prompt_constants.dart';
 import '../config/config_service.dart';
 import '../generated/l10n/app_localizations.dart';
 
@@ -45,7 +46,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
     _contentCtrl = TextEditingController(text: widget.initialContent ?? '');
     _nameCtrl = TextEditingController(text: widget.initialName ?? ''); // 优先用 initialName
     _selectedCategory = widget.activeCategory;
-    _isActive = false;
+    _isActive = false; // 默认不激活
 
     if (widget.file != null) {
       _loadPromptData();
@@ -100,6 +101,105 @@ class _PromptEditPageState extends State<PromptEditPage> {
     }
   }
 
+  Future<void> _resetPrompt() async {
+    // 显示确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.confirm),
+        content: Text(AppLocalizations.of(context)!.promptResetConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.promptCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(AppLocalizations.of(context)!.promptReset),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;    try {
+      // 获取默认内容
+      String defaultContent;
+
+      if (_isSystem) {
+        // 系统级提示词：根据名称精确匹配
+        final systemChatPrompts = PromptConstants.getSystemChatPrompts();
+        final matchingSystemPrompt = systemChatPrompts.firstWhere(
+          (prompt) => _nameCtrl.text.contains(prompt['name']!),
+          orElse: () => <String, String>{},
+        );
+
+        if (matchingSystemPrompt.isNotEmpty) {
+          // 找到匹配的系统聊天提示词
+          defaultContent = matchingSystemPrompt['content']!;
+        } else {
+          // 没有找到匹配的系统聊天提示词，使用默认类型内容
+          switch (_selectedCategory) {
+            case PromptCategory.chat:
+              defaultContent = PromptConstants.getDefaultChatPrompt();
+              break;
+            case PromptCategory.summary:
+              defaultContent = PromptConstants.getDefaultSummaryPrompt();
+              break;
+          }
+        }
+      } else {
+        // 非系统级提示词：使用默认类型内容
+        switch (_selectedCategory) {
+          case PromptCategory.chat:
+            defaultContent = PromptConstants.getDefaultChatPrompt();
+            break;
+          case PromptCategory.summary:
+            defaultContent = PromptConstants.getDefaultSummaryPrompt();
+            break;
+        }
+      }
+
+      // 重置内容
+      setState(() {
+        _contentCtrl.text = defaultContent;
+      });
+
+      // 显示重置成功提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '提示词已重置到默认内容'
+                  : 'Prompt has been reset to default content',
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.only(bottom: 100, left: 16, right: 16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('[PromptEditPage] 重置提示词失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '重置提示词失败: $e'
+                  : 'Failed to reset prompt: $e',
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.only(bottom: 100, left: 16, right: 16),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,6 +217,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
             TextField(
               controller: _nameCtrl,
               decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditRoleName),
+              readOnly: _isSystem, // 系统级提示词不允许修改名称
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<PromptCategory>(
@@ -135,18 +236,6 @@ class _PromptEditPageState extends State<PromptEditPage> {
               decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditCategory),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Checkbox(
-                  value: _isActive,
-                  onChanged: (v) {
-                          setState(() => _isActive = v ?? false);
-                        },
-                ),
-                Text(AppLocalizations.of(context)!.promptEditSetActive),
-              ],
-            ),
-            const SizedBox(height: 8),
             Expanded(
               child: TextField(
                 controller: _contentCtrl,
@@ -159,11 +248,27 @@ class _PromptEditPageState extends State<PromptEditPage> {
                 ),
               ),
             ),
+            // 显示重置按钮
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: ElevatedButton.icon(
+                onPressed: _resetPrompt,
+                icon: const Icon(Icons.person_outline), // 使用人物角色图标
+                label: Text(
+                  Localizations.localeOf(context).languageCode == 'zh' ? '重置到默认' : 'Reset to Default',
+                ),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
               child: ElevatedButton.icon(
                 onPressed: _savePrompt,
-                icon: const Icon(Icons.save),
+                icon: const Icon(Icons.person_add), // 使用添加人物角色图标
                 label: Text(AppLocalizations.of(context)!.promptEditSave),
                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
               ),

@@ -109,6 +109,93 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
     setState(() {});
   }
 
+  void _resetConfig(int index) async {
+    final config = _configs[index];
+    if (!config.isSystem) return;
+
+    // 显示确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          Localizations.localeOf(context).languageCode == 'zh' ? '确认重置' : 'Confirm Reset',
+        ),
+        content: Text(
+          Localizations.localeOf(context).languageCode == 'zh'
+              ? '确定要重置此模型配置到默认内容吗？'
+              : 'Are you sure you want to reset this model configuration to default content?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              Localizations.localeOf(context).languageCode == 'zh' ? '取消' : 'Cancel',
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              Localizations.localeOf(context).languageCode == 'zh' ? '重置' : 'Reset',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // 获取默认系统配置
+      final defaultConfig = LLMConfig.getAllSystemConfigs().firstWhere(
+        (c) => c.provider == config.provider && c.baseUrl == config.baseUrl && c.model == config.model,
+        orElse: () => config,
+      );
+
+      // 重置配置，保留原有的激活状态和时间戳
+      _configs[index] = LLMConfig(
+        provider: defaultConfig.provider,
+        baseUrl: defaultConfig.baseUrl,
+        apiKey: defaultConfig.apiKey,
+        model: defaultConfig.model,
+        active: config.active,
+        isSystem: true,
+        created: config.created,
+        updated: DateTime.now(),
+      );
+
+      await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
+      setState(() {});
+
+      // 显示成功消息
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '模型配置已重置到默认内容'
+                  : 'Model configuration has been reset to default content',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('[LLMConfigPage] 重置模型配置失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '重置模型配置失败: $e'
+                  : 'Failed to reset model configuration: $e',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _createMissingSystemConfigs() async {
     try {
       final createdCount = await LlmConfigService.createMissingSystemConfigs();
@@ -187,7 +274,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                       child: Row(
                         children: [
-                          Icon(Icons.memory, color: context.primaryTextColor, size: 24),
+                          Icon(Icons.smart_toy, color: context.primaryTextColor, size: 24), // 使用AI机器人图标
                           const SizedBox(width: 12),
                           Text(
                             AppLocalizations.of(context)!.llmManage,
@@ -234,7 +321,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                     child: ListTile(
                                       dense: true,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                                      onTap: c.isSystem ? () => _showEditDialog(config: c, readOnly: true) : null,
+                                      onTap: () => _showEditDialog(config: c, index: i, readOnly: false),
                                       leading: IconButton(
                                         icon: Icon(
                                           c.active ? Icons.check_circle : Icons.circle_outlined,
@@ -319,8 +406,27 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),
-                                              // 只有非系统配置才显示编辑按钮
-                                              if (!c.isSystem) ...[
+                                              // 系统配置显示编辑和重置按钮，非系统配置只显示编辑按钮
+                                              if (c.isSystem) ...[
+                                                const SizedBox(width: 8),
+                                                IconButton(
+                                                  icon: Icon(Icons.edit, size: 20, color: context.secondaryTextColor),
+                                                  onPressed: () => _showEditDialog(config: c, index: i),
+                                                  tooltip: AppLocalizations.of(context)!.llmEdit,
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                IconButton(
+                                                  icon: Icon(Icons.refresh, size: 20, color: Colors.orange),
+                                                  onPressed: () => _resetConfig(i),
+                                                  tooltip: Localizations.localeOf(context).languageCode == 'zh'
+                                                      ? '重置到默认'
+                                                      : 'Reset to Default',
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                ),
+                                              ] else ...[
                                                 const SizedBox(width: 8),
                                                 IconButton(
                                                   icon: Icon(Icons.edit, size: 20, color: context.secondaryTextColor),
