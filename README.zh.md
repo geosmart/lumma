@@ -1,10 +1,16 @@
-# Lumma
+<div align="center">
+  <img src="assets/icon/icon.svg" width="120" height="120" alt="Lumma Logo">
 
-[English Version](./README.md)
+  # Lumma
 
-**Lumma 是一款 AI 原生的问答式日记应用**
+  [English Version](./README.md)
 
-日有所记，问有所思；心有所感，自得其解。
+  **AI原生的问答式日记应用**
+</div>
+
+<div align="center">
+  <strong>日有所记，问有所思；心有所感，自得其解。</strong>
+</div>
 
 ## ✨ 核心亮点
 

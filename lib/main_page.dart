@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+import 'package:flutter_svg/flutter_svg.dart';
 import 'generated/l10n/app_localizations.dart';
 import 'diary/diary_chat_page.dart';
 import 'diary/diary_qa_page.dart';
@@ -76,21 +77,11 @@ class _MainTabPageState extends State<MainTabPage> {
                     const SizedBox(height: 80),
 
                     // LOGO区域
-                    Container(
+                    SvgPicture.asset(
+                      'assets/icon/icon.svg',
                       width: 120,
                       height: 120,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: context.primaryButtonGradient,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 8)),
-                        ],
-                      ),
-                      child: const Icon(Icons.auto_stories, size: 60, color: Colors.white),
+                      fit: BoxFit.contain,
                     ),
 
                     const SizedBox(height: 32),

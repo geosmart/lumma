@@ -44,6 +44,7 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_dotenv: ^5.2.1
   permission_handler: ^11.3.1
+  flutter_svg: ^2.0.10
 
 dev_dependencies:
   flutter_test:
@@ -55,12 +56,12 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/icon/icon.jpg
+    - assets/icon/icon.svg
     - .env.release
 
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icon.jpg"
+  image_path: "assets/icon/icon.svg"
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/icon/icon.jpg"
+  adaptive_icon_foreground: "assets/icon/icon.svg"

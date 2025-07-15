@@ -108,8 +108,8 @@ chmod +x "$APP_DIR/AppRun"
 
 # 复制图标
 echo "🎨 设置应用图标..."
-if [ -f "assets/icon/icon.jpg" ]; then
-    cp "assets/icon/icon.jpg" "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png"
+if [ -f "assets/icon/icon.svg" ]; then
+    cp "assets/icon/icon.svg" "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png"
 else
     echo "⚠️ 未找到应用图标，创建占位图标..."
     # 创建简单的占位图标

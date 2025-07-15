@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import '../util/ai_service.dart';
 import '../dao/diary_dao.dart';

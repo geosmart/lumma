@@ -1,10 +1,16 @@
-# Lumma
+<div align="center">
+  <img src="assets/icon/icon.svg" width="120" height="120" alt="Lumma Logo">
 
-[zh-cn](./README.zh.md)
+  # Lumma
 
-**Lumma is an AI-native diary app** for your inner reflections.
+  [zh-cn](./README.zh.md)
 
-Journal freely. Reflect deeply. Powered by AI.
+  **An AI-native diary app for your inner reflections**
+</div>
+
+<div align="center">
+  <strong>Journal freely. Reflect deeply. Powered by AI.</strong>
+</div>
 
 > As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins. That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
 

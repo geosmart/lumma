@@ -269,9 +269,9 @@ jobs:
           chmod +x $APP_DIR/AppRun
 
           # Copy icon (use a default icon if app icon doesn't exist)
-          if [ -f "assets/icon/icon.jpg" ]; then
+          if [ -f "assets/icon/icon.svg" ]; then
             # Convert JPG to PNG for better AppImage support
-            convert "assets/icon/icon.jpg" -resize 256x256 "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png"
+            convert "assets/icon/icon.svg" -resize 256x256 "$APP_DIR/usr/share/icons/hicolor/256x256/apps/$APP_NAME.png"
             echo "✅ Application icon converted and copied"
           else
             # Create a simple placeholder icon
