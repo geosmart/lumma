@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import '../util/ai_service.dart';
@@ -118,11 +119,16 @@ class DiaryChatService {
     if (history.isEmpty) return;
 
     try {
+      print('=== extractCategoryAndSave START ===');
+
       // Only process the latest round of conversation (if exists)
       final lastHistory = history.last;
       if (lastHistory['q']?.isNotEmpty == true && lastHistory['a']?.isNotEmpty == true) {
+        print('Processing conversation: Q="${lastHistory['q']}", A length=${lastHistory['a']?.length}');
+
         // Let AI extract category and title
         final result = await extractCategoryAndTitle(context, lastHistory['q']!, lastHistory['a']!);
+        print('AI extraction result: $result');
 
         // Use correct keys for updating history
         final categoryKey = AppLocalizations.of(context)!.category;
@@ -139,19 +145,58 @@ class DiaryChatService {
           category: history.last['category'] ?? '',
           time: history.last['time'],
         );
+
+        print('Formatted diary content length: ${content.length}');
         await DiaryDao.appendToDailyDiary(content);
 
         // Print save path (for debug)
         final fileName = DiaryDao.getDiaryFileName();
         final diaryDir = await DiaryDao.getDiaryDir();
         final filePath = '$diaryDir/$fileName';
-        print(
-          'Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}',
-        );
+        print('Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}');
+
+        // 验证文件是否真的被保存了
+        final file = File(filePath);
+        if (await file.exists()) {
+          final savedContent = await file.readAsString();
+          print('File saved successfully, content length: ${savedContent.length}');
+
+          // 显示保存成功的提示
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('💾 ${AppLocalizations.of(context)!.saveSuccess}'),
+                duration: const Duration(seconds: 2),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          throw Exception('File was not created after save operation');
+        }
+      } else {
+        print('Skipping save: conversation incomplete. Q empty: ${lastHistory['q']?.isEmpty}, A empty: ${lastHistory['a']?.isEmpty}');
       }
+
+      print('=== extractCategoryAndSave END ===');
     } catch (e) {
       print('Auto-save failed: ${e.toString()}');
-      // Do not show error to avoid affecting user experience
+      print('Stack trace: ${StackTrace.current}');
+
+      // 显示错误信息给用户，让用户知道保存失败了
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ ${AppLocalizations.of(context)!.saveFailed}: ${e.toString()}'),
+            duration: const Duration(seconds: 4),
+            backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: '重试',
+              onPressed: () => extractCategoryAndSave(context, history),
+            ),
+          ),
+        );
+      }
     }
   }
 

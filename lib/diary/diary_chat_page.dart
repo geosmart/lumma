@@ -43,9 +43,25 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
 
   // Automatically extract category and title and save conversation to diary file
   Future<void> _extractCategoryAndSave() async {
-    await DiaryChatService.extractCategoryAndSave(context, _history);
-    // Trigger UI update
-    setState(() {});
+    try {
+      print('[SAVE] _extractCategoryAndSave called');
+      await DiaryChatService.extractCategoryAndSave(context, _history);
+      // Trigger UI update
+      setState(() {});
+      print('[SAVE] _extractCategoryAndSave completed successfully');
+    } catch (e) {
+      print('[SAVE] _extractCategoryAndSave failed: $e');
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存失败: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   // Show model name tooltip
@@ -155,7 +171,17 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             _scrollToBottom();
 
             // Automatically extract category and save to diary file after AI response completion
-            _extractCategoryAndSave();
+            // 确保对话历史完整且未被中断
+            if (_history.isNotEmpty &&
+                _history.last['q']?.isNotEmpty == true &&
+                _history.last['a']?.isNotEmpty == true &&
+                !_askInterrupted) {
+              print('[SAVE] Starting auto-save process...');
+              await _extractCategoryAndSave();
+              print('[SAVE] Auto-save process completed');
+            } else {
+              print('[SAVE] Skipping auto-save: history empty or incomplete');
+            }
           }
         }
       },
@@ -449,6 +475,19 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 DebugRequestDialog.show(context, _lastRequestJson!);
                               }
                             },
+                          ),
+                          const SizedBox(width: 4),
+                          // Manual save button
+                          IconButton(
+                            icon: const Icon(Icons.save, color: Colors.blue),
+                            tooltip: '手动保存对话',
+                            onPressed: _history.isNotEmpty &&
+                                     _history.last['q']?.isNotEmpty == true &&
+                                     _history.last['a']?.isNotEmpty == true
+                                ? () async {
+                                    await _extractCategoryAndSave();
+                                  }
+                                : null,
                           ),
                           const SizedBox(width: 4),
                           // Diary list button
