@@ -7,6 +7,7 @@ import '../config/theme_service.dart';
 import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
 import '../widgets/debug_request_dialog.dart';
+import '../diary/diary_content_service.dart';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -26,6 +27,9 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   final ScrollController _scrollController = ScrollController();
   String? _lastRequestJson;
   String _currentModelName = ''; // Current model name in use
+  bool _extractingCategory = false; // 是否正在提取分类和标题
+  String? _extractingCategoryMsg; // 正在提取时的提示
+  bool _lastSaved = false; // 标记最后一条是否已保存
 
   @override
   void initState() {
@@ -41,21 +45,34 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     });
   }
 
-  // Automatically extract category and title and save conversation to diary file
+  // Automatically extract category and save conversation to diary file
   Future<void> _extractCategoryAndSave() async {
+    setState(() {
+      _extractingCategory = true;
+      _extractingCategoryMsg = AppLocalizations.of(context)!.aiSummary + '...';
+      _lastSaved = false;
+    });
     try {
       print('[SAVE] _extractCategoryAndSave called');
       await DiaryChatService.extractCategoryAndSave(context, _history);
-      // Trigger UI update
-      setState(() {});
+      setState(() {
+        _extractingCategory = false;
+        _extractingCategoryMsg = null;
+        _lastSaved = true;
+      });
       print('[SAVE] _extractCategoryAndSave completed successfully');
     } catch (e) {
       print('[SAVE] _extractCategoryAndSave failed: $e');
+      setState(() {
+        _extractingCategory = false;
+        _extractingCategoryMsg = null;
+        _lastSaved = false;
+      });
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('保存失败: ${e.toString()}'),
+            content: Text('保存失败: ' + e.toString()),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -142,8 +159,6 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
               }
             }
           });
-          // Add log printing for LLM response content
-          print('[LLM] Delta: \\n${data.toString()}');
           _scrollToBottom();
         }
       },
@@ -294,14 +309,14 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                         itemCount: _history.length + (_asking ? 1 : 0),
                         itemBuilder: (ctx, i) {
                           if (_summary != null && i == 0) {
-                            return SizedBox.shrink(); // Do not show AI summary/edit area in full-screen chat
+                            return SizedBox.shrink();
                           }
                           if (i < _history.length) {
                             final h = _history[i];
                             final isLast = i == _history.length - 1;
-                            // If streaming output, do not render the last answer (only render streaming)
                             final showAnswer = h['a'] != null && h['a']!.isNotEmpty && (!(_asking && isLast));
                             return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (h['q'] != null && h['q']!.isNotEmpty)
                                   Row(
@@ -315,13 +330,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF2D5A2B) // Dark mode deep green
-                                                : Colors.green[50], // Light mode light green
+                                                ? const Color(0xFF2D5A2B)
+                                                : Colors.green[50],
                                             borderRadius: BorderRadius.circular(16),
                                             border: Border.all(
                                               color: Theme.of(context).brightness == Brightness.dark
-                                                  ? const Color(0xFF4CAF50) // Dark mode green border
-                                                  : Colors.green[100]!, // Light mode light green border
+                                                  ? const Color(0xFF4CAF50)
+                                                  : Colors.green[100]!,
                                             ),
                                           ),
                                           child: EnhancedMarkdown(data: h['q'] ?? ''),
@@ -330,13 +345,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                       const SizedBox(width: 8),
                                       CircleAvatar(
                                         backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                            ? const Color(0xFF2D5A2B) // Dark mode deep green
-                                            : const Color(0xFFE8F5E9), // Light mode light green
+                                            ? const Color(0xFF2D5A2B)
+                                            : const Color(0xFFE8F5E9),
                                         child: Icon(
                                           Icons.person,
                                           color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF4CAF50) // Dark mode green icon
-                                              : Colors.green, // Light mode green icon
+                                              ? const Color(0xFF4CAF50)
+                                              : Colors.green,
                                         ),
                                       ),
                                     ],
@@ -351,13 +366,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         },
                                         child: CircleAvatar(
                                           backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF37474F) // Dark mode deep blue-grey
-                                              : Colors.blueGrey[50], // Light mode light blue-grey
+                                              ? const Color(0xFF37474F)
+                                              : Colors.blueGrey[50],
                                           child: Icon(
                                             Icons.smart_toy,
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF90A4AE) // Dark mode blue-grey icon
-                                                : Colors.blueGrey, // Light mode blue-grey icon
+                                                ? const Color(0xFF90A4AE)
+                                                : Colors.blueGrey,
                                           ),
                                         ),
                                       ),
@@ -369,24 +384,102 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                             if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
                                               _ReasoningCollapse(
                                                 content: h['reasoning']!,
-                                                initiallyExpanded: false, // History messages collapsed by default
+                                                initiallyExpanded: false,
                                               ),
                                             Container(
                                               margin: const EdgeInsets.only(bottom: 12),
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
                                                 color: Theme.of(context).brightness == Brightness.dark
-                                                    ? const Color(0xFF1E3A8A) // Dark mode deep blue
-                                                    : Colors.blue[50], // Light mode light blue
+                                                    ? const Color(0xFF1E3A8A)
+                                                    : Colors.blue[50],
                                                 borderRadius: BorderRadius.circular(16),
                                                 border: Border.all(
                                                   color: Theme.of(context).brightness == Brightness.dark
-                                                      ? const Color(0xFF3B82F6) // Dark mode blue border
-                                                      : Colors.blue[100]!, // Light mode light blue border
+                                                      ? const Color(0xFF3B82F6)
+                                                      : Colors.blue[100]!,
                                                 ),
                                               ),
                                               child: EnhancedMarkdown(data: h['a'] ?? ''),
                                             ),
+                                            // 新增：显示AI总结的title和category及已保存角标（同一行，右对齐）
+                                            if ((h['title']?.isNotEmpty == true || h['category']?.isNotEmpty == true))
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 2, bottom: 4),
+                                                child: Row(
+                                                  children: [
+                                                    if (h['title']?.isNotEmpty == true)
+                                                      Flexible(
+                                                        child: Text(
+                                                          h['title']!,
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            color: Theme.of(context).brightness == Brightness.dark
+                                                                ? Colors.grey[400]
+                                                                : Colors.grey[500],
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    if (h['category']?.isNotEmpty == true)
+                                                      Container(
+                                                        margin: const EdgeInsets.only(left: 8),
+                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                          color: DiaryContentService.getCategoryColors(h['category']!)['background'],
+                                                          borderRadius: BorderRadius.circular(8),
+                                                          border: Border.all(color: DiaryContentService.getCategoryColors(h['category']!)['border']!),
+                                                        ),
+                                                        child: Text(
+                                                          h['category']!,
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                            color: DiaryContentService.getCategoryColors(h['category']!)['text'],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    // 右侧对齐显示已保存角标
+                                                    if (_lastSaved && isLast && !_extractingCategory)
+                                                      Expanded(
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.end,
+                                                          children: [
+                                                            Icon(Icons.check_circle, size: 14, color: Colors.green[400]),
+                                                            const SizedBox(width: 4),
+                                                            Text('已保存', style: TextStyle(fontSize: 11, color: Colors.green[400], fontWeight: FontWeight.w500)),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            // 正在总结loading
+                                            if (_extractingCategory && isLast)
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 2, bottom: 4),
+                                                child: Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 14,
+                                                      height: 14,
+                                                      child: CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Text(
+                                                      _extractingCategoryMsg ?? '',
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        color: Theme.of(context).brightness == Brightness.dark
+                                                            ? Colors.grey[400]
+                                                            : Colors.grey[500],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                           ],
                                         ),
                                       ),
@@ -406,13 +499,13 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                   },
                                   child: CircleAvatar(
                                     backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                        ? const Color(0xFF37474F) // Dark mode deep blue-grey
-                                        : Colors.blueGrey[50], // Light mode light blue-grey
+                                        ? const Color(0xFF37474F)
+                                        : Colors.blueGrey[50],
                                     child: Icon(
                                       Icons.smart_toy,
                                       color: Theme.of(context).brightness == Brightness.dark
-                                          ? const Color(0xFF90A4AE) // Dark mode blue-grey icon
-                                          : Colors.blueGrey, // Light mode blue-grey icon
+                                          ? const Color(0xFF90A4AE)
+                                          : Colors.blueGrey,
                                     ),
                                   ),
                                 ),
@@ -460,7 +553,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                         },
                       ),
                     ),
-                    // Button area: above input field, only showing debug, save, and diary list buttons
+                    // Button area: above input field, only showing debug and diary list buttons
                     Container(
                       color: context.cardBackgroundColor,
                       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
@@ -475,19 +568,6 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 DebugRequestDialog.show(context, _lastRequestJson!);
                               }
                             },
-                          ),
-                          const SizedBox(width: 4),
-                          // Manual save button
-                          IconButton(
-                            icon: const Icon(Icons.save, color: Colors.blue),
-                            tooltip: '手动保存对话',
-                            onPressed: _history.isNotEmpty &&
-                                     _history.last['q']?.isNotEmpty == true &&
-                                     _history.last['a']?.isNotEmpty == true
-                                ? () async {
-                                    await _extractCategoryAndSave();
-                                  }
-                                : null,
                           ),
                           const SizedBox(width: 4),
                           // Diary list button
