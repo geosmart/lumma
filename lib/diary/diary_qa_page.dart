@@ -32,8 +32,13 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
   @override
   void initState() {
     super.initState();
-    _createDiary();
-    _loadQuestions();
+    _initializePage();
+  }
+
+  Future<void> _initializePage() async {
+    await _createDiary();
+    await _loadQuestions();
+    await _loadTodayHistory();
   }
 
   @override
@@ -42,6 +47,52 @@ class _DiaryQaPageState extends State<DiaryQaPage> {
     _scrollController.dispose();
     _aiResultController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadTodayHistory() async {
+    try {
+      final diaryDir = await DiaryDao.getDiaryDir();
+      final fileName = DiaryDao.getDiaryFileName();
+      final file = File('$diaryDir/$fileName');
+
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final entries = DiaryDao.parseDiaryContent(context, content)
+            .where((e) => e.category?.trim() != '日总结')
+            .toList();
+
+        if (entries.isEmpty) return;
+
+        final loadedAnswers = <String>[];
+        // 根据已加载的问题列表，匹配日记中已保存的答案
+        for (final question in _questions) {
+          try {
+            final entry = entries.firstWhere((e) => e.title.trim() == question.trim());
+            loadedAnswers.add(entry.q?.trim() ?? '');
+          } catch (e) {
+            // 如果找不到匹配的问题，说明后续问题未回答，中断加载
+            break;
+          }
+        }
+
+        if (mounted && loadedAnswers.isNotEmpty) {
+          setState(() {
+            _answers.addAll(loadedAnswers);
+            _current = loadedAnswers.length;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToBottom();
+          });
+        }
+      }
+    } catch (e) {
+      print('加载当天问答历史失败: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('加载当天问答历史失败: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadQuestions() async {
