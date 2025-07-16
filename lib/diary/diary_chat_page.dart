@@ -8,6 +8,9 @@ import '../diary/diary_file_list_page.dart';
 import '../widgets/enhanced_markdown.dart';
 import '../widgets/debug_request_dialog.dart';
 import '../diary/diary_content_service.dart';
+import '../dao/diary_dao.dart';
+import '../util/storage_service.dart';
+import 'dart:io';
 
 class DiaryChatPage extends StatefulWidget {
   const DiaryChatPage({super.key});
@@ -34,7 +37,8 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentModelName(); // Load current model name
+    _loadCurrentModelName();
+    _loadTodayHistory();
   }
 
   // Load current model name
@@ -43,6 +47,36 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     setState(() {
       _currentModelName = modelName;
     });
+  }
+
+  // 加载当天非日总结的日记内容到聊天历史
+  Future<void> _loadTodayHistory() async {
+    try {
+      final diaryDir = await StorageService.getDiaryDirPath();
+      final fileName = DiaryDao.getDiaryFileName();
+      final filePath = '$diaryDir/$fileName';
+      final file = File(filePath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        // 解析并过滤掉category为日总结的内容
+        final entries = DiaryDao.parseDiaryContent(context, content)
+            .where((e) => (e.category?.trim() != '日总结' && e.title.trim() != '日总结'))
+            .toList();
+        // 按时间升序排序
+        entries.sort((a, b) {
+          final t1 = a.time ?? '';
+          final t2 = b.time ?? '';
+          return t1.compareTo(t2);
+        });
+        setState(() {
+          _history = entries.map((e) => e.toMap()).toList();
+        });
+        // setState后再滚动到底部，确保渲染完成
+        _scrollToBottom(initial: true);
+      }
+    } catch (e) {
+      print('加载当天日记历史失败: $e');
+    }
   }
 
   // Automatically extract category and save conversation to diary file
@@ -221,14 +255,21 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     );
   }
 
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  void _scrollToBottom({bool initial = false}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        if (initial) {
+          // For initial load, add a small delay to ensure layout is fully complete
+          await Future.delayed(const Duration(milliseconds: 50));
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        } else {
+          // For subsequent scrolls, use animation
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
       }
     });
   }
@@ -315,9 +356,57 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                             final h = _history[i];
                             final isLast = i == _history.length - 1;
                             final showAnswer = h['a'] != null && h['a']!.isNotEmpty && (!(_asking && isLast));
+                            // 新增：对话时间分割条
+                            String? timeLabel;
+                            final curTime = h['time'];
+                            if (curTime != null && curTime.isNotEmpty) {
+                              // 仅在首条或与上一条时间不同（分钟粒度）时显示
+                              bool showTime = true;
+                              if (i > 0) {
+                                final prevTime = _history[i - 1]['time'];
+                                if (prevTime != null && prevTime.isNotEmpty) {
+                                  // 只比较到分钟
+                                  final curMinute = curTime.length >= 16 ? curTime.substring(0, 16) : curTime;
+                                  final prevMinute = prevTime.length >= 16 ? prevTime.substring(0, 16) : prevTime;
+                                  if (curMinute == prevMinute) showTime = false;
+                                }
+                              }
+                              if (showTime) {
+                                // 只显示HH:mm
+                                String displayTime = curTime.length >= 16 ? curTime.substring(11, 16) : curTime;
+                                timeLabel = displayTime;
+                              }
+                            }
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (timeLabel != null)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).brightness == Brightness.dark
+                                                ? Colors.grey[800]
+                                                : Colors.grey[200],
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            timeLabel,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Theme.of(context).brightness == Brightness.dark
+                                                  ? Colors.grey[300]
+                                                  : Colors.grey[600],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 if (h['q'] != null && h['q']!.isNotEmpty)
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
