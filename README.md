@@ -4,14 +4,34 @@
   # Lumma
 
   **An AI-native diary app for your inner reflections**
+
 </div>
 
 <div align="center">
   <strong>Journal freely. Reflect deeply. Powered by AI.</strong>
 </div>
 
-
 > As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins. That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
+
+## Screenshots
+<div align="center">
+  <img src="docs/screenshots/v1.0.0/home.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/chat.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/summary.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/diary_detail.jpg" width="200">
+</div>
+<div align="center">
+  <img src="docs/screenshots/v1.0.0/diary_list.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/diary_mode.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/setting_llm.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/setting_prompt.jpg" width="200">
+</div>
+<div align="center">
+  <img src="docs/screenshots/v1.0.0/summary_prompt.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/setting_qa.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/sync.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/theme.jpg" width="200">
+</div>
 
 ## ✨ Key Features
 

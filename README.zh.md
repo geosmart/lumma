@@ -17,22 +17,22 @@
 ## 功能截图
 
 <div align="center">
-  <img src="docs/screenshots/v1.0.0/home.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/chat.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/summary.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/diary_detail.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/home.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/chat.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/summary.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/diary_detail.jpg" width="200">
 </div>
 <div align="center">
-  <img src="docs/screenshots/v1.0.0/diary_list.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/diary_mode.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/setting_llm.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/setting_prompt.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/diary_list.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/diary_mode.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/setting_llm.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/setting_prompt.jpg" width="200">
 </div>
 <div align="center">
-  <img src="docs/screenshots/v1.0.0/summary_prompt.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/setting_qa.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/sync.jpg" width="100">
-  <img src="docs/screenshots/v1.0.0/theme.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/summary_prompt.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/setting_qa.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/sync.jpg" width="200">
+  <img src="docs/screenshots/v1.0.0/theme.jpg" width="200">
 </div>
 
 ## ✨ 核心亮点
