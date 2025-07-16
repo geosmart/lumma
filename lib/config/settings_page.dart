@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../generated/l10n/app_localizations.dart';
 import 'language_service.dart';
 import 'llm_config_page.dart';
@@ -401,14 +402,10 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
+                            SvgPicture.asset(
+                              'assets/icon/icon.svg',
                               width: 40,
                               height: 40,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: context.primaryButtonGradient),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.auto_stories, color: Colors.white, size: 20),
                             ),
                             const SizedBox(height: 8),
                             Text(

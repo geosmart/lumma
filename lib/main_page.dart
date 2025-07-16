@@ -47,148 +47,128 @@ class _MainTabPageState extends State<MainTabPage> {
           ),
         ),
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              // 背景装饰元素
-              Positioned(
-                top: 60,
-                right: -50,
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: context.decorationColor),
-                ),
-              ),
-              Positioned(
-                bottom: 100,
-                left: -80,
-                child: Container(
-                  width: 160,
-                  height: 160,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: context.decorationColor),
-                ),
+              const SizedBox(height: 80),
+
+              // LOGO区域
+              SvgPicture.asset(
+                'assets/icon/icon.svg',
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
               ),
 
-              // 主内容
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 80),
+              const SizedBox(height: 32),
 
-                    // LOGO区域
-                    SvgPicture.asset(
-                      'assets/icon/icon.svg',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
+              // 应用标题
+              Text(
+                'Lumma',
+                style: TextStyle(
+                  fontSize: 42,
+                  fontWeight: FontWeight.bold,
+                  color: context.primaryTextColor,
+                  letterSpacing: 2.0,
+                  shadows: const [Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black12)],
+                ),
+              ),
 
-                    const SizedBox(height: 32),
+              const SizedBox(height: 12),
 
-                    // 应用标题
-                    Text(
-                      'Lumma',
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: context.primaryTextColor,
-                        letterSpacing: 2.0,
-                        shadows: const [Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black12)],
-                      ),
-                    ),
+              // 副标题
+              Text(
+                AppLocalizations.of(context)!.appSubtitle,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: context.secondaryTextColor,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 1.2,
+                ),
+              ),
 
-                    const SizedBox(height: 12),
+              const Spacer(),
 
-                    // 副标题
-                    Text(
-                      AppLocalizations.of(context)!.appSubtitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: context.secondaryTextColor,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // 主操作按钮
-                    Container(
-                      width: double.infinity,
-                      height: 44,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(999),
-                        onTap: () async {
-                          final mode = await DiaryModeConfigService.loadDiaryMode();
-                          if (mode == DiaryMode.chat) {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryChatPage()));
-                          } else {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryQaPage()));
-                          }
-                        },
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.edit_note, color: Colors.white, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                AppLocalizations.of(context)!.startWritingDiary.toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // 次要操作按钮
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // 主操作按钮
+              Container(
+                width: double.infinity,
+                height: 48,
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white.withOpacity(0.18), width: 1),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () async {
+                    final mode = await DiaryModeConfigService.loadDiaryMode();
+                    if (mode == DiaryMode.chat) {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryChatPage()));
+                    } else {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryQaPage()));
+                    }
+                  },
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: _SecondaryButton(
-                            icon: Icons.list_alt,
-                            label: AppLocalizations.of(context)!.diaryList,
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
-                            },
-                          ),
-                        ),
+                        const Icon(Icons.record_voice_over, color: Colors.white, size: 20),
                         const SizedBox(width: 8),
-                        // 用 _SyncButton 替换原来的“数据同步”按钮
-                        const Expanded(child: _SyncButton()),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _SecondaryButton(
-                            icon: Icons.settings,
-                            label: AppLocalizations.of(context)!.settings,
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
-                            },
+                        Text(
+                          AppLocalizations.of(context)!.startWritingDiary.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: 1.2,
                           ),
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ),
 
-                    const SizedBox(height: 60),
+              const SizedBox(height: 24),
+
+              // 次要操作按钮
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: _SecondaryButton(
+                        icon: Icons.list_alt,
+                        label: AppLocalizations.of(context)!.diaryList,
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 用 _SyncButton 替换原来的“数据同步”按钮
+                    SizedBox(
+                      width: 100,
+                      child: _SyncButton(),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 100,
+                      child: _SecondaryButton(
+                        icon: Icons.settings,
+                        label: AppLocalizations.of(context)!.settings,
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 60),
             ],
           ),
         ),

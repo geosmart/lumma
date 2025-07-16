@@ -242,13 +242,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryMode => '日记模式';
 
   @override
-  String get fixedQA => '固定问答';
+  String get fixedQA => '固定问答日记';
 
   @override
   String get fixedQADescription => '逐条回答预设问题，生成结构化日记';
 
   @override
-  String get aiChat => 'AI问答';
+  String get aiChat => 'AI对话日记';
 
   @override
   String get aiChatDescription => '按问答提示词与AI对话，生成自定义日记';

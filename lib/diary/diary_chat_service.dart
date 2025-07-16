@@ -159,17 +159,6 @@ class DiaryChatService {
         if (await file.exists()) {
           final savedContent = await file.readAsString();
           print('File saved successfully, content length: ${savedContent.length}');
-
-          // 显示保存成功的提示
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('💾 ${AppLocalizations.of(context)!.saveSuccess}'),
-                duration: const Duration(seconds: 2),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
         } else {
           throw Exception('File was not created after save operation');
         }

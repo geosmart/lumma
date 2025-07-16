@@ -96,6 +96,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
         _lastSaved = true;
       });
       print('[SAVE] _extractCategoryAndSave completed successfully');
+      // 不再弹窗提示保存成功
     } catch (e) {
       print('[SAVE] _extractCategoryAndSave failed: $e');
       setState(() {
@@ -440,7 +441,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                               child: Stack(
                                                 children: [
                                                   Container(
-                                                    margin: const EdgeInsets.only(bottom: 4),
+                                                    margin: const EdgeInsets.only(bottom: 4, right: 32),
                                                     padding: const EdgeInsets.all(14),
                                                     decoration: BoxDecoration(
                                                       color: Theme.of(context).brightness == Brightness.dark
@@ -456,8 +457,8 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                                     child: EnhancedMarkdown(data: h['q'] ?? ''),
                                                   ),
                                                   Positioned(
-                                                    top: 0,
-                                                    right: 0,
+                                                    right: 8,
+                                                    bottom: 16,
                                                     child: IconButton(
                                                       icon: const Icon(Icons.copy, size: 16),
                                                       tooltip: '复制',
@@ -502,39 +503,29 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                                       content: h['reasoning']!,
                                                       initiallyExpanded: false,
                                                     ),
-                                                  Stack(
+                                                  // 删除a的气泡外复制按钮
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.end,
                                                     children: [
-                                                      Container(
-                                                        margin: const EdgeInsets.only(bottom: 12),
-                                                        padding: const EdgeInsets.all(14),
-                                                        decoration: BoxDecoration(
-                                                          color: Theme.of(context).brightness == Brightness.dark
-                                                              ? const Color(0xFF1E3A8A)
-                                                              : Colors.blue[50],
-                                                          borderRadius: BorderRadius.circular(16),
-                                                          border: Border.all(
-                                                            color: Theme.of(context).brightness == Brightness.dark
-                                                                ? const Color(0xFF3B82F6)
-                                                                : Colors.blue[100]!,
+                                                      Stack(
+                                                        children: [
+                                                          Container(
+                                                            margin: const EdgeInsets.only(bottom: 12),
+                                                            padding: const EdgeInsets.all(14),
+                                                            decoration: BoxDecoration(
+                                                              color: Theme.of(context).brightness == Brightness.dark
+                                                                  ? const Color(0xFF1E3A8A)
+                                                                  : Colors.blue[50],
+                                                              borderRadius: BorderRadius.circular(16),
+                                                              border: Border.all(
+                                                                color: Theme.of(context).brightness == Brightness.dark
+                                                                    ? const Color(0xFF3B82F6)
+                                                                    : Colors.blue[100]!,
+                                                              ),
+                                                            ),
+                                                            child: EnhancedMarkdown(data: h['a'] ?? ''),
                                                           ),
-                                                        ),
-                                                        child: EnhancedMarkdown(data: h['a'] ?? ''),
-                                                      ),
-                                                      Positioned(
-                                                        top: 4, // 增加顶部间距
-                                                        right: 4, // 增加右侧间距
-                                                        child: IconButton(
-                                                          icon: const Icon(Icons.copy, size: 16),
-                                                          tooltip: '复制',
-                                                          onPressed: () {
-                                                            Clipboard.setData(ClipboardData(text: h['a'] ?? ''));
-                                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                              const SnackBar(content: Text('已复制'), duration: Duration(milliseconds: 800)),
-                                                            );
-                                                          },
-                                                          padding: EdgeInsets.zero,
-                                                          constraints: const BoxConstraints(),
-                                                        ),
+                                                        ],
                                                       ),
                                                     ],
                                                   ),

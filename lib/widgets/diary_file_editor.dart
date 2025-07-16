@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../dao/diary_dao.dart';
 import '../generated/l10n/app_localizations.dart';
 
@@ -76,14 +77,32 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
                   decoration: InputDecoration(labelText: l10n.fileName),
                 ),
                 const SizedBox(height: 12),
-                TextField(
-                  controller: _editCtrl,
-                  maxLines: 12,
-                  decoration: InputDecoration(
-                    labelText: widget.fileName,
-                    border: const OutlineInputBorder(),
-                    hintText: l10n.editDiaryContent,
-                  ),
+                Stack(
+                  children: [
+                    TextField(
+                      controller: _editCtrl,
+                      maxLines: 12,
+                      decoration: InputDecoration(
+                        labelText: widget.fileName,
+                        border: const OutlineInputBorder(),
+                        hintText: l10n.editDiaryContent,
+                      ),
+                    ),
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: IconButton(
+                        icon: const Icon(Icons.copy),
+                        tooltip: l10n.copy,
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: _editCtrl.text));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('已复制'), duration: const Duration(milliseconds: 800)),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
