@@ -14,6 +14,27 @@
 
 > 作为一名重度 Obsidian 用户，我热爱写日记。但在移动端，Obsidian 的体验不佳，AI 插件更难使用。于是我基于 Flutter 自研了这款 App，打造更顺畅的移动端日记体验。
 
+## 功能截图
+
+<div align="center">
+  <img src="docs/screenshots/v1.0.0/home.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/chat.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/summary.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/diary_detail.jpg" width="100">
+</div>
+<div align="center">
+  <img src="docs/screenshots/v1.0.0/diary_list.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/diary_mode.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/setting_llm.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/setting_prompt.jpg" width="100">
+</div>
+<div align="center">
+  <img src="docs/screenshots/v1.0.0/summary_prompt.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/setting_qa.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/sync.jpg" width="100">
+  <img src="docs/screenshots/v1.0.0/theme.jpg" width="100">
+</div>
+
 ## ✨ 核心亮点
 
 ### 📝 智能日记模式
