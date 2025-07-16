@@ -60,9 +60,10 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light(
-        primary: Color(0xFFD7CCC8), // 淡雅的米棕色，与按钮颜色一致
+        primary: Color(0xFFD7CCC8),
         secondary: Color(0xFFd4a574),
         surface: Color(0xFFfdf7f0),
+        primaryContainer: Color(0xFF9FA8DA), // 蓝紫色，和暗色主题统一
       ),
       scaffoldBackgroundColor: const Color(0xFFfdf7f0),
       appBarTheme: const AppBarTheme(
@@ -72,8 +73,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD7CCC8), // 更淡雅的米棕色
-          foregroundColor: const Color(0xFF5d4037), // 深棕色文字，提高对比度
+          backgroundColor: const Color(0xFF9FA8DA), // 跟随primaryContainer
+          foregroundColor: Colors.white,
         ),
       ),
     );
@@ -88,13 +89,14 @@ class AppTheme {
         primary: Color(0xFF9FA8DA), // 淡雅的蓝紫色，与按钮颜色一致
         secondary: Color(0xFF764ba2),
         surface: Color(0xFF1a1a2e),
+        primaryContainer: Color(0xFF232a34), // 新增主按钮背景色
       ),
       scaffoldBackgroundColor: const Color(0xFF1a1a2e),
       appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF1a1a2e), foregroundColor: Colors.white, elevation: 0),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF9FA8DA), // 更淡雅的蓝紫色
-          foregroundColor: const Color(0xFF1a1a2e), // 深色文字，提高对比度
+          backgroundColor: const Color(0xFF232a34), // 跟随primaryContainer
+          foregroundColor: Colors.white, // 深色文字，提高对比度
         ),
       ),
     );
@@ -107,10 +109,12 @@ extension ThemeColors on BuildContext {
   List<Color> get backgroundGradient {
     final isDark = Theme.of(this).brightness == Brightness.dark;
     if (isDark) {
+      // 顶部深灰蓝 → 蓝紫 → 深蓝 → 深青，底部不再高亮
       return const [
-        Color(0xFF1a1a2e), // 深蓝紫
-        Color(0xFF16213e), // 深蓝
-        Color(0xFF0f3460), // 稍亮蓝
+        Color(0xFF232526), // 顶部深灰蓝
+        Color(0xFF414345), // 蓝紫
+        Color(0xFF232a34), // 深蓝青
+        Color(0xFF16213e), // 底部深蓝
       ];
     } else {
       return const [
@@ -149,7 +153,8 @@ extension ThemeColors on BuildContext {
   List<Color> get primaryButtonGradient {
     final isDark = Theme.of(this).brightness == Brightness.dark;
     if (isDark) {
-      return const [Color(0xFF667eea), Color(0xFF764ba2)];
+      // 采用icon主色的青绿渐变，现代感更强
+      return const [Color(0xFF43e97b), Color(0xFF38f9d7)];
     } else {
       return const [
         Color(0xFFd4a574), // 温暖金棕
@@ -161,6 +166,7 @@ extension ThemeColors on BuildContext {
   // 装饰元素颜色
   Color get decorationColor {
     final isDark = Theme.of(this).brightness == Brightness.dark;
-    return isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03);
+    // 用更通透的蓝紫色，呼应icon
+    return isDark ? const Color(0xFF667eea).withOpacity(0.18) : Colors.black.withOpacity(0.03);
   }
 }

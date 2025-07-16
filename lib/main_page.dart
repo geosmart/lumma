@@ -116,48 +116,39 @@ class _MainTabPageState extends State<MainTabPage> {
                     // 主操作按钮
                     Container(
                       width: double.infinity,
-                      height: 64,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      height: 44,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: context.primaryButtonGradient,
-                        ),
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
-                        ],
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1),
                       ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(32),
-                          onTap: () async {
-                            final mode = await DiaryModeConfigService.loadDiaryMode();
-                            if (mode == DiaryMode.chat) {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryChatPage()));
-                            } else {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryQaPage()));
-                            }
-                          },
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.edit_note, color: Colors.white, size: 28),
-                                const SizedBox(width: 12),
-                                Text(
-                                  AppLocalizations.of(context)!.startWritingDiary,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    letterSpacing: 1.0,
-                                  ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(999),
+                        onTap: () async {
+                          final mode = await DiaryModeConfigService.loadDiaryMode();
+                          if (mode == DiaryMode.chat) {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryChatPage()));
+                          } else {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryQaPage()));
+                          }
+                        },
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.edit_note, color: Colors.white, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                AppLocalizations.of(context)!.startWritingDiary.toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 1.2,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
