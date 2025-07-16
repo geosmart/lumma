@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../diary/chat_history_service.dart';
 import '../diary/diary_qa_title_service.dart';
@@ -83,7 +84,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   Future<void> _extractCategoryAndSave() async {
     setState(() {
       _extractingCategory = true;
-      _extractingCategoryMsg = AppLocalizations.of(context)!.aiSummary + '...';
+      _extractingCategoryMsg = '${AppLocalizations.of(context)!.aiSummary}...';
       _lastSaved = false;
     });
     try {
@@ -106,7 +107,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('保存失败: ' + e.toString()),
+            content: Text('保存失败: $e'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -410,166 +411,236 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                 if (h['q'] != null && h['q']!.isNotEmpty)
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      const SizedBox(width: 32),
-                                      Expanded(
-                                        child: Container(
-                                          margin: const EdgeInsets.only(bottom: 4),
-                                          padding: const EdgeInsets.all(14),
-                                          decoration: BoxDecoration(
+                                      SizedBox(
+                                        width: 32,
+                                        height: 32,
+                                        child: CircleAvatar(
+                                          backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                              ? const Color(0xFF2D5A2B)
+                                              : const Color(0xFFE8F5E9),
+                                          child: Icon(
+                                            Icons.person,
                                             color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF2D5A2B)
-                                                : Colors.green[50],
-                                            borderRadius: BorderRadius.circular(16),
-                                            border: Border.all(
-                                              color: Theme.of(context).brightness == Brightness.dark
-                                                  ? const Color(0xFF4CAF50)
-                                                  : Colors.green[100]!,
-                                            ),
+                                                ? const Color(0xFF4CAF50)
+                                                : Colors.green,
                                           ),
-                                          child: EnhancedMarkdown(data: h['q'] ?? ''),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      CircleAvatar(
-                                        backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                            ? const Color(0xFF2D5A2B)
-                                            : const Color(0xFFE8F5E9),
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF4CAF50)
-                                              : Colors.green,
+                                      Flexible(
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                              minWidth: 48,
+                                            ),
+                                            child: IntrinsicWidth(
+                                              child: Stack(
+                                                children: [
+                                                  Container(
+                                                    margin: const EdgeInsets.only(bottom: 4),
+                                                    padding: const EdgeInsets.all(14),
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context).brightness == Brightness.dark
+                                                          ? const Color(0xFF2D5A2B)
+                                                          : Colors.green[50],
+                                                      borderRadius: BorderRadius.circular(16),
+                                                      border: Border.all(
+                                                        color: Theme.of(context).brightness == Brightness.dark
+                                                            ? const Color(0xFF4CAF50)
+                                                            : Colors.green[100]!,
+                                                      ),
+                                                    ),
+                                                    child: EnhancedMarkdown(data: h['q'] ?? ''),
+                                                  ),
+                                                  Positioned(
+                                                    top: 0,
+                                                    right: 0,
+                                                    child: IconButton(
+                                                      icon: const Icon(Icons.copy, size: 16),
+                                                      tooltip: '复制',
+                                                      onPressed: () {
+                                                        Clipboard.setData(ClipboardData(text: h['q'] ?? ''));
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          const SnackBar(content: Text('已复制'), duration: Duration(milliseconds: 800)),
+                                                        );
+                                                      },
+                                                      padding: EdgeInsets.zero,
+                                                      constraints: const BoxConstraints(),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
+                                      const SizedBox(width: 32),
                                     ],
                                   ),
                                 if (showAnswer)
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      GestureDetector(
-                                        onTapDown: (details) {
-                                          _showModelTooltip(context, details.globalPosition);
-                                        },
-                                        child: CircleAvatar(
-                                          backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF37474F)
-                                              : Colors.blueGrey[50],
-                                          child: Icon(
-                                            Icons.smart_toy,
-                                            color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF90A4AE)
-                                                : Colors.blueGrey,
+                                      Flexible(
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                              minWidth: 48,
+                                            ),
+                                            child: IntrinsicWidth(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
+                                                    _ReasoningCollapse(
+                                                      content: h['reasoning']!,
+                                                      initiallyExpanded: false,
+                                                    ),
+                                                  Stack(
+                                                    children: [
+                                                      Container(
+                                                        margin: const EdgeInsets.only(bottom: 12),
+                                                        padding: const EdgeInsets.all(14),
+                                                        decoration: BoxDecoration(
+                                                          color: Theme.of(context).brightness == Brightness.dark
+                                                              ? const Color(0xFF1E3A8A)
+                                                              : Colors.blue[50],
+                                                          borderRadius: BorderRadius.circular(16),
+                                                          border: Border.all(
+                                                            color: Theme.of(context).brightness == Brightness.dark
+                                                                ? const Color(0xFF3B82F6)
+                                                                : Colors.blue[100]!,
+                                                          ),
+                                                        ),
+                                                        child: EnhancedMarkdown(data: h['a'] ?? ''),
+                                                      ),
+                                                      Positioned(
+                                                        top: 4, // 增加顶部间距
+                                                        right: 4, // 增加右侧间距
+                                                        child: IconButton(
+                                                          icon: const Icon(Icons.copy, size: 16),
+                                                          tooltip: '复制',
+                                                          onPressed: () {
+                                                            Clipboard.setData(ClipboardData(text: h['a'] ?? ''));
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text('已复制'), duration: Duration(milliseconds: 800)),
+                                                            );
+                                                          },
+                                                          padding: EdgeInsets.zero,
+                                                          constraints: const BoxConstraints(),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  // 新增：显示AI总结的title和category及已保存角标（同一行，右对齐）
+                                                  if ((h['title']?.isNotEmpty == true || h['category']?.isNotEmpty == true))
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 2, bottom: 4),
+                                                      child: Row(
+                                                        children: [
+                                                          if (h['title']?.isNotEmpty == true)
+                                                            Flexible(
+                                                              child: Text(
+                                                                h['title']!,
+                                                                style: TextStyle(
+                                                                  fontSize: 11,
+                                                                  color: Theme.of(context).brightness == Brightness.dark
+                                                                      ? Colors.grey[400]
+                                                                      : Colors.grey[500],
+                                                                ),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                          if (h['category']?.isNotEmpty == true)
+                                                            Container(
+                                                              margin: const EdgeInsets.only(left: 8),
+                                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                              decoration: BoxDecoration(
+                                                                color: DiaryContentService.getCategoryColors(h['category']!)['background'],
+                                                                borderRadius: BorderRadius.circular(8),
+                                                                border: Border.all(color: DiaryContentService.getCategoryColors(h['category']!)['border']!),
+                                                              ),
+                                                              child: Text(
+                                                                h['category']!,
+                                                                style: TextStyle(
+                                                                  fontSize: 10,
+                                                                  color: DiaryContentService.getCategoryColors(h['category']!)['text'],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          // 右侧对齐显示已保存角标
+                                                          if (_lastSaved && isLast && !_extractingCategory)
+                                                            Expanded(
+                                                              child: Row(
+                                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                                children: [
+                                                                  Icon(Icons.check_circle, size: 14, color: Colors.green[400]),
+                                                                  const SizedBox(width: 4),
+                                                                  Text('已保存', style: TextStyle(fontSize: 11, color: Colors.green[400], fontWeight: FontWeight.w500)),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  // 正在总结loading
+                                                  if (_extractingCategory && isLast)
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 2, bottom: 4),
+                                                      child: Row(
+                                                        children: [
+                                                          SizedBox(
+                                                            width: 14,
+                                                            height: 14,
+                                                            child: CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(width: 6),
+                                                          Text(
+                                                            _extractingCategoryMsg ?? '',
+                                                            style: TextStyle(
+                                                              fontSize: 11,
+                                                              color: Theme.of(context).brightness == Brightness.dark
+                                                                  ? Colors.grey[400]
+                                                                  : Colors.grey[500],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
-                                              _ReasoningCollapse(
-                                                content: h['reasoning']!,
-                                                initiallyExpanded: false,
-                                              ),
-                                            Container(
-                                              margin: const EdgeInsets.only(bottom: 12),
-                                              padding: const EdgeInsets.all(14),
-                                              decoration: BoxDecoration(
-                                                color: Theme.of(context).brightness == Brightness.dark
-                                                    ? const Color(0xFF1E3A8A)
-                                                    : Colors.blue[50],
-                                                borderRadius: BorderRadius.circular(16),
-                                                border: Border.all(
-                                                  color: Theme.of(context).brightness == Brightness.dark
-                                                      ? const Color(0xFF3B82F6)
-                                                      : Colors.blue[100]!,
-                                                ),
-                                              ),
-                                              child: EnhancedMarkdown(data: h['a'] ?? ''),
+                                      SizedBox(
+                                        width: 32,
+                                        height: 32,
+                                        child: GestureDetector(
+                                          onTapDown: (details) {
+                                            _showModelTooltip(context, details.globalPosition);
+                                          },
+                                          child: CircleAvatar(
+                                            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                                ? const Color(0xFF37474F)
+                                                : Colors.blueGrey[50],
+                                            child: Icon(
+                                              Icons.smart_toy,
+                                              color: Theme.of(context).brightness == Brightness.dark
+                                                  ? const Color(0xFF90A4AE)
+                                                  : Colors.blueGrey,
                                             ),
-                                            // 新增：显示AI总结的title和category及已保存角标（同一行，右对齐）
-                                            if ((h['title']?.isNotEmpty == true || h['category']?.isNotEmpty == true))
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 2, bottom: 4),
-                                                child: Row(
-                                                  children: [
-                                                    if (h['title']?.isNotEmpty == true)
-                                                      Flexible(
-                                                        child: Text(
-                                                          h['title']!,
-                                                          style: TextStyle(
-                                                            fontSize: 11,
-                                                            color: Theme.of(context).brightness == Brightness.dark
-                                                                ? Colors.grey[400]
-                                                                : Colors.grey[500],
-                                                          ),
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                      ),
-                                                    if (h['category']?.isNotEmpty == true)
-                                                      Container(
-                                                        margin: const EdgeInsets.only(left: 8),
-                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                        decoration: BoxDecoration(
-                                                          color: DiaryContentService.getCategoryColors(h['category']!)['background'],
-                                                          borderRadius: BorderRadius.circular(8),
-                                                          border: Border.all(color: DiaryContentService.getCategoryColors(h['category']!)['border']!),
-                                                        ),
-                                                        child: Text(
-                                                          h['category']!,
-                                                          style: TextStyle(
-                                                            fontSize: 10,
-                                                            color: DiaryContentService.getCategoryColors(h['category']!)['text'],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    // 右侧对齐显示已保存角标
-                                                    if (_lastSaved && isLast && !_extractingCategory)
-                                                      Expanded(
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.end,
-                                                          children: [
-                                                            Icon(Icons.check_circle, size: 14, color: Colors.green[400]),
-                                                            const SizedBox(width: 4),
-                                                            Text('已保存', style: TextStyle(fontSize: 11, color: Colors.green[400], fontWeight: FontWeight.w500)),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            // 正在总结loading
-                                            if (_extractingCategory && isLast)
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 2, bottom: 4),
-                                                child: Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 14,
-                                                      height: 14,
-                                                      child: CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      _extractingCategoryMsg ?? '',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                        color: Theme.of(context).brightness == Brightness.dark
-                                                            ? Colors.grey[400]
-                                                            : Colors.grey[500],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                          ],
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 32),
