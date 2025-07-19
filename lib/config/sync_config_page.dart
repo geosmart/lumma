@@ -39,7 +39,6 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
   String? _webdavUsername;
   String? _webdavPassword;
   String? _webdavRemoteDir;
-  String? _webdavLocalDir;
   bool _isLoading = true;
   SyncType _syncType = SyncType.obsidian;
   bool _obscureWebdavUrl = true;
@@ -65,7 +64,6 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       _webdavUsername = sync.webdavUsername;
       _webdavPassword = sync.webdavPassword;
       _webdavRemoteDir = sync.webdavRemoteDir;
-      _webdavLocalDir = sync.webdavLocalDir;
       _syncType = sync.syncType;
       _isLoading = false;
     });
@@ -86,7 +84,6 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
       config.sync.webdavUsername = _webdavUsername ?? '';
       config.sync.webdavPassword = _webdavPassword ?? '';
       config.sync.webdavRemoteDir = _webdavRemoteDir ?? '';
-      config.sync.webdavLocalDir = _webdavLocalDir ?? '';
     });
     if (mounted) {
       ScaffoldMessenger.of(
@@ -147,7 +144,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
             labelText: AppLocalizations.of(context)!.syncAddress,
             hintText: AppLocalizations.of(context)!.syncAddressPlaceholder,
           ),
-          maxLines: 1,
+          maxLines: null, // 设置为多行输入框
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(AppLocalizations.of(context)!.cancel)),
@@ -244,7 +241,7 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
     final username = _webdavUsername?.trim() ?? '';
     final password = _webdavPassword ?? '';
     final remoteDirectory = _webdavRemoteDir?.trim() ?? '';
-    final localDirectory = _webdavLocalDir?.trim() ?? '';
+    final localDirectory = _workDir?.trim() ?? '';
     if (url.isEmpty || username.isEmpty || password.isEmpty || remoteDirectory.isEmpty || localDirectory.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -571,28 +568,6 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
               ..selection = TextSelection.collapsed(offset: (_webdavRemoteDir ?? '').length),
             onChanged: (v) => _webdavRemoteDir = v,
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.localDirectory,
-                    hintText: AppLocalizations.of(context)!.localDirectoryPlaceholder,
-                  ),
-                  controller: TextEditingController(text: _webdavLocalDir ?? '')
-                    ..selection = TextSelection.collapsed(offset: (_webdavLocalDir ?? '').length),
-                  onChanged: (v) => _webdavLocalDir = v,
-                ),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: _selectWebdavLocalDirectory,
-                icon: const Icon(Icons.folder_open),
-                label: Text(AppLocalizations.of(context)!.select),
-              ),
-            ],
-          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -613,38 +588,5 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
         ],
       ),
     );
-  }
-
-  Future<void> _selectWebdavLocalDirectory() async {
-    // 对于 Android，首先检查权限
-    if (Platform.isAndroid) {
-      final hasPermission = await StoragePermissionHandler.requestStoragePermission(context);
-      if (!hasPermission) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.storagePermissionRequired),
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
-        return;
-      }
-    }
-
-    final directory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: AppLocalizations.of(context)!.selectWebdavLocalDirectory,
-    );
-
-    if (directory != null) {
-      setState(() {
-        _webdavLocalDir = directory;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.webdavLocalDirectorySetSuccess)));
-      }
-    }
   }
 }

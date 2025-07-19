@@ -52,11 +52,15 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
       _lastValue = newValue.toDouble();
     }
 
-    // 新日志添加时自动滚动到顶部
+    // 新日志添加时自动滚动到底部（append）
     if (widget.logs.length > oldWidget.logs.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
-          _scrollController.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
         }
       });
     }
@@ -92,13 +96,38 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.syncDialogProgress(widget.current, widget.total)),
+                Text(l10n.syncDialogProgress(
+                  widget.current > widget.total ? widget.total : widget.current,
+                  widget.total,
+                )),
                 if (widget.currentStage.isNotEmpty)
                   Text(widget.currentStage, style: const TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 8),
-            Text(l10n.syncDialogCurrentFile(widget.currentFile)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.currentFile,
+                    style: TextStyle(
+                      fontWeight: widget.currentFile.contains('[无变化]')
+                          ? FontWeight.normal
+                          : FontWeight.bold,
+                      color: widget.currentFile.contains('[无变化]')
+                          ? Colors.grey
+                          : (widget.currentFile.contains('[新文件]')
+                              ? Colors.blue
+                              : (widget.currentFile.contains('[已变更]')
+                                  ? Colors.orange
+                                  : const Color.fromARGB(255, 95, 91, 96))),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             Align(
               alignment: Alignment.centerLeft,
@@ -115,7 +144,7 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
                   controller: _scrollController,
                   itemCount: widget.logs.length,
                   itemBuilder: (context, index) {
-                    final logIndex = widget.logs.length - index;
+                    final logIndex = index + 1;
                     final log = widget.logs[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -130,13 +159,12 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: widget.onClose ?? () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (widget.onClose != null) widget.onClose!();
+                    Navigator.of(context, rootNavigator: true).pop();
+                  },
                   child: Text(l10n.commonClose),
                 ),
-                if (widget.isDone) ...[
-                  const SizedBox(width: 8),
-                  ElevatedButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.commonDone)),
-                ],
               ],
             ),
           ],

@@ -3,7 +3,7 @@ import 'timestamped.dart';
 enum SyncType { obsidian, webdav }
 
 class SyncConfig extends Timestamped {
-  /// 数据工作目录（workDir）
+  /// 数据存储目录
   String workDir;
 
   // 同步地址
@@ -14,7 +14,6 @@ class SyncConfig extends Timestamped {
   String webdavUsername;
   String webdavPassword;
   String webdavRemoteDir;
-  String webdavLocalDir;
 
   // 新增同步类型字段
   SyncType syncType;
@@ -26,7 +25,6 @@ class SyncConfig extends Timestamped {
     this.webdavUsername = '',
     this.webdavPassword = '',
     this.webdavRemoteDir = '',
-    this.webdavLocalDir = '',
     this.syncType = SyncType.obsidian,
     super.created,
     super.updated,
@@ -40,7 +38,6 @@ class SyncConfig extends Timestamped {
     webdavUsername: '',
     webdavPassword: '',
     webdavRemoteDir: '',
-    webdavLocalDir: '',
     syncType: SyncType.obsidian,
   );
 
@@ -51,7 +48,6 @@ class SyncConfig extends Timestamped {
     webdavUsername: map['webdav_username'] ?? '',
     webdavPassword: map['webdav_password'] ?? '',
     webdavRemoteDir: map['webdav_remote_dir'] ?? '',
-    webdavLocalDir: map['webdav_local_dir'] ?? '',
     syncType: (map['sync_type'] == 'webdav') ? SyncType.webdav : SyncType.obsidian,
     created: DateTime.tryParse(map['created'] ?? '') ?? DateTime.now(),
     updated: DateTime.tryParse(map['updated'] ?? '') ?? DateTime.now(),
@@ -64,7 +60,6 @@ class SyncConfig extends Timestamped {
     'webdav_username': webdavUsername,
     'webdav_password': webdavPassword,
     'webdav_remote_dir': webdavRemoteDir,
-    'webdav_local_dir': webdavLocalDir,
     'sync_type': syncType == SyncType.webdav ? 'webdav' : 'obsidian',
     'created': created.toIso8601String(),
     'updated': updated.toIso8601String(),

@@ -173,42 +173,6 @@ class StorageService {
     }
   }
 
-  /// 获取 WebDAV 本地目录
-  static Future<String?> getWebdavLocalDir() async {
-    try {
-      final appConfig = await AppConfigService.load();
-      final dir = appConfig.sync.webdavLocalDir;
-      print('获取 WebDAV 本地目录: ${dir.isEmpty ? "null" : dir}');
-      return dir.isEmpty ? null : dir;
-    } catch (e) {
-      print('获取 WebDAV 本地目录失败: $e');
-      return null;
-    }
-  }
-
-  /// 设置 WebDAV 本地目录
-  static Future<void> setWebdavLocalDir(String path) async {
-    try {
-      await AppConfigService.update((config) {
-        config.sync.webdavLocalDir = path;
-      });
-      print('设置 WebDAV 本地目录: $path');
-    } catch (e) {
-      print('设置 WebDAV 本地目录失败: $e');
-    }
-  }
-
-  /// 清除 WebDAV 本地目录
-  static Future<void> clearWebdavLocalDir() async {
-    try {
-      await AppConfigService.update((config) {
-        config.sync.webdavLocalDir = '';
-      });
-      print('清除 WebDAV 本地目录');
-    } catch (e) {
-      print('清除 WebDAV 本地目录失败: $e');
-    }
-  }
 
   /// 获取 AppConfig 文件路径（支持自定义 workDir）
   static Future<String> getAppConfigFilePath({String? workDir}) async {

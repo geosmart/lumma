@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// Remote directory placeholder
   ///
   /// In en, this message translates to:
-  /// **'/remote/path/'**
+  /// **'remote/path'**
   String get remoteDirectoryPlaceholder;
 
   /// Local directory field label

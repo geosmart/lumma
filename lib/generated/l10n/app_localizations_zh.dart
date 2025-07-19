@@ -124,7 +124,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncAddress => '同步地址';
 
   @override
-  String get syncAddressDescription => '设置Obsidian同步的指令对应的AdvanceUri';
+  String get syncAddressDescription => '设置Obsidian同步的AdvanceUri';
 
   @override
   String get setSyncAddress => '设置地址';
@@ -133,7 +133,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterSyncAddress => '设置同步地址';
 
   @override
-  String get syncAddressPlaceholder => '请输入同步地址';
+  String get syncAddressPlaceholder =>
+      '请输入同步地址：vault为仓库名称，commandid可在Obsidian的调试模式通过输入app.commands.commands查找';
 
   @override
   String get syncAddressSetSuccess => '同步地址设置成功';
@@ -169,7 +170,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get remoteDirectory => '远程目录';
 
   @override
-  String get remoteDirectoryPlaceholder => '/remote/path/';
+  String get remoteDirectoryPlaceholder => 'remote/path';
 
   @override
   String get localDirectory => '本地目录';
@@ -212,22 +213,22 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get dataWorkDirectory => '数据工作目录';
+  String get dataWorkDirectory => '数据存储目录';
 
   @override
-  String get dataWorkDirectoryDescription => '设置应用的数据工作目录：包括模型，提示词，日记等数据';
+  String get dataWorkDirectoryDescription => '设置应用的数据存储目录：包括模型，提示词，日记等数据';
 
   @override
-  String get selectDataWorkDirectory => '选择数据工作目录';
+  String get selectDataWorkDirectory => '选择数据存储目录';
 
   @override
-  String get dataWorkDirectorySetSuccess => '数据工作目录设置成功';
+  String get dataWorkDirectorySetSuccess => '数据存储目录设置成功';
 
   @override
-  String get confirmClearDataWorkDirectory => '确定要清除数据工作目录设置吗？';
+  String get confirmClearDataWorkDirectory => '确定要清除数据存储目录设置吗？';
 
   @override
-  String get dataWorkDirectoryCleared => '已清除数据工作目录设置';
+  String get dataWorkDirectoryCleared => '已清除数据存储目录设置';
 
   @override
   String get storagePermissionRequired => '需要文件访问权限才能选择目录';
@@ -494,7 +495,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get syncTaskComplete => '同步任务完成';
+  String get syncTaskComplete => '同步完成';
 
   @override
   String get myDiary => '我的日记';

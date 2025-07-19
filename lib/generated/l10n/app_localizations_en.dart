@@ -175,7 +175,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remoteDirectory => 'Remote Directory';
 
   @override
-  String get remoteDirectoryPlaceholder => '/remote/path/';
+  String get remoteDirectoryPlaceholder => 'remote/path';
 
   @override
   String get localDirectory => 'Local Directory';

@@ -11,6 +11,7 @@
   <strong>Journal freely. Reflect deeply. Powered by AI.</strong>
 </div>
 
+
 > As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins. That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
 
 ## Screenshots

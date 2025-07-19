@@ -263,21 +263,40 @@ class WebdavUtil {
     try {
       final dir = Directory(localDir);
       if (!await dir.exists()) {
-        print('本地日记目录不存在: $localDir');
+        print('本地工作目录不存在: $localDir');
         return false;
       }
       final allEntities = await dir.list(recursive: true, followLinks: false).toList();
-      final files = allEntities.whereType<File>().cast<File>().toList();
-
+      // 先收集所有本地目录并排序（父目录优先）
+      final localDirsList = allEntities.whereType<Directory>().map((entity) {
+        return entity.path.substring(localDir.length).replaceAll('\\', '/');
+      }).toList();
+      localDirsList.sort((a, b) => a.split('/').length.compareTo(b.split('/').length));
+      // 依次创建远程目录（父目录优先）
+      for (final relativePath in localDirsList) {
+        if (relativePath.isEmpty) continue;
+        final remotePath = (remoteDir.endsWith('/') ? remoteDir : remoteDir + '/') + relativePath.replaceFirst('/', '');
+        print('[增量目录同步] 创建远程目录: $remotePath');
+        final created = await createDirectory(
+          webdavUrl: webdavUrl,
+          username: username,
+          password: password,
+          remotePath: remotePath,
+        );
+        if (created) {
+          print('[增量目录同步] 成功: $remotePath');
+        } else {
+          print('[增量目录同步] 失败: $remotePath');
+          return false;
+        }
+      }
       // 筛选需要上传的文件
       List<File> filesToUpload = [];
-      for (final file in files) {
+      for (final file in allEntities.whereType<File>()) {
         final relativePath = file.path.substring(localDir.length).replaceAll('\\', '/');
-        final remotePath = (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/') + relativePath.replaceFirst('/', '');
-
+        final remotePath = (remoteDir.endsWith('/') ? remoteDir : remoteDir + '/') + relativePath.replaceFirst('/', '');
         // 获取本地文件修改时间
         final localModified = await file.lastModified();
-
         // 获取远程文件修改时间
         final remoteModified = await getRemoteFileLastModified(
           webdavUrl: webdavUrl,
@@ -285,25 +304,24 @@ class WebdavUtil {
           password: password,
           remotePath: remotePath,
         );
-
-        // 如果远程文件不存在或本地文件更新，则需要上传
-        if (remoteModified == null || localModified.isAfter(remoteModified)) {
+        if (remoteModified == null) {
+          print('[同步] 新文件: $relativePath (本地: $localModified, 远程: 无)');
           filesToUpload.add(file);
-          print('需要上传: $relativePath (本地: $localModified, 远程: $remoteModified)');
+        } else if (localModified.isAfter(remoteModified)) {
+          print('[同步] 已变更: $relativePath (本地: $localModified, 远程: $remoteModified)');
+          filesToUpload.add(file);
         } else {
-          print('跳过上传: $relativePath (本地文件未变更)');
+          print('[同步] 无变化: $relativePath (本地: $localModified, 远程: $remoteModified)');
         }
       }
-
       int current = 0;
       final total = filesToUpload.length;
       print('共需上传 $total 个文件');
-
       for (final entity in filesToUpload) {
         current++;
         if (onProgress != null) onProgress(current, total, entity.path);
         final relativePath = entity.path.substring(localDir.length).replaceAll('\\', '/');
-        final remotePath = (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/') + relativePath.replaceFirst('/', '');
+        final remotePath = (remoteDir.endsWith('/') ? remoteDir : remoteDir + '/') + relativePath.replaceFirst('/', '');
         final uploadSuccess = await uploadFile(
           webdavUrl: webdavUrl,
           username: username,
@@ -417,6 +435,70 @@ class WebdavUtil {
       print('增量下载 WebDAV 目录异常: $e\n$stackTrace');
       return false;
     }
+  }
+
+  static Future<bool> createDirectory({
+    required String webdavUrl,
+    required String username,
+    required String password,
+    required String remotePath,
+  }) async {
+    try {
+      final uri = Uri.parse('$webdavUrl$remotePath');
+      final auth = base64Encode(utf8.encode('$username:$password'));
+      final response = await http.Request('MKCOL', uri)
+        ..headers.addAll({'Authorization': 'Basic $auth'});
+      final streamedResponse = await http.Client().send(response);
+      // MKCOL: 201 Created 或 405 Method Not Allowed（已存在）视为成功
+      if (streamedResponse.statusCode == 201 || streamedResponse.statusCode == 405) {
+        return true;
+      } else {
+        print('MKCOL失败: $remotePath 状态码: ${streamedResponse.statusCode}');
+        return false;
+      }
+    } catch (e, stackTrace) {
+      print('MKCOL异常: $e\n$stackTrace');
+      return false;
+    }
+  }
+
+  // 列出远程目录结构（只返回目录路径列表）
+  static Future<List<String>> listRemoteDirectories({
+    required String webdavUrl,
+    required String username,
+    required String password,
+    required String remoteDir,
+  }) async {
+    final uri = Uri.parse(webdavUrl + (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/'));
+    final auth = base64Encode(utf8.encode('$username:$password'));
+    final request = http.Request('PROPFIND', uri)
+      ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
+      ..body = '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
+    final response = await http.Client().send(request);
+    if (response.statusCode != 207) return [];
+    final responseBody = await response.stream.bytesToString();
+    // 解析所有目录路径
+    final dirMatches = RegExp(r'<D:response>[\s\S]*?<D:resourcetype>[\s\S]*?<D:collection/>[\s\S]*?<D:href>(.*?)<\/D:href>').allMatches(responseBody);
+    final dirs = dirMatches.map((m) {
+      final href = m.group(1) ?? '';
+      // 去除域名和 remoteDir 前缀
+      final uri = Uri.parse(href);
+      return uri.path;
+    }).where((path) => path != '/' && path != remoteDir && path != (remoteDir.endsWith('/') ? remoteDir : remoteDir + '/')).toList();
+    return dirs;
+  }
+
+  // 删除远程目录（WebDAV DELETE 方法）
+  static Future<bool> deleteDirectory({
+    required String webdavUrl,
+    required String username,
+    required String password,
+    required String remotePath,
+  }) async {
+    final uri = Uri.parse(webdavUrl + remotePath);
+    final auth = base64Encode(utf8.encode('$username:$password'));
+    final response = await http.delete(uri, headers: {'Authorization': 'Basic $auth'});
+    return response.statusCode == 204 || response.statusCode == 200 || response.statusCode == 404;
   }
 
   // 解析 WebDAV PROPFIND 响应，包含修改时间
