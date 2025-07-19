@@ -10,8 +10,6 @@ import 'config/diary_mode_config_service.dart';
 import 'config/theme_service.dart';
 import 'util/sync_service.dart';
 import 'model/enums.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'widgets/sync_progress_dialog.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});

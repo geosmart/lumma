@@ -10,6 +10,7 @@ import 'dart:convert';
 import '../generated/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/sync_progress_dialog.dart';
+import 'package:path/path.dart' as path;
 
 class SyncService {
   static Future<bool> isSyncConfigured() async {
@@ -86,7 +87,7 @@ class SyncService {
       }).toList();
       localDirsList.sort((a, b) => a.split('/').length.compareTo(b.split('/').length));
       for (final relativePath in localDirsList) {
-        final remotePath = (syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : syncConfig.webdavRemoteDir + '/') + relativePath.replaceFirst('/', '');
+        final remotePath = (syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : '${syncConfig.webdavRemoteDir}/') + relativePath.replaceFirst('/', '');
         final decodedRemotePath = Uri.encodeFull(remotePath);
         await WebdavUtil.createDirectory(
           webdavUrl: syncConfig.webdavUrl,
@@ -123,17 +124,21 @@ class SyncService {
 
       // 增量下载 WebDAV 内容到本地
       print('开始从 WebDAV 增量下载到本地目录');
-      final downloadSuccess = await WebdavUtil.downloadDirectoryIncremental(
+      // 下载远程 data/diary 目录到本地 workDir/data/diary
+      final localDiaryDir = path.join(workDir ?? '', 'data/diary');
+      // remoteDir 强制拼接
+      final remoteDiaryDir = syncConfig.webdavRemoteDir.endsWith('/')
+          ? syncConfig.webdavRemoteDir + 'data/diary'
+          : syncConfig.webdavRemoteDir + '/data/diary';
+      final downloadSuccess = await WebdavUtil.downloadDirectory(
         webdavUrl: syncConfig.webdavUrl,
         username: syncConfig.webdavUsername,
         password: syncConfig.webdavPassword,
-        remoteDir: syncConfig.webdavRemoteDir.isEmpty ? '/' : syncConfig.webdavRemoteDir,
-        localDir: workDir ?? '', // 保证类型安全，workDir一定为String
+        remoteDir: remoteDiaryDir,
+        localDir: localDiaryDir,
         onProgress: (current, total, filePath) {
-          // 只统计文件进度，忽略所有文件夹日志
-          if (onProgress != null && !filePath.startsWith('[目录]')) {
-            // total 应始终为 remoteTotalFiles
-            onProgress(current, remoteTotalFiles, filePath);
+          if (onProgress != null) {
+            onProgress(current, total, filePath);
           }
         },
       );
