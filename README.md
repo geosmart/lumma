@@ -1,18 +1,19 @@
-<div align="center">
+<p align="center">
   <img src="assets/icon/icon.svg" width="120" height="120" alt="Lumma Logo">
+</p>
 
-  # Lumma
+<h1 align="center">Lumma</h1>
 
-  **An AI-native diary app for your inner reflections**
-
-</div>
+<p align="center">An AI-native diary app for your inner reflections</p>
 
 <div align="center">
   <strong>Journal freely. Reflect deeply. Powered by AI.</strong>
 </div>
 
+<br>
 
-> As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins. That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
+> As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins.
+> That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
 
 ## Screenshots
 <div align="center">
@@ -56,4 +57,5 @@
 
 ## 🛠 How It Works
 
-Use voice input (e.g. via WeChat keyboard) to capture your thoughts. Lumma uses AI to structure the content into clean Markdown files, ready to sync with your Obsidian vault.
+Use voice input (e.g. via WeChat keyboard) to capture your thoughts.
+Lumma uses AI to structure the content into clean Markdown files, ready to sync with your Obsidian vault.
