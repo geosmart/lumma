@@ -161,7 +161,7 @@ class _MainTabPageState extends State<MainTabPage> {
                           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
                         },
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),

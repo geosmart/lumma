@@ -30,7 +30,7 @@ class DiaryChatService {
     String answer,
   ) async {
     try {
-      final prompt = PromptConstants.getExtractCategoryAndTitlePrompt()
+      final prompt = (await PromptConstants.getExtractCategoryAndTitlePrompt())
           .replaceAll(r'{{question}}', question)
           .replaceAll(r'{{answer}}', answer);
       final messages = [

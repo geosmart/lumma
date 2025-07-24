@@ -1,3 +1,4 @@
+import '../config/config_service.dart';
 import '../config/language_service.dart';
 
 /// 所有默认提示词内容常量
@@ -20,11 +21,14 @@ class PromptConstants {
   }
 
   /// 根据当前语言获取分类和标题提取提示词
-  static String getExtractCategoryAndTitlePrompt() {
+  static Future<String> getExtractCategoryAndTitlePrompt() async {
     final languageService = LanguageService.instance;
     final currentLanguage = languageService.currentLocale.languageCode;
-
-    return currentLanguage == 'zh' ? extractCategoryAndTitlePromptChinese : extractCategoryAndTitlePrompt;
+    if (currentLanguage == 'zh') {
+      return await getExtractCategoryAndTitlePromptChineseDynamic();
+    } else {
+      return extractCategoryAndTitlePrompt;
+    }
   }
 
   /// 根据当前语言获取系统聊天提示词列表
@@ -144,8 +148,12 @@ User question: {{question}}
 AI answer: {{answer}}
 ''';
 
-  static const String extractCategoryAndTitlePromptChinese = '''请从以下对话内容中，提取"分类"和"标题"：
-- "分类"需从下列分类中选择最合适的一个：想法、观察、工作、生活、育儿、学习、健康、情感。
+  /// 动态生成中文分类和标题提取提示词，分类从AppConfig配置读取
+  static Future<String> getExtractCategoryAndTitlePromptChineseDynamic() async {
+    final config = await AppConfigService.load();
+    final categories = config.getCategoryList().join('、');
+    return '''请从以下对话内容中，提取"分类"和"标题"：
+- "分类"需从下列分类中选择最合适的一个：$categories。
 - "标题"需提炼日记的内容，不超过10个字，不要过于抽象，如果不好抽象就使用关键词表示。
 - 只返回JSON格式，如：{"分类": "xxx", "标题": "xxx"}
 - 不要输出其他内容。
@@ -153,6 +161,18 @@ AI answer: {{answer}}
 用户问题：{{question}}
 AI回答：{{answer}}
 ''';
+  }
+
+  /// 根据当前语言异步获取分类和标题提取提示词（支持动态分类）
+  static Future<String> getExtractCategoryAndTitlePromptDynamic() async {
+    final languageService = LanguageService.instance;
+    final currentLanguage = languageService.currentLocale.languageCode;
+    if (currentLanguage == 'zh') {
+      return await getExtractCategoryAndTitlePromptChineseDynamic();
+    } else {
+      return extractCategoryAndTitlePrompt;
+    }
+  }
 
   // Default English system chat prompts (5 non-deletable system prompts)
   static const List<Map<String, String>> systemChatPrompts = [

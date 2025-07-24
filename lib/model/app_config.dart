@@ -11,6 +11,11 @@ class AppConfig {
   List<PromptConfig> prompt;
   SyncConfig sync;
   List<String> qaQuestions;
+  List<String> categoryList;
+
+  static const List<String> defaultCategoryList = [
+    '想法', '观察', '工作', '生活', '育儿', '学习', '健康', '情感'
+  ];
 
   AppConfig({
     this.diaryMode = DiaryMode.qa,
@@ -20,9 +25,11 @@ class AppConfig {
     this.language = LanguageType.zh,
     SyncConfig? sync,
     List<String>? qaQuestions,
+    List<String>? categoryList,
   }) : prompt = prompt ?? const [],
        sync = sync ?? SyncConfig.defaultConfig(),
-       qaQuestions = qaQuestions ?? const [];
+       qaQuestions = qaQuestions ?? const [],
+       categoryList = categoryList ?? const [];
 
   /// 创建默认配置
   factory AppConfig.defaultConfig() {
@@ -43,7 +50,12 @@ class AppConfig {
       prompt: defaultPrompts,
       sync: defaultSync,
       qaQuestions: const [],
+      categoryList: const [],
     );
+  }
+
+  List<String> getCategoryList() {
+    return categoryList.isNotEmpty ? categoryList : List<String>.from(defaultCategoryList);
   }
 
   factory AppConfig.fromMap(Map map) => AppConfig(
@@ -54,6 +66,7 @@ class AppConfig {
     language: languageTypeFromString(map['language'] ?? 'zh'),
     sync: map['sync'] != null ? SyncConfig.fromMap(map['sync']) : SyncConfig.defaultConfig(),
     qaQuestions: (map['qa_questions'] as List? ?? []).map((e) => e.toString()).toList(),
+    categoryList: (map['category_list'] as List? ?? []).map((e) => e.toString()).toList(),
   );
   Map<String, dynamic> toMap() => {
     'diary_mode': diaryModeToString(diaryMode),
@@ -63,5 +76,6 @@ class AppConfig {
     'language': languageTypeToString(language),
     'sync': sync.toMap(),
     'qa_questions': qaQuestions,
+    'category_list': categoryList,
   };
 }

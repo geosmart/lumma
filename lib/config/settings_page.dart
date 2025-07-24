@@ -9,6 +9,7 @@ import '../diary/qa_question_config_page.dart';
 import 'sync_config_page.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
+import '../config/category_config_page.dart';
 
 class SettingsPage extends StatelessWidget {
   final int initialTabIndex;
@@ -18,7 +19,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 6,
+      length: 7,
       initialIndex: initialTabIndex,
       child: Scaffold(
         appBar: AppBar(
@@ -35,6 +36,7 @@ class SettingsPage extends StatelessWidget {
               Tab(icon: Icon(Icons.question_answer, size: 20)),
               Tab(icon: Icon(Icons.sync, size: 20)),
               Tab(icon: Icon(Icons.palette, size: 20)),
+              Tab(icon: Icon(Icons.category, size: 20)), // 新增“总结分类”tab
             ],
           ),
         ),
@@ -43,6 +45,7 @@ class SettingsPage extends StatelessWidget {
             DiaryModeConfigPage(),
             PromptConfigPage(),
             LLMConfigPage(),
+            CategoryConfigPage(),
             QaQuestionConfigPage(),
             SyncConfigPage(),
             _AppearanceSettingsPage(),
