@@ -520,10 +520,226 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                         : _buildContentWithTags(h['a']!),
                   ),
                 ),
+              // 新增：编辑/删除按钮
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: Text(AppLocalizations.of(context)!.edit),
+                    onPressed: () async {
+                      final entry = history[i];
+                      final result = await showDialog<Map<String, String>>(
+                        context: context,
+                        builder: (context) => _EditDiaryEntryDialog(
+                          initialEntry: entry,
+                          allCategories: const [
+                            '工作', '生活', '学习', '健康', '日总结', '其他'
+                          ],
+                        ),
+                      );
+                      if (result != null) {
+                        setState(() {
+                          history[i] = result;
+                          _content = DiaryContentService.rebuildContentFromHistory(context, history);
+                        });
+                        await DiaryContentService.saveDiaryContent(_content!, widget.fileName);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    icon: const Icon(Icons.delete_outline, size: 16),
+                    label: Text(AppLocalizations.of(context)!.delete),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(AppLocalizations.of(context)!.delete),
+                          content: Text(AppLocalizations.of(context)!.deleteConfirmMessage),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text(AppLocalizations.of(context)!.cancel),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: Text(AppLocalizations.of(context)!.delete),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        setState(() {
+                          history.removeAt(i);
+                          _content = DiaryContentService.rebuildContentFromHistory(context, history);
+                        });
+                        await DiaryContentService.saveDiaryContent(_content!, widget.fileName);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppLocalizations.of(context)!.deleteSuccess)),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+/// 编辑日记条目的对话框
+class _EditDiaryEntryDialog extends StatefulWidget {
+  final Map<String, String> initialEntry;
+  final List<String> allCategories;
+
+  const _EditDiaryEntryDialog({
+    required this.initialEntry,
+    required this.allCategories,
+  });
+
+  @override
+  State<_EditDiaryEntryDialog> createState() => _EditDiaryEntryDialogState();
+}
+
+class _EditDiaryEntryDialogState extends State<_EditDiaryEntryDialog> {
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
+  late String _category;
+  late TimeOfDay _time;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.initialEntry['title'] ?? '');
+    _contentController = TextEditingController(text: widget.initialEntry['q'] ?? '');
+    _category = widget.initialEntry['category'] ?? widget.allCategories.first;
+    final timeStr = widget.initialEntry['time'] ?? '';
+    final timeParts = timeStr.split(':');
+    if (timeParts.length == 2) {
+      _time = TimeOfDay(hour: int.tryParse(timeParts[0]) ?? 8, minute: int.tryParse(timeParts[1]) ?? 0);
+    } else {
+      _time = const TimeOfDay(hour: 8, minute: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(context: context, initialTime: _time);
+    if (picked != null) {
+      setState(() => _time = picked);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.edit,
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.editDiary, // 用editDiary代替title
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _category,
+                    items: widget.allCategories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _category = v ?? widget.allCategories.first),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.category,
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: InkWell(
+                    onTap: _pickTime,
+                    borderRadius: BorderRadius.circular(8),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.time,
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time, size: 18, color: theme.colorScheme.primary),
+                          const SizedBox(width: 6),
+                          Text(_time.format(context)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: _contentController,
+              maxLines: 5,
+              minLines: 3,
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.editDiary, // 用editDiary代替content
+                border: const OutlineInputBorder(),
+                alignLabelWithHint: true,
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.save),
+                label: Text(AppLocalizations.of(context)!.save),
+                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                onPressed: () {
+                  Navigator.of(context).pop({
+                    'title': _titleController.text.trim(),
+                    'time': _time.format(context),
+                    'category': _category,
+                    'q': _contentController.text.trim(),
+                    'a': widget.initialEntry['a'] ?? '',
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

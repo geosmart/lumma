@@ -275,4 +275,10 @@ class DiaryContentService {
     final tagRegex = RegExp(r'(#[^\s#]+)');
     return tagRegex.allMatches(content);
   }
+
+  /// Rebuild markdown content from chat history (List<Map<String, String>>)
+  /// 实际调用DiaryDao.historyToMarkdown，便于统一service层调用
+  static String rebuildContentFromHistory(BuildContext context, List<Map<String, String>> history) {
+    return DiaryDao.historyToMarkdown(context, history);
+  }
 }

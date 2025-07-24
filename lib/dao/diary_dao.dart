@@ -249,6 +249,13 @@ class DiaryDao {
     return buffer.toString().trim();
   }
 
+  /// Convert List<Map<String, String>> (history) back to markdown format
+  /// 便于UI层直接用分块history重组md内容
+  static String historyToMarkdown(BuildContext context, List<Map<String, String>> history) {
+    final entries = history.map((e) => DiaryEntry.fromMap(e)).toList();
+    return diaryContentToMarkdown(context, entries);
+  }
+
   // === 日记文件操作方法 ===
 
   /// Get diary directory path
