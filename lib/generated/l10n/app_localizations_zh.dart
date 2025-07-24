@@ -704,4 +704,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String llmServiceError(int statusCode) {
     return '大模型服务错误 ($statusCode)';
   }
+
+  @override
+  String get title => '标题';
 }

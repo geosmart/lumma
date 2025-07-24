@@ -702,5 +702,9 @@
         "description": "HTTP status code"
       }
     }
+  },
+  "title": "Title",
+  "@title": {
+    "description": "Label for diary entry title input"
   }
 }

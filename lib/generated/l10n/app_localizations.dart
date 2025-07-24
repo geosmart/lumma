@@ -1435,6 +1435,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'LLM Service Error ({statusCode})'**
   String llmServiceError(int statusCode);
+
+  /// Label for diary entry title input
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
 }
 
 class _AppLocalizationsDelegate

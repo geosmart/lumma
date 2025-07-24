@@ -33,10 +33,10 @@ class SettingsPage extends StatelessWidget {
               Tab(icon: Icon(Icons.auto_stories, size: 20)),
               Tab(icon: Icon(Icons.person, size: 20)),
               Tab(icon: Icon(Icons.smart_toy, size: 20)),
+              Tab(icon: Icon(Icons.category, size: 20)),
               Tab(icon: Icon(Icons.question_answer, size: 20)),
               Tab(icon: Icon(Icons.sync, size: 20)),
               Tab(icon: Icon(Icons.palette, size: 20)),
-              Tab(icon: Icon(Icons.category, size: 20)), // 新增“总结分类”tab
             ],
           ),
         ),

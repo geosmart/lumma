@@ -5,6 +5,28 @@ import '../generated/l10n/app_localizations.dart';
 
 /// Diary content service class, handles business logic for diary content
 class DiaryContentService {
+  // ====== 随机互斥颜色缓存实现 ======
+  static final Map<String, Map<String, Color>> _categoryColorCache = {};
+  static final List<List<Color>> _colorPalette = [
+    [Colors.blue[50]!, Colors.blue[200]!, Colors.blue[700]!],
+    [Colors.green[50]!, Colors.green[200]!, Colors.green[700]!],
+    [Colors.red[50]!, Colors.red[200]!, Colors.red[700]!],
+    [Colors.purple[50]!, Colors.purple[200]!, Colors.purple[700]!],
+    [Colors.orange[50]!, Colors.orange[200]!, Colors.orange[700]!],
+    [Colors.indigo[50]!, Colors.indigo[200]!, Colors.indigo[700]!],
+    [Colors.brown[50]!, Colors.brown[200]!, Colors.brown[700]!],
+    [Colors.deepPurple[50]!, Colors.deepPurple[200]!, Colors.deepPurple[700]!],
+    [Colors.pink[50]!, Colors.pink[200]!, Colors.pink[700]!],
+    [Colors.teal[50]!, Colors.teal[200]!, Colors.teal[700]!],
+    [Colors.cyan[50]!, Colors.cyan[200]!, Colors.cyan[700]!],
+    [Colors.amber[50]!, Colors.amber[200]!, Colors.amber[700]!],
+    [Colors.lime[50]!, Colors.lime[200]!, Colors.lime[700]!],
+    [Colors.lightBlue[50]!, Colors.lightBlue[200]!, Colors.lightBlue[700]!],
+    [Colors.deepOrange[50]!, Colors.deepOrange[200]!, Colors.deepOrange[700]!],
+  ];
+
+  static int _colorIndex = 0;
+
   /// Load diary content
   static Future<Map<String, dynamic>> loadDiaryContent(String fileName) async {
     final diaryDir = await DiaryDao.getDiaryDir();
@@ -130,81 +152,29 @@ class DiaryContentService {
     return !isSummaryContent(q) && !isSummaryContent(a);
   }
 
+
   /// Return corresponding color configuration based on tag type
   static Map<String, Color> getCategoryColors(String category) {
-    final lowerCategory = category.toLowerCase();
-
-    // Observation tags - blue
-    if (lowerCategory.contains('observe') ||
-        lowerCategory.contains('观察') ||
-        lowerCategory.contains('环境') ||
-        lowerCategory.contains('他人')) {
-      return {'background': Colors.blue[50]!, 'border': Colors.blue[200]!, 'text': Colors.blue[700]!};
+    if (category.trim().isEmpty) {
+      // fallback for empty category
+      return {'background': Colors.grey[100]!, 'border': Colors.grey[300]!, 'text': Colors.grey[700]!};
     }
-
-    // Positive/good tags - green
-    if (lowerCategory.contains('good') ||
-        lowerCategory.contains('成就') ||
-        lowerCategory.contains('喜悦') ||
-        lowerCategory.contains('感恩')) {
-      return {'background': Colors.green[50]!, 'border': Colors.green[200]!, 'text': Colors.green[700]!};
+    final key = category.trim().toLowerCase();
+    if (_categoryColorCache.containsKey(key)) {
+      return _categoryColorCache[key]!;
     }
-
-    // Difficult/challenge tags - red
-    if (lowerCategory.contains('difficult') ||
-        lowerCategory.contains('挑战') ||
-        lowerCategory.contains('情绪') ||
-        lowerCategory.contains('身体')) {
-      return {'background': Colors.red[50]!, 'border': Colors.red[200]!, 'text': Colors.red[700]!};
-    }
-
-    // Improvement/different tags - purple
-    if (lowerCategory.contains('different') || lowerCategory.contains('觉察') || lowerCategory.contains('改进')) {
-      return {'background': Colors.purple[50]!, 'border': Colors.purple[200]!, 'text': Colors.purple[700]!};
-    }
-
-    // Daily summary - orange (special handling)
-    if (lowerCategory.contains('日总结') || lowerCategory.contains('总结') || lowerCategory == '## 日总结') {
-      return {'background': Colors.orange[50]!, 'border': Colors.orange[200]!, 'text': Colors.orange[700]!};
-    }
-
-    // Work related - indigo
-    if (lowerCategory.contains('工作') ||
-        lowerCategory.contains('职场') ||
-        lowerCategory.contains('meeting') ||
-        lowerCategory.contains('项目')) {
-      return {'background': Colors.indigo[50]!, 'border': Colors.indigo[200]!, 'text': Colors.indigo[700]!};
-    }
-
-    // Life related - brown
-    if (lowerCategory.contains('生活') ||
-        lowerCategory.contains('日常') ||
-        lowerCategory.contains('家庭') ||
-        lowerCategory.contains('休闲')) {
-      return {'background': Colors.brown[50]!, 'border': Colors.brown[200]!, 'text': Colors.brown[700]!};
-    }
-
-    // Study related - deep purple
-    if (lowerCategory.contains('学习') ||
-        lowerCategory.contains('读书') ||
-        lowerCategory.contains('知识') ||
-        lowerCategory.contains('技能')) {
-      return {'background': Colors.deepPurple[50]!, 'border': Colors.deepPurple[200]!, 'text': Colors.deepPurple[700]!};
-    }
-
-    // Health related - pink
-    if (lowerCategory.contains('健康') ||
-        lowerCategory.contains('运动') ||
-        lowerCategory.contains('饮食') ||
-        lowerCategory.contains('锻炼')) {
-      return {'background': Colors.pink[50]!, 'border': Colors.pink[200]!, 'text': Colors.pink[700]!};
-    }
-
-    // Other tags - default teal
-    return {'background': Colors.teal[50]!, 'border': Colors.teal[200]!, 'text': Colors.teal[700]!};
+    // 互斥分配颜色
+    final colorSet = _colorPalette[_colorIndex % _colorPalette.length];
+    _colorIndex++;
+    final colorMap = {
+      'background': colorSet[0],
+      'border': colorSet[1],
+      'text': colorSet[2],
+    };
+    _categoryColorCache[key] = colorMap;
+    return colorMap;
   }
-
-  /// Parse summary content and return grouped by categories
+    /// Parse summary content and return grouped by categories
   static Map<String, List<String>> parseSummaryContent(String content) {
     // Group summary content by 4 categories
     final Map<String, List<String>> groupedContent = {'observe': [], 'good': [], 'difficult': [], 'different': []};
@@ -225,7 +195,6 @@ class DiaryContentService {
         groupedContent['different']!.add(trimmedLine);
       }
     }
-
     return groupedContent;
   }
 

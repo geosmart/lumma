@@ -726,4 +726,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String llmServiceError(int statusCode) {
     return 'LLM Service Error ($statusCode)';
   }
+
+  @override
+  String get title => 'Title';
 }

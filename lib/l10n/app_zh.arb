@@ -222,5 +222,9 @@
   "llmRateLimitError": "大模型限流错误",
   "llmRateLimitErrorMessage": "大模型服务因请求过于频繁而暂时不可用 (429)。请稍等片刻后重试，或检查您的API使用限制。",
   "goToLlmConfig": "前往大模型配置",
-  "llmServiceError": "大模型服务错误 ({statusCode})"
+  "llmServiceError": "大模型服务错误 ({statusCode})",
+  "title": "标题",
+  "@title": {
+    "description": "日记条目标题输入框的标签"
+  }
 }

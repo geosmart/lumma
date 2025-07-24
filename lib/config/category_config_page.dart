@@ -38,6 +38,16 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
     });
   }
 
+  void _removeCategory(int index) {
+    if (_controllers.length <= 3) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('至少保留三个分类')));
+      return;
+    }
+    setState(() {
+      _controllers.removeAt(index);
+    });
+  }
+
   Future<void> _saveCategories() async {
     setState(() {
       _isLoading = true;
@@ -168,6 +178,12 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                                         ),
                                       ),
                                     ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                    tooltip: '删除',
+                                    onPressed: () => _removeCategory(index),
                                   ),
                                 ],
                               ),
