@@ -548,7 +548,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get saveSuccess => '保存成功';
 
   @override
-  String get saveFailed => '保存失败';
+  String saveFailed(String error) {
+    return '保存失败: $error';
+  }
 
   @override
   String get noContent => '无内容';
@@ -707,4 +709,32 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get title => '标题';
+
+  @override
+  String get summaryCategory => '总结分类';
+
+  @override
+  String get keepAtLeastThreeCategories => '至少保留三个分类';
+
+  @override
+  String get categoryCannotBeEmpty => '分类不能为空';
+
+  @override
+  String get categorySaved => '分类已保存';
+
+  @override
+  String error(String error) {
+    return '错误: $error';
+  }
+
+  @override
+  String get noCategory => '暂无分类';
+
+  @override
+  String categoryLabel(int index) {
+    return '分类$index';
+  }
+
+  @override
+  String get addCategory => '新增分类';
 }

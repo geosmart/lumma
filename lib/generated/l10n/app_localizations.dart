@@ -1136,11 +1136,11 @@ abstract class AppLocalizations {
   /// **'Save successful'**
   String get saveSuccess;
 
-  /// Error message when saving fails
+  /// Save failed message with error info
   ///
   /// In en, this message translates to:
-  /// **'Save failed'**
-  String get saveFailed;
+  /// **'Save failed: {error}'**
+  String saveFailed(String error);
 
   /// Message when there is no content
   ///
@@ -1441,6 +1441,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Title'**
   String get title;
+
+  /// No description provided for @summaryCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary Category'**
+  String get summaryCategory;
+
+  /// No description provided for @keepAtLeastThreeCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep at least three categories'**
+  String get keepAtLeastThreeCategories;
+
+  /// No description provided for @categoryCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Category cannot be empty'**
+  String get categoryCannotBeEmpty;
+
+  /// No description provided for @categorySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Category saved'**
+  String get categorySaved;
+
+  /// Error message with error info
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String error(String error);
+
+  /// No description provided for @noCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get noCategory;
+
+  /// Category label with index
+  ///
+  /// In en, this message translates to:
+  /// **'Category {index}'**
+  String categoryLabel(int index);
+
+  /// No description provided for @addCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Category'**
+  String get addCategory;
 }
 
 class _AppLocalizationsDelegate

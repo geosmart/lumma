@@ -23,7 +23,7 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
   late TextEditingController _summaryController;
   late String _category;
   late TimeOfDay _time;
-  late List<String> _categories;
+  List<String> _categories = [];
 
   @override
   void initState() {

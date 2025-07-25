@@ -706,5 +706,32 @@
   "title": "Title",
   "@title": {
     "description": "Label for diary entry title input"
-  }
+  },
+  "summaryCategory": "Summary Category",
+  "keepAtLeastThreeCategories": "Keep at least three categories",
+  "categoryCannotBeEmpty": "Category cannot be empty",
+  "categorySaved": "Category saved",
+  "saveFailed": "Save failed: {error}",
+  "@saveFailed": {
+    "description": "Save failed message with error info",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "error": "Error: {error}",
+  "@error": {
+    "description": "Error message with error info",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noCategory": "No category",
+  "categoryLabel": "Category {index}",
+  "@categoryLabel": {
+    "description": "Category label with index",
+    "placeholders": {
+      "index": { "type": "int" }
+    }
+  },
+  "addCategory": "Add Category"
 }

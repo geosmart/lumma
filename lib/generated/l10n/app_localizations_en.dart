@@ -567,7 +567,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveSuccess => 'Save successful';
 
   @override
-  String get saveFailed => 'Save failed';
+  String saveFailed(String error) {
+    return 'Save failed: $error';
+  }
 
   @override
   String get noContent => 'No content';
@@ -729,4 +731,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get title => 'Title';
+
+  @override
+  String get summaryCategory => 'Summary Category';
+
+  @override
+  String get keepAtLeastThreeCategories => 'Keep at least three categories';
+
+  @override
+  String get categoryCannotBeEmpty => 'Category cannot be empty';
+
+  @override
+  String get categorySaved => 'Category saved';
+
+  @override
+  String error(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get noCategory => 'No category';
+
+  @override
+  String categoryLabel(int index) {
+    return 'Category $index';
+  }
+
+  @override
+  String get addCategory => 'Add Category';
 }

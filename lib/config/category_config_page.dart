@@ -39,8 +39,9 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
   }
 
   void _removeCategory(int index) {
+    final l10n = AppLocalizations.of(context)!;
     if (_controllers.length <= 3) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('至少保留三个分类')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.keepAtLeastThreeCategories)));
       return;
     }
     setState(() {
@@ -49,20 +50,21 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
   }
 
   Future<void> _saveCategories() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
     });
     try {
       final categories = _controllers.map((c) => c.text).where((e) => e.trim().isNotEmpty).toList();
       if (categories.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('分类不能为空')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.categoryCannotBeEmpty)));
         setState(() { _isLoading = false; });
         return;
       }
       await AppConfigService.update((c) => c.categoryList = List<String>.from(categories));
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('分类已保存')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.categorySaved)));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.saveFailed(e.toString()))));
     } finally {
       setState(() {
         _isLoading = false;
@@ -91,7 +93,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                 Icon(Icons.category, color: context.primaryTextColor, size: 24),
                 const SizedBox(width: 12),
                 Text(
-                  '总结分类',
+                  l10n.summaryCategory,
                   style: TextStyle(
                     fontSize: SettingsUiConfig.titleFontSize,
                     fontWeight: SettingsUiConfig.titleFontWeight,
@@ -115,7 +117,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                 if (snapshot.hasError) {
                   return Center(
                     child: Text(
-                      'Error: \\${snapshot.error}',
+                      l10n.error(snapshot.error?.toString() ?? ''),
                       style: TextStyle(color: context.primaryTextColor, fontSize: SettingsUiConfig.titleFontSize),
                     ),
                   );
@@ -129,7 +131,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                     : _controllers.isEmpty
                     ? Center(
                         child: Text(
-                          '暂无分类',
+                          l10n.noCategory,
                           style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.titleFontSize),
                         ),
                       )
@@ -156,7 +158,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                                         fontSize: SettingsUiConfig.titleFontSize,
                                       ),
                                       decoration: InputDecoration(
-                                        labelText: '分类${index + 1}',
+                                        labelText: l10n.categoryLabel(index + 1),
                                         labelStyle: TextStyle(
                                           color: context.secondaryTextColor,
                                           fontSize: SettingsUiConfig.subtitleFontSize,
@@ -182,7 +184,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                                   const SizedBox(width: 8),
                                   IconButton(
                                     icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                    tooltip: '删除',
+                                    tooltip: l10n.delete,
                                     onPressed: () => _removeCategory(index),
                                   ),
                                 ],
@@ -201,7 +203,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add),
-                    label: const Text('新增分类'),
+                    label: Text(l10n.addCategory),
                     onPressed: _addCategory,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -216,7 +218,7 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.save),
-                    label: const Text('保存'),
+                    label: Text(l10n.save),
                     onPressed: _isLoading ? null : _saveCategories,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),

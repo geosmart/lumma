@@ -224,7 +224,31 @@
   "goToLlmConfig": "前往大模型配置",
   "llmServiceError": "大模型服务错误 ({statusCode})",
   "title": "标题",
-  "@title": {
-    "description": "日记条目标题输入框的标签"
-  }
+  "summaryCategory": "总结分类",
+  "keepAtLeastThreeCategories": "至少保留三个分类",
+  "categoryCannotBeEmpty": "分类不能为空",
+  "categorySaved": "分类已保存",
+  "saveFailed": "保存失败: {error}",
+  "@saveFailed": {
+    "description": "保存失败提示，带错误信息",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "error": "错误: {error}",
+  "@error": {
+    "description": "错误提示，带错误信息",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noCategory": "暂无分类",
+  "categoryLabel": "分类{index}",
+  "@categoryLabel": {
+    "description": "分类标签，带序号",
+    "placeholders": {
+      "index": { "type": "int" }
+    }
+  },
+  "addCategory": "新增分类"
 }

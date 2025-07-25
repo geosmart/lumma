@@ -457,19 +457,22 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                                     child: EnhancedMarkdown(data: h['q'] ?? ''),
                                                   ),
                                                   Positioned(
-                                                    right: 8,
-                                                    bottom: 16,
-                                                    child: IconButton(
-                                                      icon: const Icon(Icons.copy, size: 16),
-                                                      tooltip: '复制',
-                                                      onPressed: () {
-                                                        Clipboard.setData(ClipboardData(text: h['q'] ?? ''));
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          const SnackBar(content: Text('已复制'), duration: Duration(milliseconds: 800)),
-                                                        );
-                                                      },
-                                                      padding: EdgeInsets.zero,
-                                                      constraints: const BoxConstraints(),
+                                                    right: 0, // 修复在Android端气泡和复制按钮重叠问题
+                                                    bottom: 8, // 调整为更贴近气泡底部
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      child: IconButton(
+                                                        icon: const Icon(Icons.copy, size: 16),
+                                                        tooltip: '复制',
+                                                        onPressed: () {
+                                                          Clipboard.setData(ClipboardData(text: h['q'] ?? ''));
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(content: Text('已复制'), duration: Duration(milliseconds: 800)),
+                                                          );
+                                                        },
+                                                        padding: EdgeInsets.zero,
+                                                        constraints: const BoxConstraints(),
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
@@ -523,7 +526,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                                                     : Colors.blue[100]!,
                                                               ),
                                                             ),
-                                                            child: EnhancedMarkdown(data: h['a'] ?? ''),
+                                                            child: Text(h['a'] ?? '', style: TextStyle(fontSize: 14, color: context.primaryTextColor)),
                                                           ),
                                                         ],
                                                       ),
@@ -686,10 +689,11 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                                 : Colors.grey[200]!, // Light mode light grey border
                                           ),
                                         ),
-                                        child: EnhancedMarkdown(
-                                          data: _askStreaming.isEmpty
+                                        child: Text(
+                                          _askStreaming.isEmpty
                                               ? AppLocalizations.of(context)!.aiThinking
                                               : _askStreaming,
+                                          style: TextStyle(fontSize: 14, color: context.primaryTextColor),
                                         ),
                                       ),
                                     ],
