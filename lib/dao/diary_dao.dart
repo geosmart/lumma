@@ -195,6 +195,19 @@ class DiaryDao {
     return parseDiaryMarkdownToChatHistory(context, content);
   }
 
+
+  /// 提取所有非总结的日记条目，格式化为：时间，日记内容\n时间，日记内容\n...
+ static String extractPlainDiaryEntries(BuildContext context, String content) {
+    final entries = DiaryDao.parseDiaryContent(context, content);
+    // 只保留非总结（category/title都不是日总结）的条目
+    final filtered = entries.where((e) => (e.category?.trim() != '日总结' && e.title.trim() != '日总结'));
+    // 只保留有时间和内容的条目
+    final lines = filtered.where((e) => (e.time?.isNotEmpty == true && e.q?.isNotEmpty == true))
+                          .map((e) => '${e.time}, ${e.q!.replaceAll('\n', ' ').replaceAll('#', '')}')
+                          .toList();
+    return lines.join('\n');
+  }
+
   /// Remove daily summary section from diary content
   /// This is useful when we want to process diary content without existing summaries
   /// Uses parseDiaryContent to parse entries and filters out summary entries by category

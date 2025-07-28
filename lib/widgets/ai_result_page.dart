@@ -49,7 +49,7 @@ class _AiResultPageState extends State<AiResultPage> {
   Future<void> _startSummaryStream(BuildContext context) async {
     final content = await widget.getContent();
     if (content == null) return;
-    final processedContent = DiaryDao.removeDailySummarySection(context, content);
+    final processedContent = DiaryDao.extractPlainDiaryEntries(context, content);
     setState(() {
       _isProcessing = true;
       _controller.text = '';
@@ -148,61 +148,113 @@ class _AiResultPageState extends State<AiResultPage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_isProcessing)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                padding: const EdgeInsets.only(bottom: 12.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.2)),
+                    const SizedBox(width: 10),
                     Text(
                       widget.processingText ?? AppLocalizations.of(context)!.aiGenerating,
-                      style: TextStyle(color: context.secondaryTextColor),
+                      style: TextStyle(color: context.secondaryTextColor, fontSize: 15, letterSpacing: 0.2),
                     ),
                   ],
                 ),
               ),
             Expanded(
-              child: TextField(
-                controller: _controller,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                style: TextStyle(color: context.primaryTextColor),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderSide: BorderSide(color: context.borderColor)),
-                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.borderColor)),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Theme.of(context).primaryColor)),
-                  hintText: widget.hintText ?? AppLocalizations.of(context)!.aiContentPlaceholder,
-                  hintStyle: TextStyle(color: context.secondaryTextColor),
-                  fillColor: context.cardBackgroundColor,
-                  filled: true,
-                  contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                  isDense: true,
-                  alignLabelWithHint: true,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.cardBackgroundColor, // 修正：不加透明度，保证主题一致
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                strutStyle: const StrutStyle(height: 1.0, forceStrutHeight: true),
+                child: TextField(
+                  controller: _controller,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: TextStyle(
+                    color: context.primaryTextColor,
+                    fontSize: 17,
+                    height: 1.7, // 行高
+                    letterSpacing: 0.4, // 字间距
+                  ),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: context.borderColor, width: 1.1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: context.borderColor, width: 1.1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.3),
+                    ),
+                    hintText: widget.hintText ?? AppLocalizations.of(context)!.aiContentPlaceholder,
+                    hintStyle: TextStyle(color: context.secondaryTextColor, fontSize: 16, letterSpacing: 0.3),
+                    fillColor: context.cardBackgroundColor, // 修正：不加透明度
+                    filled: true,
+                    contentPadding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                    isDense: true,
+                    alignLabelWithHint: true,
+                  ),
+                  strutStyle: const StrutStyle(height: 1.7, forceStrutHeight: true),
+                  cursorColor: Theme.of(context).primaryColor,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             // Action button area, placed at the bottom
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.refresh),
-                  label: Text(AppLocalizations.of(context)!.regenerate),
-                  onPressed: _isProcessing ? null : () => _handleAction('regenerate'),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.refresh),
+                    label: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(AppLocalizations.of(context)!.regenerate, style: const TextStyle(fontSize: 16)),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: context.cardBackgroundColor,
+                      foregroundColor: context.primaryTextColor,
+                      elevation: 0.5,
+                      side: BorderSide(color: context.borderColor, width: 1),
+                    ),
+                    onPressed: _isProcessing ? null : () => _handleAction('regenerate'),
+                  ),
                 ),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: Text(AppLocalizations.of(context)!.save),
-                  onPressed: _isProcessing ? null : () => _handleAction('save'),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.save),
+                    label: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      elevation: 1.5,
+                    ),
+                    onPressed: _isProcessing ? null : () => _handleAction('save'),
+                  ),
                 ),
               ],
             ),
