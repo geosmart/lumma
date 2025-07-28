@@ -92,51 +92,92 @@ You are a warm, insightful diary assistant. Your task is to guide me through a s
 * 想对明天的自己说的话
 ''';
 
-  static const String defaultSummaryPrompt =
-      '''Please summarize the diary from the following conversation content according to the template below.
+  static const String defaultSummaryPrompt ='''
+Daily Journal Organization Requirements
+Please organize the conversation content according to the following format, output the list directly without adding any titles:
+Processing Principles
 
-Summary Requirements:
-1. Preserve the original diary content as much as possible, but don't keep the original format; format the output according to the diary template below;
-2. Don't extract or expand, don't add extra content or explanations;
-3. Fix punctuation, grammar errors and typos;
-4. Maintain the original tone and style;
-5. Note that each category should be on one line without line breaks. If there are multiple items in each category, generate multiple lines, for example `#observe #environment` can have multiple lines to describe different observation details;
+Language Optimization: Fix grammar errors, typos, and unclear expressions caused by voice input
+Moderate Streamlining: Remove repetitive expressions and redundant information while preserving core details and specific descriptions
+Maintain Authenticity: Preserve original emotional tone, personal expressions, and genuine feelings
+Detail Balance: Be concise and smooth while retaining enough details to make memories vivid
+Precise Categorization: Add appropriate tag classifications based on content nature
 
-Summary Template:
-* #observe #environment What details caught your attention today? (weather, sounds, light and shadow, smells, spatial layout)
-* #observe #others Who (family, children, colleagues, partners) did what specific things today? What did they say, what facial expressions or actions did they have?
-* #good #achievement What did you accomplish today? What plan did you advance? Did you have even a small breakthrough?
-* #good #joy When did you feel happy, relaxed or find something interesting? With whom, what words, what events, what atmosphere brought this feeling?
-* #good #gratitude What support or kindness did you receive today (response / help / understanding / companionship / beautiful scenery / delicious food / thoughtfulness)? Are you grateful for any person or thing?
-* #difficult #challenge What external challenges did you encounter today? Where did things get interrupted or stuck?
-* #difficult #emotion When did you feel uncomfortable emotions (inferiority / anxiety / anger / loss / irritation / shame / fear / tension)? What happened at that moment?
-* #difficult #body Did your body send any signals (fatigue / soreness / drowsiness / tension / dizziness / palpitations)? Did you feel uncomfortable or abnormal? How did you respond?
-* #different #awareness What reaction patterns did I show again today? For example, was there a moment when you thought "I'm procrastinating again, not listening carefully again, rushing to respond to others again, ignoring my own feelings again..."
-* #different #improvement Create small, actionable optimizations for tomorrow based on today's problems (challenges, emotions, body) (time allocation, emotion management, communication methods, seeking external help)
+Category Template Reference
+
+#observe #habits: Sleep time records (e.g., 23:3007:00); exercise content and duration (e.g., running30 minutes)
+#observe #environment: Environmental details that caught attention (weather changes, special sounds, light effects, scent experiences, spatial layouts, etc.)
+#observe #others: Specific things people (family, children, colleagues, partners) did, said, their expressions or actions
+#good #achievement: Things completed today, plans advanced, small breakthroughs achieved
+#good #joy: Specific things that brought happiness, relaxation, or fun, who you were with, which words/events/atmosphere brought joy
+#good #gratitude: Support or kindness received (responses/help/understanding/companionship/beautiful scenery/good food/thoughtfulness), people or things you're grateful for
+#difficult #challenges: External challenges encountered, where things got interrupted or stuck
+#difficult #emotions: Uncomfortable emotions experienced (insecurity/anxiety/anger/disappointment/irritation/shame/fear/tension), what happened in that moment
+#difficult #physical: Physical signals (fatigue/soreness/drowsiness/tension/dizziness/palpitations), uncomfortable or abnormal feelings, how you responded
+#different #awareness: Discovered reaction patterns, like moments when you thought "Why am I procrastinating again, not listening carefully again, rushing to respond to others again, ignoring my own feelings again"
+#different #improvement: Actionable small optimizations for today's issues (challenges, emotions, physical) such as time allocation, emotional management, communication methods, seeking external help
+
+Special Notes
+
+Key information must be preserved: All names of people, places, projects, technical terms must be kept complete, such as project names, technical terminology, company departments, specific numbers, etc.
+Dream descriptions must be preserved completely: Including dream scenes, characters, plots, your role and feelings in the dream
+Dialogue content should be as complete as possible: Important conversations should preserve key phrases and context, including who said what
+Emotions and physical sensations should be specific: Not just "tired," but "dry eyes," "felt like time passed without doing much"
+Technical details should be specific: Such as specific effects of algorithm improvements, data volumes, time comparisons, etc.
+
+Output Requirements
+
+Output list items directly in format: * #tag1 #tag2 HH:MM specific content
+Time format HH:MM represents 24-hour format (e.g., 22:15)
+Do not add markdown titles or explanatory text
+Each category can have multiple records, fully showing different details
+Better to be detailed than summarized, ensuring future recall can recreate the specific situation at that time
+If a category has no relevant content, do not output it
 ''';
 
-  static const String defaultSummaryPromptChinese = '''请从对话内容中，按下面的模板总结日记。
+  static const String defaultSummaryPromptChinese = '''
+**日记整理要求**
 
-总结要求
-1. 不要提炼和发散，不要添加额外的内容或解释；
-2. 修复标点符号，语法错误和错别字；
-3. 保持原有的语气和风格；
-4. 注意每个分类在一行不要换行，如果每个分类有多个则生成多个，比如`#observe #环境`可以有多行来描述不同的观察细节；
-5. 不要额外添加markdown父标题，按下面的日记模板格式化（列表）输出日记的内容；
+请将对话内容按以下格式整理，直接输出列表，不要添加任何标题：
 
-总结模板
-* #observe #习惯 睡眠时间({{睡觉时间}}-{{起床时间}})
-* #observe #习惯 运动({{运动内容}}-{{运动分钟数}}分)
-* #observe #环境 引起了注意的细节？（天气、声音，光影、味道、空间布局）
-* #observe #他人 今天谁（家人、孩子、同事、伴侣）做了什么具体的事？他们说了哪句话、有什么面部表情或动作？
-* #good #成就 今天做成的事，推进的计划，小的突破
-* #good #喜悦 感到开心、轻松或觉得有趣的事情，和谁一起，是哪句话，哪件事，哪种氛围带来的？
-* #good #感恩 收到的支持或善意（回应 / 帮助 / 理解 / 陪伴 / 美景 / 美食 / 体贴）？是否对什么人或事物心怀感激？
-* #difficult #挑战 今天遇到的外部挑战？事情进行到哪被打断或卡住了？
-* #difficult #情绪 感受到不适的情绪（自卑 / 焦虑 / 愤怒 / 失落 / 烦躁 / 羞愧 / 恐惧 / 紧张）？那一刻发生了什么？
-* #difficult #身体 身体信号（疲惫 / 酸痛 / 困倦 / 紧绷 / 头晕 / 心悸）？是否感到不舒服或异常？你是怎么回应的？
-* #different #觉察 反应模式？比如有没有哪一刻你心里闪过我怎么又拖延了、又没有用心倾听、又急着回应了别人、又忽略了自己的感受……
-* #different #改进 针对今日问题（挑战，情绪，身体）可行的小步优化（时间分配，情绪管理，沟通方式，寻求外援）
+**处理原则**
+
+1. **语言优化**：修复语音输入导致的语法错误、错别字和表达不通顺的地方
+2. **适度精简**：去除重复表达和冗余信息，但保留核心细节和具体描述
+3. **保持真实性**：维持原有的情感色彩、个人化表达和真实感受
+4. **细节平衡**：既要简洁流畅，又要保留足够的细节让回忆有画面感
+5. **精准分类**：根据内容性质添加对应的标签分类
+
+**分类模板参考**
+
+* #observe #习惯：睡眠时间记录(如：23:30*07:00)；运动内容和时长(如：跑步*30分钟)
+* #observe #环境：引起注意的环境细节(天气变化、特殊声音、光影效果、气味感受、空间布局等)
+* #observe #他人：具体的人(家人、孩子、同事、伴侣)做了什么事、说了什么话、有什么表情或动作
+* #good #成就：今天完成的事情、推进的计划、取得的小突破
+* #good #喜悦：感到开心、轻松或有趣的具体事情，和谁在一起，哪句话、哪件事、哪种氛围带来的
+* #good #感恩：收到的支持或善意(回应/帮助/理解/陪伴/美景/美食/体贴)，对什么人或事物心怀感激
+* #difficult #挑战：遇到的外部挑战，事情进行到哪里被打断或卡住了
+* #difficult #情绪：感受到的不适情绪(自卑/焦虑/愤怒/失落/烦躁/羞愧/恐惧/紧张)，那一刻发生了什么
+* #difficult #身体：身体信号(疲惫/酸痛/困倦/紧绷/头晕/心悸)，感到不舒服或异常的地方，如何回应的
+* #different #觉察：发现的反应模式，比如哪一刻心里闪过"我怎么又拖延了、又没用心倾听、又急着回应别人、又忽略了自己的感受"等
+* #different #改进：针对今日问题(挑战、情绪、身体)的可行小步优化(时间分配、情绪管理、沟通方式、寻求外援)
+
+**特别注意**
+
+- **关键信息必须保留**：所有出现的人名、地名、项目名、技术名词都要完整保留，如项目名、技术术语、公司部门、具体数字等
+- **梦境描述必须完整保留**：包括梦中的场景、人物、情节、自己的角色和感受
+- **对话内容尽量完整**：重要的谈话要保留关键语句和语境，包括谁说了什么
+- **情绪和身体感受要具体**：不只是"累了"，而是"眼睛干涩"、"感觉没多干啥但时间就过去了"
+- **技术细节要具体**：比如算法改进的具体效果、数据量、时间对比等
+
+**输出要求**
+
+- 直接输出列表项，格式为：* #标签1 #标签2 HH:MM 具体内容
+- 时间格式HH:MM表示24小时制(如22:15)
+- 不添加markdown标题或说明文字
+- 每个分类可以有多条记录，充分展现不同细节
+- 宁可详细也不要概括，确保未来回忆时能重现当时的具体情境
+- 如果某分类无相关内容则不输出
 ''';
 
   static const String extractCategoryAndTitlePrompt =

@@ -23,9 +23,6 @@ class AiService {
         if (h['q'] != null && h['q']!.isNotEmpty) {
           messages.add({'role': 'user', 'content': h['q']!});
         }
-        if (h['a'] != null && h['a']!.isNotEmpty) {
-          messages.add({'role': 'assistant', 'content': h['a']!});
-        }
       }
     }
     if (userInput != null && userInput.isNotEmpty) {
