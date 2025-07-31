@@ -211,7 +211,7 @@ jobs:
       - name: Download AppImageTool
         run: |
           mkdir -p linux/build
-          wget -O linux/build/appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          wget -O linux/build/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x linux/build/appimagetool
 
       - name: Create AppImage Structure
