@@ -114,7 +114,7 @@ class DiaryChatService {
   }
 
   // Auto extract category and title and save conversation to diary file
-  static Future<void> extractCategoryAndSave(BuildContext context, List<Map<String, String>> history) async {
+  static Future<void> extractCategoryAndSave(BuildContext context, List<Map<String, String>> history, {bool forceDefault = false}) async {
     if (history.isEmpty) return;
 
     try {
@@ -125,15 +125,21 @@ class DiaryChatService {
       if (lastHistory['q']?.isNotEmpty == true && lastHistory['a']?.isNotEmpty == true) {
         print('Processing conversation: Q="${lastHistory['q']}", A length=${lastHistory['a']?.length}');
 
-        // Let AI extract category and title
-        final result = await extractCategoryAndTitle(context, lastHistory['q']!, lastHistory['a']!);
-        print('AI extraction result: $result');
+        if (forceDefault) {
+          // 直接写入默认分类和内容分析
+          history[history.length - 1]['category'] = '未分类';
+          history[history.length - 1]['title'] = 'AI内容占位';
+        } else {
+          // Let AI extract category and title
+          final result = await extractCategoryAndTitle(context, lastHistory['q']!, lastHistory['a']!);
+          print('AI extraction result: $result');
 
-        // Use correct keys for updating history
-        final categoryKey = AppLocalizations.of(context)!.category;
-        final titleKey = AppLocalizations.of(context)!.diaryContent;
-        history[history.length - 1]['category'] = result[categoryKey] ?? '';
-        history[history.length - 1]['title'] = result[titleKey] ?? ''; // This should be the extracted title
+          // Use correct keys for updating history
+          final categoryKey = AppLocalizations.of(context)!.category;
+          final titleKey = AppLocalizations.of(context)!.diaryContent;
+          history[history.length - 1]['category'] = result[categoryKey] ?? '';
+          history[history.length - 1]['title'] = result[titleKey] ?? '';
+        }
 
         // Save to diary file after extraction
         final content = DiaryDao.formatDiaryContent(
@@ -180,7 +186,7 @@ class DiaryChatService {
             backgroundColor: Colors.orange,
             action: SnackBarAction(
               label: '重试',
-              onPressed: () => extractCategoryAndSave(context, history),
+              onPressed: () => extractCategoryAndSave(context, history, forceDefault: forceDefault),
             ),
           ),
         );

@@ -733,5 +733,57 @@
       "index": { "type": "int" }
     }
   },
-  "addCategory": "Add Category"
+  "addCategory": "Add Category",
+  "calendarView": "Calendar",
+  "@calendarView": {
+    "description": "Calendar view button and page title"
+  },
+  "totalDays": "Total Days",
+  "@totalDays": {
+    "description": "Total days label in calendar statistics"
+  },
+  "totalChars": "Total Chars",
+  "@totalChars": {
+    "description": "Total characters label in calendar statistics"
+  },
+  "avgChars": "Avg/Day",
+  "@avgChars": {
+    "description": "Average characters per day label in calendar statistics"
+  },
+  "less": "Less",
+  "@less": {
+    "description": "Less label in heatmap legend"
+  },
+  "more": "More",
+  "@more": {
+    "description": "More label in heatmap legend"
+  },
+  "monday": "Mon",
+  "@monday": {
+    "description": "Monday abbreviation"
+  },
+  "tuesday": "Tue",
+  "@tuesday": {
+    "description": "Tuesday abbreviation"
+  },
+  "wednesday": "Wed",
+  "@wednesday": {
+    "description": "Wednesday abbreviation"
+  },
+  "thursday": "Thu",
+  "@thursday": {
+    "description": "Thursday abbreviation"
+  },
+  "friday": "Fri",
+  "@friday": {
+    "description": "Friday abbreviation"
+  },
+  "saturday": "Sat",
+  "@saturday": {
+    "description": "Saturday abbreviation"
+  },
+  "sunday": "Sun",
+  "@sunday": {
+    "description": "Sunday abbreviation"
+  }
 }

@@ -737,4 +737,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addCategory => '新增分类';
+
+  @override
+  String get calendarView => '日历';
+
+  @override
+  String get totalDays => '总天数';
+
+  @override
+  String get totalChars => '总字数';
+
+  @override
+  String get avgChars => '日均';
+
+  @override
+  String get less => '少';
+
+  @override
+  String get more => '多';
+
+  @override
+  String get monday => '一';
+
+  @override
+  String get tuesday => '二';
+
+  @override
+  String get wednesday => '三';
+
+  @override
+  String get thursday => '四';
+
+  @override
+  String get friday => '五';
+
+  @override
+  String get saturday => '六';
+
+  @override
+  String get sunday => '日';
 }

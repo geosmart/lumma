@@ -759,4 +759,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addCategory => 'Add Category';
+
+  @override
+  String get calendarView => 'Calendar';
+
+  @override
+  String get totalDays => 'Total Days';
+
+  @override
+  String get totalChars => 'Total Chars';
+
+  @override
+  String get avgChars => 'Avg/Day';
+
+  @override
+  String get less => 'Less';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get monday => 'Mon';
+
+  @override
+  String get tuesday => 'Tue';
+
+  @override
+  String get wednesday => 'Wed';
+
+  @override
+  String get thursday => 'Thu';
+
+  @override
+  String get friday => 'Fri';
+
+  @override
+  String get saturday => 'Sat';
+
+  @override
+  String get sunday => 'Sun';
 }

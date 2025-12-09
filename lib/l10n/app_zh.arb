@@ -250,5 +250,57 @@
       "index": { "type": "int" }
     }
   },
-  "addCategory": "新增分类"
+  "addCategory": "新增分类",
+  "calendarView": "日历",
+  "@calendarView": {
+    "description": "日历视图按钮和页面标题"
+  },
+  "totalDays": "总天数",
+  "@totalDays": {
+    "description": "日历统计中的总天数标签"
+  },
+  "totalChars": "总字数",
+  "@totalChars": {
+    "description": "日历统计中的总字数标签"
+  },
+  "avgChars": "日均",
+  "@avgChars": {
+    "description": "日历统计中的日均字数标签"
+  },
+  "less": "少",
+  "@less": {
+    "description": "热力图图例中的'少'标签"
+  },
+  "more": "多",
+  "@more": {
+    "description": "热力图图例中的'多'标签"
+  },
+  "monday": "一",
+  "@monday": {
+    "description": "星期一缩写"
+  },
+  "tuesday": "二",
+  "@tuesday": {
+    "description": "星期二缩写"
+  },
+  "wednesday": "三",
+  "@wednesday": {
+    "description": "星期三缩写"
+  },
+  "thursday": "四",
+  "@thursday": {
+    "description": "星期四缩写"
+  },
+  "friday": "五",
+  "@friday": {
+    "description": "星期五缩写"
+  },
+  "saturday": "六",
+  "@saturday": {
+    "description": "星期六缩写"
+  },
+  "sunday": "日",
+  "@sunday": {
+    "description": "星期日缩写"
+  }
 }

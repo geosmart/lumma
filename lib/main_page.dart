@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'generated/l10n/app_localizations.dart';
 import 'diary/diary_chat_page.dart';
 import 'diary/diary_qa_page.dart';
+import 'diary/diary_calendar_page.dart';
 import 'config/settings_page.dart';
 import 'diary/diary_file_list_page.dart';
 import 'config/diary_mode_config_service.dart';
@@ -146,7 +147,18 @@ class _MainTabPageState extends State<MainTabPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // 用 _SyncButton 替换原来的“数据同步”按钮
+                    SizedBox(
+                      width: 100,
+                      child: _SecondaryButton(
+                        icon: Icons.calendar_today,
+                        label: AppLocalizations.of(context)!.calendarView,
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryCalendarPage()));
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 用 _SyncButton 替换原来的"数据同步"按钮
                     SizedBox(
                       width: 100,
                       child: _SyncButton(),

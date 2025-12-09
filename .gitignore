@@ -54,3 +54,6 @@ lumma.AppDir/
 test/sample_data
 .env.local
 flutter_app_vscode
+.venv
+**/*.so
+rsync.sh

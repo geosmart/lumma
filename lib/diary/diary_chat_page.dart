@@ -81,7 +81,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   }
 
   // Automatically extract category and save conversation to diary file
-  Future<void> _extractCategoryAndSave() async {
+  Future<void> _extractCategoryAndSave({bool forceDefault = false}) async {
     setState(() {
       _extractingCategory = true;
       _extractingCategoryMsg = '${AppLocalizations.of(context)!.aiSummary}...';
@@ -89,7 +89,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
     });
     try {
       print('[SAVE] _extractCategoryAndSave called');
-      await DiaryChatService.extractCategoryAndSave(context, _history);
+      await DiaryChatService.extractCategoryAndSave(context, _history, forceDefault: forceDefault);
       setState(() {
         _extractingCategory = false;
         _extractingCategoryMsg = null;
@@ -236,7 +236,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
           }
         }
       },
-      onError: (err) {
+      onError: (err) async {
         if (!_askInterrupted) {
           final errorMsg = DiaryChatService.parseErrorMessage(err);
           setState(() {
@@ -251,6 +251,12 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               DiaryChatService.showConfigurationErrorDialog(context, err);
             });
+          }
+          // 新增：报错时也保存日记内容，使用默认分类和内容分析
+          if (_history.isNotEmpty && _history.last['q']?.isNotEmpty == true) {
+            print('[SAVE] Error occurred, saving with default category/analysis...');
+            await _extractCategoryAndSave(forceDefault: true);
+            print('[SAVE] Error save process completed');
           }
         }
       },

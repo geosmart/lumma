@@ -1489,6 +1489,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Category'**
   String get addCategory;
+
+  /// Calendar view button and page title
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendarView;
+
+  /// Total days label in calendar statistics
+  ///
+  /// In en, this message translates to:
+  /// **'Total Days'**
+  String get totalDays;
+
+  /// Total characters label in calendar statistics
+  ///
+  /// In en, this message translates to:
+  /// **'Total Chars'**
+  String get totalChars;
+
+  /// Average characters per day label in calendar statistics
+  ///
+  /// In en, this message translates to:
+  /// **'Avg/Day'**
+  String get avgChars;
+
+  /// Less label in heatmap legend
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get less;
+
+  /// More label in heatmap legend
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// Monday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get monday;
+
+  /// Tuesday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get tuesday;
+
+  /// Wednesday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get wednesday;
+
+  /// Thursday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get thursday;
+
+  /// Friday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get friday;
+
+  /// Saturday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get saturday;
+
+  /// Sunday abbreviation
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get sunday;
 }
 
 class _AppLocalizationsDelegate
