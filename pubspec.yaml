@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  # GetX - 状态管理、路由、依赖注入、国际化
+  get: ^4.6.6
   intl: any
   http: ^1.2.1
   path: ^1.8.3

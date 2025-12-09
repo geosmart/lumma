@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import '../generated/l10n/app_localizations.dart';
-import 'language_service.dart';
-import 'llm_config_page.dart';
-import 'prompt_config_page.dart';
+import '../app/controllers/language_controller.dart';
+import '../app/controllers/theme_controller.dart';
 import 'diary_mode_config_page.dart';
-import '../diary/qa_question_config_page.dart';
+import 'prompt_config_page.dart';
+import 'llm_config_page.dart';
 import 'sync_config_page.dart';
 import 'theme_service.dart';
 import 'settings_ui_config.dart';
 import '../config/category_config_page.dart';
+import '../diary/qa_question_config_page.dart';
 
 class SettingsPage extends StatelessWidget {
   final int initialTabIndex;
@@ -57,52 +59,48 @@ class SettingsPage extends StatelessWidget {
 }
 
 // Appearance settings page (including theme and language)
-class _AppearanceSettingsPage extends StatefulWidget {
+class _AppearanceSettingsPage extends StatelessWidget {
   const _AppearanceSettingsPage();
 
   @override
-  State<_AppearanceSettingsPage> createState() => _AppearanceSettingsPageState();
-}
-
-class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
-  @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: LanguageService.instance,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: context.backgroundGradient,
+    // 使用 GetX 控制器
+    final languageController = Get.find<LanguageController>();
+    final themeController = Get.find<ThemeController>();
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.backgroundGradient,
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Page title
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+            child: Row(
+              children: [
+                Icon(Icons.palette, color: context.primaryTextColor, size: 24),
+                const SizedBox(width: 12),
+                Text(
+                  AppLocalizations.of(context)!.appearanceSettings,
+                  style: TextStyle(
+                    fontSize: SettingsUiConfig.titleFontSize,
+                    fontWeight: SettingsUiConfig.titleFontWeight,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              // Page title
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                child: Row(
-                  children: [
-                    Icon(Icons.palette, color: context.primaryTextColor, size: 24),
-                    const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context)!.appearanceSettings,
-                      style: TextStyle(
-                        fontSize: SettingsUiConfig.titleFontSize,
-                        fontWeight: SettingsUiConfig.titleFontWeight,
-                        color: context.primaryTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // Language settings
-              Container(
+          // Language settings - 使用 Obx 监听状态变化
+          Obx(() => Container(
                 decoration: BoxDecoration(
                   color: context.cardBackgroundColor,
                   borderRadius: BorderRadius.circular(16),
@@ -132,11 +130,11 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                     // Chinese
                     Container(
                       decoration: BoxDecoration(
-                        color: LanguageService.instance.currentLocale.languageCode == 'zh'
+                        color: languageController.currentLocale.languageCode == 'zh'
                             ? const Color(0xFFF3E5AB).withOpacity(0.3)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
-                        border: LanguageService.instance.currentLocale.languageCode == 'zh'
+                        border: languageController.currentLocale.languageCode == 'zh'
                             ? Border.all(color: const Color(0xFFD4A574), width: 1.5)
                             : null,
                       ),
@@ -159,17 +157,17 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                           AppLocalizations.of(context)!.languageChinese,
                           style: TextStyle(
                             fontSize: SettingsUiConfig.subtitleFontSize,
-                            fontWeight: LanguageService.instance.currentLocale.languageCode == 'zh'
+                            fontWeight: languageController.currentLocale.languageCode == 'zh'
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                             color: context.primaryTextColor,
                           ),
                         ),
-                        trailing: LanguageService.instance.currentLocale.languageCode == 'zh'
+                        trailing: languageController.currentLocale.languageCode == 'zh'
                             ? const Icon(Icons.check_circle, color: Color(0xFFD4A574), size: 20)
                             : null,
                         onTap: () {
-                          LanguageService.instance.setLanguage(const Locale('zh', 'CN'));
+                          languageController.setLanguage(const Locale('zh', 'CN'));
                         },
                       ),
                     ),
@@ -177,11 +175,11 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                     // English
                     Container(
                       decoration: BoxDecoration(
-                        color: LanguageService.instance.currentLocale.languageCode == 'en'
+                        color: languageController.currentLocale.languageCode == 'en'
                             ? const Color(0xFFF3E5AB).withOpacity(0.3)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
-                        border: LanguageService.instance.currentLocale.languageCode == 'en'
+                        border: languageController.currentLocale.languageCode == 'en'
                             ? Border.all(color: const Color(0xFFD4A574), width: 1.5)
                             : null,
                       ),
@@ -204,28 +202,28 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                           AppLocalizations.of(context)!.languageEnglish,
                           style: TextStyle(
                             fontSize: SettingsUiConfig.subtitleFontSize,
-                            fontWeight: LanguageService.instance.currentLocale.languageCode == 'en'
+                            fontWeight: languageController.currentLocale.languageCode == 'en'
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                             color: context.primaryTextColor,
                           ),
                         ),
-                        trailing: LanguageService.instance.currentLocale.languageCode == 'en'
+                        trailing: languageController.currentLocale.languageCode == 'en'
                             ? const Icon(Icons.check_circle, color: Color(0xFFD4A574), size: 20)
                             : null,
                         onTap: () {
-                          LanguageService.instance.setLanguage(const Locale('en', 'US'));
+                          languageController.setLanguage(const Locale('en', 'US'));
                         },
                       ),
                     ),
                   ],
                 ),
-              ),
+              )),
 
-              const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-              // Theme switch card
-              Container(
+          // Theme switch card - 使用 Obx 监听状态变化
+          Obx(() => Container(
                 decoration: BoxDecoration(
                   color: context.cardBackgroundColor,
                   borderRadius: BorderRadius.circular(16),
@@ -255,12 +253,12 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                     // Light theme
                     Container(
                       decoration: BoxDecoration(
-                        color: ThemeService.instance.themeMode == ThemeMode.light
-                            ? const Color(0xFFF3E5AB).withOpacity(0.3) // Use warm golden background when selected
+                        color: themeController.themeMode == ThemeMode.light
+                            ? const Color(0xFFF3E5AB).withOpacity(0.3)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
-                        border: ThemeService.instance.themeMode == ThemeMode.light
-                            ? Border.all(color: const Color(0xFFD4A574), width: 1.5) // Add golden border when selected
+                        border: themeController.themeMode == ThemeMode.light
+                            ? Border.all(color: const Color(0xFFD4A574), width: 1.5)
                             : null,
                       ),
                       child: ListTile(
@@ -271,10 +269,10 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                             gradient: const LinearGradient(colors: [Color(0xFFfdf7f0), Color(0xFFf0e6d6)]),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: ThemeService.instance.themeMode == ThemeMode.light
-                                  ? const Color(0xFFD4A574) // Use golden border when selected
+                              color: themeController.themeMode == ThemeMode.light
+                                  ? const Color(0xFFD4A574)
                                   : context.borderColor,
-                              width: ThemeService.instance.themeMode == ThemeMode.light ? 3 : 2,
+                              width: themeController.themeMode == ThemeMode.light ? 3 : 2,
                             ),
                           ),
                           child: const Icon(Icons.wb_sunny, color: Color(0xFF8d6e63), size: 20),
@@ -282,10 +280,8 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                         title: Text(
                           AppLocalizations.of(context)!.themeLightMode,
                           style: TextStyle(
-                            fontWeight: ThemeService.instance.themeMode == ThemeMode.light
-                                ? FontWeight
-                                      .w600 // Bold font when selected
-                                : FontWeight.w500,
+                            fontWeight:
+                                themeController.themeMode == ThemeMode.light ? FontWeight.w600 : FontWeight.w500,
                             color: context.primaryTextColor,
                           ),
                         ),
@@ -295,18 +291,16 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                         ),
                         trailing: Radio<ThemeMode>(
                           value: ThemeMode.light,
-                          groupValue: ThemeService.instance.themeMode,
-                          activeColor: const Color(0xFFD4A574), // Light theme用金色
+                          groupValue: themeController.themeMode,
+                          activeColor: const Color(0xFFD4A574),
                           onChanged: (value) {
                             if (value != null) {
-                              ThemeService.instance.setTheme(value);
-                              setState(() {});
+                              themeController.setTheme(value);
                             }
                           },
                         ),
                         onTap: () {
-                          ThemeService.instance.setTheme(ThemeMode.light);
-                          setState(() {});
+                          themeController.setTheme(ThemeMode.light);
                         },
                       ),
                     ),
@@ -316,12 +310,12 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                     // Dark theme
                     Container(
                       decoration: BoxDecoration(
-                        color: ThemeService.instance.themeMode == ThemeMode.dark
-                            ? const Color(0xFF3B4CCA).withOpacity(0.2) // 选中时用蓝紫色背景
+                        color: themeController.themeMode == ThemeMode.dark
+                            ? const Color(0xFF3B4CCA).withOpacity(0.2)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
-                        border: ThemeService.instance.themeMode == ThemeMode.dark
-                            ? Border.all(color: const Color(0xFF9FA8DA), width: 1.5) // 选中时添加淡蓝色边框
+                        border: themeController.themeMode == ThemeMode.dark
+                            ? Border.all(color: const Color(0xFF9FA8DA), width: 1.5)
                             : null,
                       ),
                       child: ListTile(
@@ -332,10 +326,10 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                             gradient: const LinearGradient(colors: [Color(0xFF1a1a2e), Color(0xFF0f3460)]),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: ThemeService.instance.themeMode == ThemeMode.dark
-                                  ? const Color(0xFF9FA8DA) // 选中时用淡蓝色边框
+                              color: themeController.themeMode == ThemeMode.dark
+                                  ? const Color(0xFF9FA8DA)
                                   : context.borderColor,
-                              width: ThemeService.instance.themeMode == ThemeMode.dark ? 3 : 2,
+                              width: themeController.themeMode == ThemeMode.dark ? 3 : 2,
                             ),
                           ),
                           child: const Icon(Icons.nightlight_round, color: Colors.white, size: 20),
@@ -343,10 +337,8 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                         title: Text(
                           AppLocalizations.of(context)!.themeDarkMode,
                           style: TextStyle(
-                            fontWeight: ThemeService.instance.themeMode == ThemeMode.dark
-                                ? FontWeight
-                                      .w600 // Bold font when selected
-                                : FontWeight.w500,
+                            fontWeight:
+                                themeController.themeMode == ThemeMode.dark ? FontWeight.w600 : FontWeight.w500,
                             color: context.primaryTextColor,
                           ),
                         ),
@@ -356,84 +348,80 @@ class _AppearanceSettingsPageState extends State<_AppearanceSettingsPage> {
                         ),
                         trailing: Radio<ThemeMode>(
                           value: ThemeMode.dark,
-                          groupValue: ThemeService.instance.themeMode,
-                          activeColor: const Color(0xFF9FA8DA), // Dark theme用淡蓝色
+                          groupValue: themeController.themeMode,
+                          activeColor: const Color(0xFF9FA8DA),
                           onChanged: (value) {
                             if (value != null) {
-                              ThemeService.instance.setTheme(value);
-                              setState(() {});
+                              themeController.setTheme(value);
                             }
                           },
                         ),
                         onTap: () {
-                          ThemeService.instance.setTheme(ThemeMode.dark);
-                          setState(() {});
+                          themeController.setTheme(ThemeMode.dark);
                         },
                       ),
                     ),
                   ],
                 ),
-              ),
+              )),
 
-              const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-              // Preview card
-              Container(
-                decoration: BoxDecoration(
-                  color: context.cardBackgroundColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: context.borderColor, width: 1),
+          // Preview card
+          Container(
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: context.borderColor, width: 1),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.themePreview,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.primaryTextColor),
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.themePreview,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.primaryTextColor),
-                    ),
-                    const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-                    // Simulate homepage style
-                    Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: context.backgroundGradient),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              'assets/icon/icon.svg',
-                              width: 40,
-                              height: 40,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              AppLocalizations.of(context)!.appTitle,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: context.primaryTextColor,
-                              ),
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.appSubtitle,
-                              style: TextStyle(fontSize: 12, color: context.secondaryTextColor),
-                            ),
-                          ],
+                // Simulate homepage style
+                Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: context.backgroundGradient),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icon/icon.svg',
+                          width: 40,
+                          height: 40,
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context)!.appTitle,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: context.primaryTextColor,
+                          ),
+                        ),
+                        Text(
+                          AppLocalizations.of(context)!.appSubtitle,
+                          style: TextStyle(fontSize: 12, color: context.secondaryTextColor),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

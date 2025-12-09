@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'en_us.dart';
 import 'zh_cn.dart';
 

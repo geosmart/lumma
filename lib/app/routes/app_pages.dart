@@ -16,6 +16,7 @@ import 'package:lumma/config/category_config_page.dart';
 import 'package:lumma/config/diary_mode_config_page.dart';
 import 'package:lumma/config/sync_config_page.dart';
 import 'package:lumma/diary/qa_question_config_page.dart';
+import 'package:lumma/model/enums.dart';
 import 'app_routes.dart';
 
 /// GetX 页面路由配置
@@ -47,33 +48,52 @@ class AppPages {
       name: AppRoutes.diaryDetail,
       page: () => const DiaryDetailPage(),
     ),
+    // DiaryEditPage 需要 fileName 参数，通过 Get.arguments['fileName'] 传递
     GetPage(
       name: AppRoutes.diaryEdit,
-      page: () => const DiaryEditPage(),
+      page: () => DiaryEditPage(
+        fileName: Get.arguments?['fileName'] ?? '',
+      ),
     ),
+    // DiaryContentPage 需要 fileName 参数，通过 Get.arguments['fileName'] 传递
     GetPage(
       name: AppRoutes.diaryContent,
-      page: () => const DiaryContentPage(),
+      page: () => DiaryContentPage(
+        fileName: Get.arguments?['fileName'] ?? '',
+      ),
     ),
     GetPage(
       name: AppRoutes.settings,
       page: () => const SettingsPage(),
     ),
+    // LlmConfigPage 是 StatefulWidget，不能用 const
     GetPage(
       name: AppRoutes.llmConfig,
-      page: () => const LlmConfigPage(),
+      page: () => const LLMConfigPage(),
     ),
+    // LlmEditPage 可以接收可选参数
     GetPage(
       name: AppRoutes.llmEdit,
-      page: () => const LlmEditPage(),
+      page: () => LLMEditPage(
+        config: Get.arguments?['config'],
+        readOnly: Get.arguments?['readOnly'] ?? false,
+      ),
     ),
     GetPage(
       name: AppRoutes.promptConfig,
       page: () => const PromptConfigPage(),
     ),
+    // PromptEditPage 需要 activeCategory 参数（PromptCategory 枚举类型）
     GetPage(
       name: AppRoutes.promptEdit,
-      page: () => const PromptEditPage(),
+      page: () => PromptEditPage(
+        activeCategory: Get.arguments?['activeCategory'] ?? PromptCategory.chat,
+        file: Get.arguments?['file'],
+        readOnly: Get.arguments?['readOnly'] ?? false,
+        initialContent: Get.arguments?['initialContent'],
+        initialName: Get.arguments?['initialName'],
+        isSystem: Get.arguments?['isSystem'] ?? false,
+      ),
     ),
     GetPage(
       name: AppRoutes.categoryConfig,

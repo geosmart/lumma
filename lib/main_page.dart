@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'generated/l10n/app_localizations.dart';
-import 'diary/diary_chat_page.dart';
-import 'diary/diary_qa_page.dart';
-import 'diary/diary_calendar_page.dart';
-import 'config/settings_page.dart';
-import 'diary/diary_file_list_page.dart';
 import 'config/diary_mode_config_service.dart';
 import 'config/theme_service.dart';
 import 'util/sync_service.dart';
 import 'model/enums.dart';
+import 'app/routes/app_routes.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -102,9 +99,10 @@ class _MainTabPageState extends State<MainTabPage> {
                   onTap: () async {
                     final mode = await DiaryModeConfigService.loadDiaryMode();
                     if (mode == DiaryMode.chat) {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryChatPage()));
+                      // 使用 GetX 路由导航
+                      Get.toNamed(AppRoutes.diaryChat);
                     } else {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryQaPage()));
+                      Get.toNamed(AppRoutes.diaryQa);
                     }
                   },
                   child: Center(
@@ -142,7 +140,8 @@ class _MainTabPageState extends State<MainTabPage> {
                         icon: Icons.list_alt,
                         label: AppLocalizations.of(context)!.diaryList,
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
+                          // 使用 GetX 路由导航
+                          Get.toNamed(AppRoutes.diaryFileList);
                         },
                       ),
                     ),
@@ -153,7 +152,8 @@ class _MainTabPageState extends State<MainTabPage> {
                         icon: Icons.calendar_today,
                         label: AppLocalizations.of(context)!.calendarView,
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryCalendarPage()));
+                          // 使用 GetX 路由导航
+                          Get.toNamed(AppRoutes.diaryCalendar);
                         },
                       ),
                     ),
@@ -170,7 +170,8 @@ class _MainTabPageState extends State<MainTabPage> {
                         icon: Icons.settings,
                         label: AppLocalizations.of(context)!.settings,
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
+                          // 使用 GetX 路由导航
+                          Get.toNamed(AppRoutes.settings);
                         },
                       ),
                     )
