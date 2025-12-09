@@ -42,6 +42,14 @@ class PromptConfigService {
       needsSave = true;
     }
 
+    // 检查是否有纠错类型的提示词
+    final correctionPrompts = config.prompt.where((p) => p.type == PromptCategory.correction).toList();
+    if (correctionPrompts.isEmpty) {
+      print('[PromptConfigService] 没有找到纠错类型的提示词，创建默认提示词');
+      config.prompt.add(PromptConfig.correctionDefault());
+      needsSave = true;
+    }
+
     if (needsSave) {
       await AppConfigService.save();
       print('[PromptConfigService] 已保存默认提示词到配置文件');
@@ -176,6 +184,9 @@ class PromptConfigService {
         break;
       case PromptCategory.summary:
         defaultContent = PromptConstants.getDefaultSummaryPrompt();
+        break;
+      case PromptCategory.correction:
+        defaultContent = PromptConstants.getDefaultCorrectionPrompt();
         break;
     }
 

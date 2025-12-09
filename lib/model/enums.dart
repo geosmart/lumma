@@ -24,7 +24,7 @@ DiaryMode diaryModeFromString(String value) {
 }
 
 // 提示词分类枚举
-enum PromptCategory { chat, summary }
+enum PromptCategory { chat, summary, correction }
 
 // 获取提示词分类显示名称（国际化）
 String promptCategoryToDisplayName(PromptCategory category, BuildContext context) {
@@ -34,6 +34,8 @@ String promptCategoryToDisplayName(PromptCategory category, BuildContext context
       return l10n.promptCategoryChat;
     case PromptCategory.summary:
       return l10n.promptCategorySummary;
+    case PromptCategory.correction:
+      return l10n.promptCategoryCorrection;
   }
 }
 
@@ -44,6 +46,8 @@ String promptCategoryToString(PromptCategory category) {
       return 'chat';
     case PromptCategory.summary:
       return 'summary';
+    case PromptCategory.correction:
+      return 'correction';
   }
 }
 
@@ -54,6 +58,8 @@ PromptCategory promptCategoryFromString(String value) {
       return PromptCategory.chat;
     case 'summary':
       return PromptCategory.summary;
+    case 'correction':
+      return PromptCategory.correction;
     default:
       return PromptCategory.chat;
   }

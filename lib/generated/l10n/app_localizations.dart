@@ -812,6 +812,12 @@ abstract class AppLocalizations {
   /// **'Summary'**
   String get promptCategorySummary;
 
+  /// No description provided for @promptCategoryCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction'**
+  String get promptCategoryCorrection;
+
   /// No description provided for @appearanceSettings.
   ///
   /// In en, this message translates to:

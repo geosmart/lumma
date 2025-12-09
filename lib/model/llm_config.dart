@@ -23,7 +23,7 @@ class LLMConfig extends Timestamped {
     provider: 'openrouter',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: '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',
-    model: 'deepseek/deepseek-chat-v3-0324:free',
+    model: 'tngtech/deepseek-r1t2-chimera:free',
     active: true,
     isSystem: true, // 标记为系统级配置
   );

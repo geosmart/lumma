@@ -39,6 +39,15 @@ class PromptConfig extends Timestamped {
     isSystem: true, // 系统级提示词
   );
 
+  /// 纠错提示词默认配置
+  factory PromptConfig.correctionDefault() => PromptConfig(
+    name: getDefaultFileName(PromptCategory.correction),
+    type: PromptCategory.correction,
+    active: false,
+    content: PromptConstants.getDefaultCorrectionPrompt(),
+    isSystem: true, // 系统级提示词
+  );
+
   /// 获取提示词类型对应的默认文件名
   static String getDefaultFileName(PromptCategory type) {
     // 导入语言服务
@@ -52,6 +61,8 @@ class PromptConfig extends Timestamped {
         return isZh ? '对话助手.md' : 'QA Diary Assistant.md';
       case PromptCategory.summary:
         return isZh ? '总结助手.md' : 'Summary Diary Assistant.md';
+      case PromptCategory.correction:
+        return isZh ? '纠错助手.md' : 'Correction Assistant.md';
     }
   }
 

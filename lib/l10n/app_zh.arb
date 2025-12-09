@@ -126,6 +126,7 @@
   "qaSave": "保存设置",
   "promptCategoryChat": "问答",
   "promptCategorySummary": "总结",
+  "promptCategoryCorrection": "纠错",
   "appearanceSettings": "外观设置",
   "themePreview": "主题预览",
   "themeLightMode": "浅色模式",

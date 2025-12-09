@@ -396,6 +396,7 @@
   "qaSave": "Save Settings",
   "promptCategoryChat": "Chat",
   "promptCategorySummary": "Summary",
+  "promptCategoryCorrection": "Correction",
   "appearanceSettings": "Appearance Settings",
   "themePreview": "Theme Preview",
   "themeLightMode": "Light Mode",

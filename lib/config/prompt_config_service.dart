@@ -177,6 +177,9 @@ class PromptConfigService {
       case PromptCategory.summary:
         defaultContent = PromptConstants.getDefaultSummaryPrompt();
         break;
+      case PromptCategory.correction:
+        defaultContent = PromptConstants.getDefaultCorrectionPrompt();
+        break;
     }
 
     // 更新提示词内容

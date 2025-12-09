@@ -4,6 +4,9 @@ import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/util/frontmatter_service.dart';
 import 'package:lumma/util/storage_service.dart';
 import 'package:lumma/service/config_service.dart';
+import 'package:lumma/service/ai_service.dart';
+import 'package:lumma/util/prompt_util.dart';
+import 'package:lumma/model/enums.dart';
 
 /// Diary entry model for better readability
 class DiaryEntry {
@@ -397,6 +400,83 @@ class DiaryDao {
       await saveDiaryMarkdown(newContent, fileName: fileName);
     }
   }
+
+  /// 追加内容到今日日记，带时间戳和纠错处理
+  /// [userContent] 用户原始输入内容
+  /// [context] BuildContext 用于获取本地化和调用纠错服务
+  /// [shouldCorrect] 是否应该纠错，如果为null则自动检查纠错配置
+  static Future<void> appendDailyDiaryWithCorrection({
+    required BuildContext context,
+    required String userContent,
+    bool? shouldCorrect,
+  }) async {
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final dateStr = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+
+    String contentToSave = userContent;
+
+    // 检查是否需要纠错
+    final needsCorrection = shouldCorrect ?? await isCorrectionEnabled();
+
+    if (needsCorrection) {
+      // 调用纠错服务处理内容
+      try {
+        contentToSave = await processTextWithCorrection(userContent);
+      } catch (e) {
+        print('[DiaryDao] 纠错处理失败，使用原始内容: $e');
+        // 如果纠错失败，使用原始内容
+        contentToSave = userContent;
+      }
+    }
+
+    // 格式化为 markdown 条目
+    final formattedEntry = '* $dateStr $timeStr $contentToSave\n';
+
+    // 追加到当天日记
+    await appendToDailyDiary(formattedEntry);
+  }
+
+  /// 使用纠错服务处理文本
+  static Future<String> processTextWithCorrection(String text) async {
+    final prompt = await getActivePromptContent(PromptCategory.correction);
+    if (prompt == null || prompt.isEmpty) {
+      return text;
+    }
+
+    final messages = [
+      {'role': 'system', 'content': prompt},
+      {'role': 'user', 'content': text},
+    ];
+
+    String correctedText = text;
+    bool completed = false;
+
+    await AiService.askStream(
+      messages: messages,
+      onDelta: (data) {
+        // 实时更新纠错后的文本
+        correctedText = data['content'] ?? text;
+      },
+      onDone: (data) {
+        correctedText = data['content']?.trim() ?? text;
+        completed = true;
+      },
+      onError: (error) {
+        print('[DiaryDao] 纠错服务调用失败: $error');
+        correctedText = text;
+        completed = true;
+      },
+    );
+
+    // 等待完成
+    while (!completed) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    return correctedText.isEmpty ? text : correctedText;
+  }
+
 
   /// 获取指定日期的日记文件名，不指定则为当天
   static String getDiaryFileName([DateTime? date]) {

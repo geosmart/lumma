@@ -376,6 +376,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get promptCategorySummary => '总结';
 
   @override
+  String get promptCategoryCorrection => '纠错';
+
+  @override
   String get appearanceSettings => '外观设置';
 
   @override

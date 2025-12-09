@@ -6,6 +6,7 @@ import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/config/settings_ui_config.dart';
 import 'package:lumma/view/pages/llm_edit_page.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
+import 'package:lumma/service/ai_service.dart';
 
 class LLMConfigPage extends StatefulWidget {
   const LLMConfigPage({super.key});
@@ -52,10 +53,8 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
   }
 
   void _deleteConfig(int index) async {
-    final config = _configs[index];
-
     // 系统级配置不可删除
-    if (config.isSystem) {
+    if (_configs[index].isSystem) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -89,6 +88,157 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
       _configs.removeAt(index);
       await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
       setState(() {});
+    }
+  }
+
+  void _testConfig(int index) async {
+    // 显示加载对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: context.cardBackgroundColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? '正在测试模型...'
+                    : 'Testing model...',
+                style: TextStyle(color: context.primaryTextColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // 构建测试消息
+      final messages = [
+        {'role': 'user', 'content': Localizations.localeOf(context).languageCode == 'zh' ? '你是什么大模型？' : 'What AI model are you?'},
+      ];
+
+      // 临时切换到该配置进行测试
+      final originalConfigs = List<LLMConfig>.from(_configs);
+      for (var i = 0; i < _configs.length; i++) {
+        _configs[i] = LLMConfig(
+          provider: _configs[i].provider,
+          baseUrl: _configs[i].baseUrl,
+          apiKey: _configs[i].apiKey,
+          model: _configs[i].model,
+          active: i == index,
+          isSystem: _configs[i].isSystem,
+          created: _configs[i].created,
+          updated: _configs[i].updated,
+        );
+      }
+      await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
+
+      String response = '';
+      int startTime = DateTime.now().millisecondsSinceEpoch;
+      bool completed = false;
+
+      await AiService.askStream(
+        messages: messages,
+        onDelta: (data) {
+          response = data['content'] ?? '';
+        },
+        onDone: (data) {
+          response = data['content'] ?? '';
+          completed = true;
+        },
+        onError: (error) {
+          response = 'Error: $error';
+          completed = true;
+        },
+      );
+
+      // 等待完成
+      while (!completed) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      int endTime = DateTime.now().millisecondsSinceEpoch;
+      int responseTime = endTime - startTime;
+
+      // 恢复原始配置
+      _configs = originalConfigs;
+      await AppConfigService.update((c) => c.model = List<LLMConfig>.from(_configs));
+
+      // 关闭加载对话框
+      if (mounted) Navigator.of(context).pop();
+
+      // 显示测试结果
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '测试结果'
+                  : 'Test Result',
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    Localizations.localeOf(context).languageCode == 'zh'
+                        ? '响应时间: ${responseTime}ms'
+                        : 'Response time: ${responseTime}ms',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    Localizations.localeOf(context).languageCode == 'zh'
+                        ? '模型回答:'
+                        : 'Model response:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(response),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  Localizations.localeOf(context).languageCode == 'zh'
+                      ? '关闭'
+                      : 'Close',
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      // 关闭加载对话框
+      if (mounted) Navigator.of(context).pop();
+
+      // 显示错误信息
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '测试失败: $e'
+                  : 'Test failed: $e',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -449,6 +599,16 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                                           ? '系统配置不可删除'
                                                           : 'System configuration cannot be deleted')
                                                     : AppLocalizations.of(context)!.llmDelete,
+                                                padding: EdgeInsets.zero,
+                                                constraints: const BoxConstraints(),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: Icon(Icons.play_arrow, size: 20, color: Colors.green),
+                                                onPressed: () => _testConfig(i),
+                                                tooltip: Localizations.localeOf(context).languageCode == 'zh'
+                                                    ? '测试模型'
+                                                    : 'Test Model',
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),

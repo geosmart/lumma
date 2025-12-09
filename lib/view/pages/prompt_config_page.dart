@@ -383,10 +383,18 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           size: 22,
                                         ),
                                         onPressed: () async {
+                                          final isCurrentlyActive = _activePrompt[_activeCategory] == prompt.name;
                                           print('[PromptConfigPage] 尝试设置激活提示词: $_activeCategory -> ${prompt.name}');
                                           try {
-                                            await setActivePrompt(_activeCategory, prompt.name);
-                                            print('[PromptConfigPage] 设置激活提示词成功');
+                                            if (isCurrentlyActive) {
+                                              // 如果当前已激活，则禁用
+                                              await disableActivePrompt(_activeCategory);
+                                              print('[PromptConfigPage] 禁用激活提示词成功');
+                                            } else {
+                                              // 如果未激活，则激活
+                                              await setActivePrompt(_activeCategory, prompt.name);
+                                              print('[PromptConfigPage] 设置激活提示词成功');
+                                            }
                                             await _loadActivePrompt();
                                             setState(() {});
                                           } catch (e) {
@@ -402,7 +410,9 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                             }
                                           }
                                         },
-                                        tooltip: AppLocalizations.of(context)!.promptSetActive,
+                                        tooltip: _activePrompt[_activeCategory] == prompt.name
+                                            ? (Localizations.localeOf(context).languageCode == 'zh' ? '禁用' : 'Disable')
+                                            : AppLocalizations.of(context)!.promptSetActive,
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                       ),
@@ -515,20 +525,22 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                         ); // End of Container
                       },
                     ),
-                    Positioned(
-                      bottom: 24,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: FloatingActionButton(
-                          heroTag: 'add-prompt',
-                          onPressed: () => _showPrompt(null),
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          tooltip: AppLocalizations.of(context)!.promptAdd,
-                          child: const Icon(Icons.add, size: 28),
+                    // 纠错分类不显示添加按钮
+                    if (_activeCategory != PromptCategory.correction)
+                      Positioned(
+                        bottom: 24,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: FloatingActionButton(
+                            heroTag: 'add-prompt',
+                            onPressed: () => _showPrompt(null),
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            tooltip: AppLocalizations.of(context)!.promptAdd,
+                            child: const Icon(Icons.add, size: 28),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 );
               },

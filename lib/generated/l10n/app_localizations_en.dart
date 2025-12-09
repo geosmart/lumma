@@ -394,6 +394,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promptCategorySummary => 'Summary';
 
   @override
+  String get promptCategoryCorrection => 'Correction';
+
+  @override
   String get appearanceSettings => 'Appearance Settings';
 
   @override

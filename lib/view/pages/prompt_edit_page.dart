@@ -145,6 +145,9 @@ class _PromptEditPageState extends State<PromptEditPage> {
             case PromptCategory.summary:
               defaultContent = PromptConstants.getDefaultSummaryPrompt();
               break;
+            case PromptCategory.correction:
+              defaultContent = PromptConstants.getDefaultCorrectionPrompt();
+              break;
           }
         }
       } else {
@@ -155,6 +158,9 @@ class _PromptEditPageState extends State<PromptEditPage> {
             break;
           case PromptCategory.summary:
             defaultContent = PromptConstants.getDefaultSummaryPrompt();
+            break;
+          case PromptCategory.correction:
+            defaultContent = PromptConstants.getDefaultCorrectionPrompt();
             break;
         }
       }

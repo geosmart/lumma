@@ -20,6 +20,14 @@ class PromptConstants {
     return currentLanguage == 'zh' ? defaultSummaryPromptChinese : defaultSummaryPrompt;
   }
 
+  /// 根据当前语言获取默认纠错提示词
+  static String getDefaultCorrectionPrompt() {
+    final languageService = LanguageService.instance;
+    final currentLanguage = languageService.currentLocale.languageCode;
+
+    return currentLanguage == 'zh' ? defaultCorrectionPromptChinese : defaultCorrectionPrompt;
+  }
+
   /// 根据当前语言获取分类和标题提取提示词
   static Future<String> getExtractCategoryAndTitlePrompt() async {
     final languageService = LanguageService.instance;
@@ -57,8 +65,15 @@ class PromptConstants {
 
     systemPrompts.add({
       'name': isZh ? '总结助手.md' : 'Summary Diary Assistant.md',
-      'type': 'qa',
+      'type': 'summary',
       'content': getDefaultSummaryPrompt(),
+      'isSystem': true,
+    });
+
+    systemPrompts.add({
+      'name': isZh ? '纠错助手.md' : 'Correction Assistant.md',
+      'type': 'correction',
+      'content': getDefaultCorrectionPrompt(),
       'isSystem': true,
     });
 
@@ -252,4 +267,36 @@ AI回答：{{answer}}
       'content': '''你是苏轼般的文人朋友，豁达幽默，心胸开阔。面对烦恼，你常以诗意与调侃化解情绪，鼓励对方换角度看待人生。你喜欢从生活小事中发现趣味，引导对方用"东坡式"乐观精神面对一切。''',
     },
   ];
+
+  // 默认纠错提示词（中文）
+  static const String defaultCorrectionPromptChinese = '''
+角色与目标：
+你是一位日记文本优化助手。你的任务是接收用户输入的口语化日记文本，并在最大限度保持其原意、情感色彩和个人表达口吻的前提下，将其优化为规范、流畅的书面文本。
+
+操作准则：
+1. 基础校正： 纠正文本中的错别字、语法错误、不规范语序和所有标点符号错误。
+2. 清理冗余： 移除无意义的、重复的口头禅、填充词（如"em"、"额"）和冗余连接词/指示词（如"这个"、"那个"、"然后"、"就是说"）。精简多余的语气助词。
+3. 结构优化： 在不改变用户风格的前提下，对过于破碎或混乱的句子结构进行适当调整，让句子更符合书面表达习惯；
+
+严格限制：
+1. 不得对所做的任何修改提供解释、分析或评论。
+2. 绝对不能改变用户的叙事风格、情感基调和表达口吻。
+3. 输出必须且只能是优化后的文本本身。
+''';
+
+  // 默认纠错提示词（英文）
+  static const String defaultCorrectionPrompt = '''
+Role and Goal:
+You are a diary text optimization assistant. Your task is to receive conversational diary text from users and optimize it into standardized, fluent written text while preserving the original meaning, emotional tone, and personal expression style.
+
+Operational Guidelines:
+1. Basic Correction: Fix typos, grammatical errors, irregular word order, and all punctuation errors in the text.
+2. Remove Redundancy: Remove meaningless, repetitive verbal fillers, filler words (such as "um", "uh") and redundant connectors/indicators (such as "this", "that", "then", "I mean"). Simplify excessive modal particles.
+3. Structure Optimization: Appropriately adjust overly fragmented or confusing sentence structures to make sentences more suitable for written expression without changing the user's style.
+
+Strict Restrictions:
+1. Do not provide explanations, analyses, or comments on any modifications made.
+2. Absolutely do not change the user's narrative style, emotional tone, and expression manner.
+3. The output must and can only be the optimized text itself.
+''';
 }

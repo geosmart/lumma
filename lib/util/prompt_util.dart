@@ -17,9 +17,9 @@ Future<String?> getActivePromptName(PromptCategory category) async {
   final config = await AppConfigService.load();
   final prompt = config.prompt.firstWhere(
     (p) => p.type == category && p.active,
-    orElse: () => config.prompt.firstWhere((p) => p.type == category, orElse: () => PromptConfig.chatDefault()),
+    orElse: () => PromptConfig.chatDefault()..active = false,
   );
-  return prompt.name;
+  return prompt.active ? prompt.name : null;
 }
 
 /// 设置指定类型的激活prompt（只允许一个active）
@@ -28,6 +28,17 @@ Future<void> setActivePrompt(PromptCategory category, String name) async {
     for (final p in config.prompt) {
       if (p.type == category) {
         p.active = (p.name == name);
+      }
+    }
+  });
+}
+
+/// 禁用指定类型的激活prompt
+Future<void> disableActivePrompt(PromptCategory category) async {
+  await AppConfigService.update((config) {
+    for (final p in config.prompt) {
+      if (p.type == category) {
+        p.active = false;
       }
     }
   });
@@ -95,4 +106,11 @@ Future<List<PromptConfig>> listPrompts({PromptCategory? category}) async {
   final config = await AppConfigService.load();
   if (category == null) return config.prompt;
   return config.prompt.where((p) => p.type == category).toList();
+}
+
+/// 检查纠错功能是否启用
+Future<bool> isCorrectionEnabled() async {
+  final config = await AppConfigService.load();
+  final correctionPrompts = config.prompt.where((p) => p.type == PromptCategory.correction && p.active).toList();
+  return correctionPrompts.isNotEmpty;
 }
