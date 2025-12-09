@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'generated/l10n/app_localizations.dart';
+import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/service/diary_mode_config_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/util/sync_service.dart';
-import 'model/enums.dart';
-import 'routes/app_routes.dart';
+import 'package:lumma/model/enums.dart';
+import 'package:lumma/routes/app_routes.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});

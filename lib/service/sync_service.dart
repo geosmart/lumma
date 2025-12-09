@@ -4,7 +4,7 @@ import 'package:lumma/util/storage_service.dart';
 import 'package:lumma/model/enums.dart';
 import 'package:lumma/model/sync_config.dart';
 import 'package:lumma/service/config_service.dart';
-import 'webdav_util.dart';
+import 'package:lumma/util/webdav_util.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lumma/generated/l10n/app_localizations.dart';

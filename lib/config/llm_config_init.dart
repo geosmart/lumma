@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../model/llm_config.dart';
-import 'config_service.dart';
+import 'package:lumma/service/config_service.dart';
 import '../model/prompt_config.dart';
 import '../model/prompt_constants.dart';
 import '../model/enums.dart';

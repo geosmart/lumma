@@ -1,6 +1,6 @@
-import '../model/enums.dart';
-import '../model/prompt_config.dart';
-import '../config/config_service.dart';
+import 'package:lumma/model/enums.dart';
+import 'package:lumma/model/prompt_config.dart';
+import 'package:lumma/service/config_service.dart';
 
 /// 获取指定类型的激活prompt内容
 Future<String?> getActivePromptContent(PromptCategory category) async {

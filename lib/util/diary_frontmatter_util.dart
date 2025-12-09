@@ -1,6 +1,6 @@
 import 'dart:io';
-import '../config/config_service.dart';
-import 'storage_service.dart';
+import 'package:lumma/service/config_service.dart';
+import 'package:lumma/util/storage_service.dart';
 
 /// Parse frontmatter to get the created field
 Future<DateTime?> getDiaryCreatedTime(String diaryFileName) async {

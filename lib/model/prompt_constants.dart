@@ -1,5 +1,5 @@
-import '../config/config_service.dart';
-import '../config/language_service.dart';
+import 'package:lumma/service/config_service.dart';
+import 'package:lumma/service/language_service.dart';
 
 /// 所有默认提示词内容常量
 class PromptConstants {

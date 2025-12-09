@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import '../generated/l10n/app_localizations.dart';
-import '../util/frontmatter_service.dart';
-import '../util/storage_service.dart';
-import '../config/config_service.dart';
+import 'package:lumma/generated/l10n/app_localizations.dart';
+import 'package:lumma/util/frontmatter_service.dart';
+import 'package:lumma/util/storage_service.dart';
+import 'package:lumma/service/config_service.dart';
 
 /// Diary entry model for better readability
 class DiaryEntry {

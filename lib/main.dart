@@ -4,10 +4,10 @@ import 'package:get/get.dart';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/llm_config_init.dart';
-import 'config/theme_service.dart';
+import 'service/theme_service.dart';
 import 'generated/l10n/app_localizations.dart';
-import 'app/routes/app_pages.dart';
-import 'app/bindings/initial_binding.dart';
+import 'routes/app_pages.dart';
+import 'bindings/initial_binding.dart';
 import 'app/translations/app_translations.dart';
 
 void main() async {

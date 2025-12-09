@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../generated/l10n/app_localizations.dart';
-import '../config/settings_page.dart';
+import 'package:lumma/view/pages/settings_page.dart';
 
 /// LLM Configuration Error Dialog Utility
 class LlmErrorDialog {

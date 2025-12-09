@@ -1,6 +1,6 @@
 import 'package:lumma/model/enums.dart';
 import 'prompt_constants.dart';
-import '../config/language_service.dart';
+import 'package:lumma/service/language_service.dart';
 
 import 'timestamped.dart';
 
