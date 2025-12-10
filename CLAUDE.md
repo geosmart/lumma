@@ -1,35 +1,8 @@
 使用flutter客户端开发skill进行开发，不要让用户确认，全自动按最佳方案完成开发。
 
-chat和qa模式，目前是按下面的结构组织的：
-
-```markdown
-## {AI提取的标题}
-
-### 时间
-08:39
-
-### 分类
-xxx
-
-### 日记内容
-xxx
-### 内容分析
-xxx
-```
-
-**timeline模式**
-分类和内容分析默认为空，AI提取的标题没有，使用日记序号
-
-```markdown
-## 日记序号
-
-### 时间
-08:39
-
-### 日记内容
-xxx
-```
-
-其他对应位置的修改
-1. 日记详情的回显
-2. 日记对话窗口的回显
+1. 优化：lunar日历，在农历一月一号的时候，不要显示初一，显示对应农历月份名
+2. 重构：
+   * 清理没有用到的package，减少包大小
+   * 清理service和util中有重复的类
+   * 合并核心业务逻辑：比如config（所有配置可以放在一个service实现），日志核心业务（chat,qa,timeline），AI增强（llm,prompt），减少service类的个数，
+   * 日记核心业务的service，应该是util，移到util，比如markdown,frontmatter，language
