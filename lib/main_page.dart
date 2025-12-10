@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'generated/l10n/app_localizations.dart';
-import 'package:lumma/service/diary_mode_config_service.dart';
+import 'package:lumma/service/config_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/util/sync_service.dart';
 import 'model/enums.dart';
@@ -97,7 +97,7 @@ class _MainTabPageState extends State<MainTabPage> {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(999),
                   onTap: () async {
-                    final mode = await DiaryModeConfigService.loadDiaryMode();
+                    final mode = await AppConfigService.loadDiaryMode();
                     if (mode == DiaryMode.chat) {
                       // 使用 GetX 路由导航
                       Get.toNamed(AppRoutes.diaryChat);

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lumma/model/llm_config.dart';
 import 'package:lumma/service/config_service.dart';
-import 'package:lumma/service/llm_config_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/config/settings_ui_config.dart';
 import 'package:lumma/view/pages/llm_edit_page.dart';
@@ -348,7 +347,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
 
   Future<void> _createMissingSystemConfigs() async {
     try {
-      final createdCount = await LlmConfigService.createMissingSystemConfigs();
+      final createdCount = await AppConfigService.createMissingSystemLlmConfigs();
 
       if (createdCount > 0) {
         // 重新加载配置列表

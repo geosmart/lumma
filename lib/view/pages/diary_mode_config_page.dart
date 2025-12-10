@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
-import 'package:lumma/service/diary_mode_config_service.dart';
+import 'package:lumma/service/config_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/config/settings_ui_config.dart';
 import 'package:lumma/model/enums.dart' as model_enums;
@@ -23,7 +23,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
   }
 
   Future<void> _loadMode() async {
-    final mode = await DiaryModeConfigService.loadDiaryMode();
+    final mode = await AppConfigService.loadDiaryMode();
     setState(() {
       _mode = mode;
       _loading = false;
@@ -34,7 +34,7 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
     setState(() {
       _mode = mode;
     });
-    await DiaryModeConfigService.saveDiaryMode(mode);
+    await AppConfigService.saveDiaryMode(mode);
   }
 
   @override

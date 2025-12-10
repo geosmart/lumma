@@ -11,7 +11,7 @@ import 'package:lumma/view/widgets/debug_request_dialog.dart';
 import 'package:lumma/service/diary_content_service.dart';
 import 'package:lumma/dao/diary_dao.dart';
 import 'package:lumma/util/storage_service.dart';
-import 'package:lumma/service/diary_mode_config_service.dart';
+import 'package:lumma/service/config_service.dart';
 import 'package:lumma/model/enums.dart';
 import 'dart:io';
 
@@ -56,7 +56,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
   Future<void> _loadTodayHistory() async {
     try {
       // 检查当前日记模式，如果是timeline模式，不加载对话历史
-      final mode = await DiaryModeConfigService.loadDiaryMode();
+      final mode = await AppConfigService.loadDiaryMode();
       if (mode == DiaryMode.timeline) {
         // Timeline模式不需要加载聊天历史
         setState(() {

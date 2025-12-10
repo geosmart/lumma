@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:lumma/model/app_config.dart';
+import 'package:lumma/model/llm_config.dart';
+import 'package:lumma/model/enums.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/service/language_service.dart';
-import 'package:lumma/service/llm_config_service.dart';
 import 'package:lumma/service/prompt_config_service.dart';
-import 'package:lumma/service/diary_mode_config_service.dart';
 import 'package:lumma/util/storage_service.dart';
 
 const String kLummaConfigFileName = 'lumma_config.json';
@@ -161,16 +161,102 @@ class AppConfigService {
     await StorageService.migrateToStandardDirectories();
 
     // 主入口，初始化所有配置
-    await LlmConfigService.init();
+    await _initLlmConfig();
     await PromptConfigService.init();
     // await QaQuestionsService.init(); // Needs BuildContext, must be called from app-level init
     await ThemeService.instance.init();
     await LanguageService.instance.init();
-    await DiaryModeConfigService.init();
+    // DiaryModeConfigService.init() - no longer needed, default is set in AppConfig
     // 可扩展：如有其它配置类，继续调用其 init
     // 例如：await SyncConfigService.init?.call();
 
     // TODO: QaQuestionsService.init(context) must be called from app-level with BuildContext
     print('[AppConfigService] 系统初始化完成，使用统一的数据存储目录结构');
+  }
+
+  // ============================================================================
+  // Diary Mode Configuration Methods
+  // ============================================================================
+
+  /// Load the current diary mode from app config
+  static Future<DiaryMode> loadDiaryMode() async {
+    final config = await load();
+    return config.diaryMode;
+  }
+
+  /// Save the diary mode to app config
+  static Future<void> saveDiaryMode(DiaryMode mode) async {
+    await update((config) {
+      config.diaryMode = mode;
+    });
+  }
+
+  // ============================================================================
+  // LLM Configuration Methods
+  // ============================================================================
+
+  static Future<void> _initLlmConfig() async {
+    final config = await load();
+    if (config.model.isEmpty) {
+      final env = await _readEnv();
+      final llm = LLMConfig(
+        provider: env['MODEL_PROVIDER'] ?? '',
+        baseUrl: env['MODEL_BASE_URL'] ?? '',
+        apiKey: env['MODEL_API_KEY'] ?? '',
+        model: env['MODEL_NAME'] ?? '',
+        active: true,
+      );
+      await update((c) => c.model = [llm]);
+    }
+  }
+
+  /// 创建缺少的系统LLM配置
+  static Future<int> createMissingSystemLlmConfigs() async {
+    final config = await load();
+    final systemConfigs = LLMConfig.getAllSystemConfigs();
+
+    int createdCount = 0;
+
+    for (final systemConfig in systemConfigs) {
+      // 检查是否已经存在相同的系统配置
+      final exists = config.model.any(
+        (llm) =>
+            llm.provider == systemConfig.provider &&
+            llm.baseUrl == systemConfig.baseUrl &&
+            llm.model == systemConfig.model &&
+            llm.isSystem == true,
+      );
+
+      if (!exists) {
+        print('[AppConfigService] 创建缺少的系统LLM配置: ${systemConfig.provider} - ${systemConfig.model}');
+        config.model.add(systemConfig);
+        createdCount++;
+      }
+    }
+
+    if (createdCount > 0) {
+      await save();
+      print('[AppConfigService] 成功创建了 $createdCount 个系统LLM配置');
+    }
+
+    return createdCount;
+  }
+
+  static Future<Map<String, String>> _readEnv() async {
+    final file = File('.env');
+    if (!await file.exists()) return {};
+    final lines = await file.readAsLines();
+    final map = <String, String>{};
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
+      final idx = trimmed.indexOf('=');
+      if (idx > 0) {
+        final key = trimmed.substring(0, idx).trim();
+        final value = trimmed.substring(idx + 1).trim();
+        map[key] = value;
+      }
+    }
+    return map;
   }
 }
