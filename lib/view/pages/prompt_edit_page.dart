@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lumma/model/enums.dart';
 import 'package:lumma/util/prompt_util.dart';
 import 'package:lumma/model/prompt_config.dart';
-import 'package:lumma/model/prompt_constants.dart';
+import 'package:lumma/config/prompt_constants.dart';
 import 'package:lumma/service/config_service.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
 

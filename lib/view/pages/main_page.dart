@@ -7,7 +7,7 @@ import 'package:lumma/service/config_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/util/sync_service.dart';
 import 'package:lumma/model/enums.dart';
-import 'package:lumma/routes/app_routes.dart';
+import 'package:lumma/view/routes/app_routes.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});

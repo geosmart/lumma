@@ -10,7 +10,6 @@ import 'package:lumma/model/sync_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lumma/generated/l10n/app_localizations.dart';
-import 'package:restart_app/restart_app.dart';
 
 class SyncConfigService {
   static Future<Map?> loadSyncConfig() async {
@@ -133,12 +132,11 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           context: context,
           builder: (context) => AlertDialog(
             title: Text('提示'),
-            content: Text('数据存储目录已更改，需重启程序以应用更改。'),
+            content: Text('数据存储目录已更改，应用将退出。请重新打开应用以应用更改。'),
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Restart.restartApp();
+                  exit(0);
                 },
                 child: Text('确定'),
               ),

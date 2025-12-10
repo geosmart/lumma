@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../model/llm_config.dart';
 import 'package:lumma/service/config_service.dart';
 import '../model/prompt_config.dart';
-import '../model/prompt_constants.dart';
+import 'prompt_constants.dart';
 import '../model/enums.dart';
 
 /// 初始化 LLM 和 Prompt 配置，如果没有则从 .env 读取并写入

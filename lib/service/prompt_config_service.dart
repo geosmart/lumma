@@ -1,6 +1,6 @@
 import 'package:lumma/model/enums.dart';
 import 'package:lumma/model/prompt_config.dart';
-import 'package:lumma/model/prompt_constants.dart';
+import 'package:lumma/config/prompt_constants.dart';
 import 'package:lumma/service/config_service.dart';
 import 'package:lumma/service/language_service.dart';
 import 'dart:convert';
