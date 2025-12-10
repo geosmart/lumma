@@ -330,6 +330,14 @@
   "@aiChatDescription": {
     "description": "AI chat mode description"
   },
+  "timeline": "Timeline Narrative",
+  "@timeline": {
+    "description": "Timeline mode title"
+  },
+  "timelineDescription": "Record thoughts and events at each moment in timeline format",
+  "@timelineDescription": {
+    "description": "Timeline mode description"
+  },
   "startWritingDiary": "Start Writing",
   "@startWritingDiary": {
     "description": "Main action button text"

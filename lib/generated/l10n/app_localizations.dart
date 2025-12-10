@@ -578,6 +578,18 @@ abstract class AppLocalizations {
   /// **'Chat with AI using Q&A prompts to generate custom diary'**
   String get aiChatDescription;
 
+  /// Timeline mode title
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline Narrative'**
+  String get timeline;
+
+  /// Timeline mode description
+  ///
+  /// In en, this message translates to:
+  /// **'Record thoughts and events at each moment in timeline format'**
+  String get timelineDescription;
+
   /// Main action button text
   ///
   /// In en, this message translates to:

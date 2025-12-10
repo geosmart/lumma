@@ -139,6 +139,37 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
               onTap: () => _setMode(model_enums.DiaryMode.qa),
             ),
           ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.borderColor, width: 1),
+            ),
+            child: ListTile(
+              leading: Icon(
+                _mode == model_enums.DiaryMode.timeline ? Icons.check_circle : Icons.circle_outlined,
+                color: _mode == model_enums.DiaryMode.timeline ? Colors.green : context.secondaryTextColor,
+                size: 22,
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.timeline,
+                    style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, color: context.primaryTextColor),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+              subtitle: Text(
+                AppLocalizations.of(context)!.timelineDescription,
+                style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.subtitleFontSize),
+              ),
+              onTap: () => _setMode(model_enums.DiaryMode.timeline),
+            ),
+          ),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:lumma/view/pages/main_page.dart';
 import 'package:lumma/view/pages/diary_chat_page.dart';
 import 'package:lumma/view/pages/diary_qa_page.dart';
+import 'package:lumma/view/pages/diary_timeline_page.dart';
 import 'package:lumma/view/pages/diary_calendar_page.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
 import 'package:lumma/view/pages/diary_detail_page.dart';
@@ -35,6 +36,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.diaryQa,
       page: () => const DiaryQaPage(),
+    ),
+    GetPage(
+      name: AppRoutes.diaryTimeline,
+      page: () => const DiaryTimelinePage(),
     ),
     GetPage(
       name: AppRoutes.diaryCalendar,

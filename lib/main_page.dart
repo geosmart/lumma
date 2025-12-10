@@ -101,6 +101,8 @@ class _MainTabPageState extends State<MainTabPage> {
                     if (mode == DiaryMode.chat) {
                       // 使用 GetX 路由导航
                       Get.toNamed(AppRoutes.diaryChat);
+                    } else if (mode == DiaryMode.timeline) {
+                      Get.toNamed(AppRoutes.diaryTimeline);
                     } else {
                       Get.toNamed(AppRoutes.diaryQa);
                     }

@@ -255,6 +255,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiChatDescription => '按问答提示词与AI对话，生成自定义日记';
 
   @override
+  String get timeline => '时间线叙事';
+
+  @override
+  String get timelineDescription => '以时间线方式记录每个时刻的想法和事件';
+
+  @override
   String get startWritingDiary => '开始写日记';
 
   @override

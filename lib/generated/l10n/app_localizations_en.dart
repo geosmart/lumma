@@ -270,6 +270,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Chat with AI using Q&A prompts to generate custom diary';
 
   @override
+  String get timeline => 'Timeline Narrative';
+
+  @override
+  String get timelineDescription =>
+      'Record thoughts and events at each moment in timeline format';
+
+  @override
   String get startWritingDiary => 'Start Writing';
 
   @override

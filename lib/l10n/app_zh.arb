@@ -84,6 +84,8 @@
   "fixedQADescription": "逐条回答预设问题，生成结构化日记",
   "aiChat": "AI对话日记",
   "aiChatDescription": "按问答提示词与AI对话，生成自定义日记",
+  "timeline": "时间线叙事",
+  "timelineDescription": "以时间线方式记录每个时刻的想法和事件",
   "startWritingDiary": "开始写日记",
   "diaryList": "日记列表",
   "sync": "同步",

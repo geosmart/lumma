@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../generated/l10n/app_localizations.dart';
 
-enum DiaryMode { qa, chat }
+enum DiaryMode { qa, chat, timeline }
 
 String diaryModeToString(DiaryMode mode) {
   switch (mode) {
@@ -9,6 +9,8 @@ String diaryModeToString(DiaryMode mode) {
       return 'qa';
     case DiaryMode.chat:
       return 'chat';
+    case DiaryMode.timeline:
+      return 'timeline';
   }
 }
 
@@ -18,6 +20,8 @@ DiaryMode diaryModeFromString(String value) {
       return DiaryMode.qa;
     case 'chat':
       return DiaryMode.chat;
+    case 'timeline':
+      return DiaryMode.timeline;
     default:
       return DiaryMode.qa;
   }
