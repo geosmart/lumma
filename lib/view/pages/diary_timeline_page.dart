@@ -16,7 +16,7 @@ class DiaryTimelinePage extends StatefulWidget {
 class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
   final TextEditingController _ctrl = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<TimelineEntry> _entries = [];
+  final List<DiaryEntry> _entries = [];
   String? _diaryFileName;
   bool _diaryCreated = false;
   bool _isSaving = false;
@@ -74,12 +74,12 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
 
       if (await file.exists()) {
         final content = await file.readAsString();
-        final entries = _parseTimelineEntries(content);
+        final entries = DiaryDao.parseDiaryContent(context, content);
 
         if (mounted && entries.isNotEmpty) {
           setState(() {
             _entries.clear();
-            _entries.addAll(entries);
+            _entries.addAll(entries.reversed); // Reverse to show chronological order
           });
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _scrollToBottom();
@@ -89,31 +89,6 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
     } catch (e) {
       print('加载时间线失败: $e');
     }
-  }
-
-  List<TimelineEntry> _parseTimelineEntries(String content) {
-    final entries = <TimelineEntry>[];
-    final lines = content.split('\n');
-
-    // Parse entries in format: * yyyyMMdd HH:mm:ss content
-    final pattern = RegExp(r'^\* (\d{8}) (\d{2}:\d{2}:\d{2}) (.+)$');
-
-    for (final line in lines) {
-      final match = pattern.firstMatch(line.trim());
-      if (match != null) {
-        final dateStr = match.group(1)!;
-        final timeStr = match.group(2)!;
-        final content = match.group(3)!;
-
-        entries.add(TimelineEntry(
-          dateStr: dateStr,
-          timeStr: timeStr,
-          content: content,
-        ));
-      }
-    }
-
-    return entries;
   }
 
   void _scrollToBottom() {
@@ -133,30 +108,24 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
     if (_isSaving) return;
 
     final userContent = _ctrl.text.trim();
-    final now = DateTime.now();
-    final dateStr = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
 
-    // Add to local list immediately for display
     setState(() {
-      _entries.add(TimelineEntry(
-        dateStr: dateStr,
-        timeStr: timeStr,
-        content: userContent,
-      ));
       _ctrl.clear();
       _isSaving = true;
     });
 
-    _scrollToBottom();
-
     try {
-      // Save to diary using the existing method
-      await DiaryDao.appendDailyDiaryWithCorrection(
+      // Save to diary using timeline-specific method
+      await DiaryDao.appendTimelineDiaryEntry(
         context: context,
         userContent: userContent,
         shouldCorrect: null, // Use default correction setting
       );
+
+      // Reload entries to reflect the new entry with proper numbering
+      await _loadTodayTimeline();
+
+      _scrollToBottom();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -234,7 +203,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                entry.timeStr,
+                                entry.time ?? '',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: context.secondaryTextColor,
@@ -251,7 +220,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  entry.content,
+                                  entry.q ?? '',
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: context.primaryTextColor,
@@ -395,16 +364,4 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       ),
     );
   }
-}
-
-class TimelineEntry {
-  final String dateStr;
-  final String timeStr;
-  final String content;
-
-  TimelineEntry({
-    required this.dateStr,
-    required this.timeStr,
-    required this.content,
-  });
 }

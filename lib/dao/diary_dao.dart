@@ -102,6 +102,37 @@ class DiaryDao {
     return buffer.toString();
   }
 
+  /// Timeline mode diary content formatting method
+  /// Uses sequential numbering as title, with no category and content analysis sections
+  /// [entryNumber] Entry number (e.g., 1, 2, 3...)
+  /// [content] Diary content
+  /// [time] Time (optional, defaults to current time)
+  static String formatTimelineDiaryContent({
+    required BuildContext context,
+    required int entryNumber,
+    required String content,
+    String? time,
+  }) {
+    final buffer = StringBuffer();
+    // 1. Title with entry number
+    buffer.writeln('## 日记$entryNumber');
+    buffer.writeln();
+    // 2. Time
+    final now = DateTime.now();
+    final timeStr = time ?? '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    buffer.writeln('### ${AppLocalizations.of(context)!.time}');
+    buffer.writeln(timeStr);
+    buffer.writeln();
+    // 3. Diary content (timeline mode only has content, no category or analysis)
+    buffer.writeln('### ${AppLocalizations.of(context)!.diaryContent}');
+    buffer.writeln(content);
+    buffer.writeln();
+    // Separator
+    buffer.writeln('---');
+    buffer.writeln();
+    return buffer.toString();
+  }
+
   /// Parse markdown to chat history, returns List<DiaryEntry>
   /// Each entry contains: title, time, category, q, a
   /// Results are sorted by time in descending order (newest first)
@@ -475,6 +506,66 @@ class DiaryDao {
     }
 
     return correctedText.isEmpty ? text : correctedText;
+  }
+
+  /// Get the count of diary entries in today's diary file
+  /// Used for generating sequential entry numbers in timeline mode
+  static Future<int> getTodayDiaryEntryCount(BuildContext context) async {
+    try {
+      final fileName = getDiaryFileName();
+      final diaryDir = await getDiaryDir();
+      final file = File('$diaryDir/$fileName');
+
+      if (!await file.exists()) {
+        return 0;
+      }
+
+      final content = await file.readAsString();
+      final entries = parseDiaryContent(context, content);
+      return entries.length;
+    } catch (e) {
+      print('[DiaryDao] 获取日记条目数量失败: $e');
+      return 0;
+    }
+  }
+
+  /// Append timeline entry to today's diary
+  /// [context] BuildContext for localization and parsing
+  /// [userContent] User input content
+  /// [shouldCorrect] Whether to apply text correction, if null checks correction config
+  static Future<void> appendTimelineDiaryEntry({
+    required BuildContext context,
+    required String userContent,
+    bool? shouldCorrect,
+  }) async {
+    // Get current entry count to generate next entry number
+    final currentCount = await getTodayDiaryEntryCount(context);
+    final entryNumber = currentCount + 1;
+
+    String contentToSave = userContent;
+
+    // Check if correction is needed
+    final needsCorrection = shouldCorrect ?? await isCorrectionEnabled();
+
+    if (needsCorrection) {
+      // Apply text correction
+      try {
+        contentToSave = await processTextWithCorrection(userContent);
+      } catch (e) {
+        print('[DiaryDao] 纠错处理失败，使用原始内容: $e');
+        contentToSave = userContent;
+      }
+    }
+
+    // Format as timeline entry
+    final formattedEntry = formatTimelineDiaryContent(
+      context: context,
+      entryNumber: entryNumber,
+      content: contentToSave,
+    );
+
+    // Append to today's diary
+    await appendToDailyDiary(formattedEntry);
   }
 
 
