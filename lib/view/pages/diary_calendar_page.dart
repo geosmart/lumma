@@ -104,8 +104,13 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
         title: Text(l10n.calendarView),
         actions: [
           IconButton(
-            icon: const Icon(Icons.list_alt),
-            tooltip: l10n.diaryList,
+            icon: const Icon(Icons.view_timeline),
+            tooltip: l10n.listView,
+            onPressed: () => Get.toNamed(AppRoutes.diaryList),
+          ),
+          IconButton(
+            icon: const Icon(Icons.folder_outlined),
+            tooltip: l10n.fileView,
             onPressed: () => Get.toNamed(AppRoutes.diaryFileList),
           ),
           IconButton(

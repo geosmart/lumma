@@ -9,6 +9,7 @@ abstract class AppRoutes {
   static const diaryTimeline = '/diary/timeline';
   static const diaryCalendar = '/diary/calendar';
   static const diaryFileList = '/diary/file-list';
+  static const diaryList = '/diary/list';
   static const diaryDetail = '/diary/detail';
   static const diaryEdit = '/diary/edit';
   static const diaryContent = '/diary/content';

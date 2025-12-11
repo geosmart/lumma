@@ -5,6 +5,7 @@ import 'package:lumma/view/pages/diary_qa_page.dart';
 import 'package:lumma/view/pages/diary_timeline_page.dart';
 import 'package:lumma/view/pages/diary_calendar_page.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
+import 'package:lumma/view/pages/diary_list_page.dart';
 import 'package:lumma/view/pages/diary_detail_page.dart';
 import 'package:lumma/view/pages/diary_edit_page.dart';
 import 'package:lumma/view/pages/diary_content_page.dart';
@@ -48,6 +49,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.diaryFileList,
       page: () => const DiaryFileListPage(),
+    ),
+    GetPage(
+      name: AppRoutes.diaryList,
+      page: () => const DiaryListPage(),
     ),
     GetPage(
       name: AppRoutes.diaryDetail,

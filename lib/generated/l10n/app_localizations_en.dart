@@ -476,7 +476,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promptEditSave => 'Save';
 
   @override
-  String get diaryFileListTitle => 'Diary Files';
+  String get diaryFileListTitle => 'File View';
+
+  @override
+  String get diaryTimelineListTitle => 'Timeline View';
+
+  @override
+  String get fileView => 'File View';
+
+  @override
+  String get listView => 'Timeline View';
+
+  @override
+  String get viewDiaryFiles => 'File View';
+
+  @override
+  String get viewDiaryTimeline => 'Timeline View';
 
   @override
   String get syncDialogTitle => 'Sync Progress';

@@ -977,8 +977,38 @@ abstract class AppLocalizations {
   /// No description provided for @diaryFileListTitle.
   ///
   /// In en, this message translates to:
-  /// **'Diary Files'**
+  /// **'File View'**
   String get diaryFileListTitle;
+
+  /// No description provided for @diaryTimelineListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline View'**
+  String get diaryTimelineListTitle;
+
+  /// No description provided for @fileView.
+  ///
+  /// In en, this message translates to:
+  /// **'File View'**
+  String get fileView;
+
+  /// No description provided for @listView.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline View'**
+  String get listView;
+
+  /// No description provided for @viewDiaryFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'File View'**
+  String get viewDiaryFiles;
+
+  /// No description provided for @viewDiaryTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline View'**
+  String get viewDiaryTimeline;
 
   /// No description provided for @syncDialogTitle.
   ///
