@@ -7,7 +7,7 @@ class EnUS extends Translations {
         'en_US': {
           // 应用基础
           'app_name': 'Lumma',
-          'app_subtitle': 'Hear. Heal. Hold.',
+          'app_subtitle': 'Journal freely. Reflect deeply.\nPowered by AI.',
 
           // 主页
           'start_writing_diary': 'Start Writing',

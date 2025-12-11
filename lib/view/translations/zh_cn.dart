@@ -7,13 +7,13 @@ class ZhCN extends Translations {
         'zh_CN': {
           // 应用基础
           'app_name': 'Lumma',
-          'app_subtitle': '倾听·疗愈·珍藏',
+          'app_subtitle': '自由记录·深度思考\nAI 驱动',
 
           // 主页
           'start_writing_diary': '开始写日记',
           'diary_list': '日记列表',
           'calendar_view': '日历视图',
-          'data_sync': '数据同步',
+          'data_sync': '同步',
           'settings': '设置',
 
           // 日记相关

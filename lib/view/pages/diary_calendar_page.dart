@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:lumma/service/diary_statistics_service.dart';
 import 'package:lumma/view/pages/diary_content_page.dart';
+import 'package:lumma/view/routes/app_routes.dart';
 import 'package:lumma/dao/diary_dao.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lunar/lunar.dart';
@@ -101,6 +103,11 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
       appBar: AppBar(
         title: Text(l10n.calendarView),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            tooltip: l10n.diaryList,
+            onPressed: () => Get.toNamed(AppRoutes.diaryFileList),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadStatistics,

@@ -57,3 +57,4 @@ flutter_app_vscode
 .venv
 **/*.so
 rsync.sh
+.marscode

@@ -55,7 +55,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diary => '日记';
 
   @override
-  String get diaryFiles => '日记文件';
+  String get diaryFiles => '列表';
 
   @override
   String get newDiary => '新建日记';
@@ -457,7 +457,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get promptEditSave => '保存';
 
   @override
-  String get diaryFileListTitle => '日记文件';
+  String get diaryFileListTitle => '列表';
 
   @override
   String get syncDialogTitle => '同步进度';
@@ -482,7 +482,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonDone => '完成';
 
   @override
-  String get dataSync => '数据同步';
+  String get dataSync => '同步';
 
   @override
   String get startSyncTask => '开始同步任务';
