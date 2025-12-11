@@ -457,7 +457,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get promptEditSave => '保存';
 
   @override
-  String get diaryFileListTitle => '列表';
+  String get diaryFileListTitle => '文件视图';
+
+  @override
+  String get diaryTimelineListTitle => '列表视图';
+
+  @override
+  String get fileView => '文件视图';
+
+  @override
+  String get listView => '列表视图';
+
+  @override
+  String get viewDiaryFiles => '文件视图';
+
+  @override
+  String get viewDiaryTimeline => '列表视图';
 
   @override
   String get syncDialogTitle => '同步进度';

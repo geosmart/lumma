@@ -429,7 +429,12 @@
   "promptEditSetActive": "Set Active",
   "promptEditContent": "Markdown Content",
   "promptEditSave": "Save",
-  "diaryFileListTitle": "Diary Files",
+  "diaryFileListTitle": "File View",
+  "diaryTimelineListTitle": "Timeline View",
+  "fileView": "File View",
+  "listView": "Timeline View",
+  "viewDiaryFiles": "File View",
+  "viewDiaryTimeline": "Timeline View",
   "syncDialogTitle": "Sync Progress",
   "syncDialogProgress": "Progress: {current}/{total}",
   "@syncDialogProgress": {

@@ -28,12 +28,12 @@ class LLMConfig extends Timestamped {
     isSystem: true, // 标记为系统级配置
   );
 
-  /// 创建默认的LLM配置（OpenAI）
+  /// 创建默认的LLM配置（Ollama）
   factory LLMConfig.deepSeekDefault() => LLMConfig(
-    provider: 'deepseek',
-    baseUrl: 'https://api.deepseek.com/v1',
-    apiKey: 'sk-xxx',
-    model: 'deepseek-chat',
+    provider: 'ollama',
+    baseUrl: 'http://nas:11434/v1',
+    apiKey: 'xxx',
+    model: 'qwen3:2.5b',
     active: false,
     isSystem: true, // 标记为系统级配置
   );
