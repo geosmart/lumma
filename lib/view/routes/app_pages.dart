@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:lumma/view/pages/main_page.dart';
 import 'package:lumma/view/pages/diary_chat_page.dart';
-import 'package:lumma/view/pages/diary_qa_page.dart';
 import 'package:lumma/view/pages/diary_timeline_page.dart';
 import 'package:lumma/view/pages/diary_calendar_page.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
@@ -17,7 +16,6 @@ import 'package:lumma/view/pages/prompt_edit_page.dart';
 import 'package:lumma/view/pages/category_config_page.dart';
 import 'package:lumma/view/pages/diary_mode_config_page.dart';
 import 'package:lumma/view/pages/sync_config_page.dart';
-import 'package:lumma/view/pages/qa_question_config_page.dart';
 import 'package:lumma/model/enums.dart';
 import 'app_routes.dart';
 
@@ -33,10 +31,6 @@ class AppPages {
     GetPage(
       name: AppRoutes.diaryChat,
       page: () => const DiaryChatPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryQa,
-      page: () => const DiaryQaPage(),
     ),
     GetPage(
       name: AppRoutes.diaryTimeline,
@@ -116,10 +110,6 @@ class AppPages {
     GetPage(
       name: AppRoutes.syncConfig,
       page: () => const SyncConfigPage(),
-    ),
-    GetPage(
-      name: AppRoutes.qaQuestionConfig,
-      page: () => const QaQuestionConfigPage(),
     ),
   ];
 }

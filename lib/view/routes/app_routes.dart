@@ -5,7 +5,6 @@ abstract class AppRoutes {
 
   // 日记相关
   static const diaryChat = '/diary/chat';
-  static const diaryQa = '/diary/qa';
   static const diaryTimeline = '/diary/timeline';
   static const diaryCalendar = '/diary/calendar';
   static const diaryFileList = '/diary/file-list';
@@ -23,5 +22,4 @@ abstract class AppRoutes {
   static const categoryConfig = '/settings/category-config';
   static const diaryModeConfig = '/settings/diary-mode-config';
   static const syncConfig = '/settings/sync-config';
-  static const qaQuestionConfig = '/settings/qa-question-config';
 }

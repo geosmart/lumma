@@ -167,7 +167,7 @@ class _MainTabPageState extends State<MainTabPage> {
                               } else if (mode == DiaryMode.timeline) {
                                 Get.toNamed(AppRoutes.diaryTimeline);
                               } else {
-                                Get.toNamed(AppRoutes.diaryQa);
+                                Get.toNamed(AppRoutes.diaryChat);
                               }
                             },
                             child: Center(
