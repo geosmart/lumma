@@ -38,18 +38,16 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.loadingFailed}: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.loadingFailed}: $e')));
       }
     }
   }
 
   Color _getColorForCount(int count, int maxCount) {
     if (count == 0) {
-      return Theme.of(context).brightness == Brightness.dark
-          ? Colors.grey[800]!
-          : Colors.grey[200]!;
+      return Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!;
     }
 
     final intensity = DiaryStatisticsService.getIntensityLevel(count, maxCount);
@@ -87,11 +85,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
     // Check if diary exists for this day
     final normalizedDate = DateTime(date.year, date.month, date.day);
     if (_characterCounts.containsKey(normalizedDate) && _characterCounts[normalizedDate]! > 0) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DiaryContentPage(fileName: fileName),
-        ),
-      );
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiaryContentPage(fileName: fileName)));
     }
   }
 
@@ -113,10 +107,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
             tooltip: l10n.fileView,
             onPressed: () => Get.toNamed(AppRoutes.diaryFileList),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadStatistics,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadStatistics),
         ],
       ),
       body: _loading
@@ -132,10 +123,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
                 // Calendar heatmap
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: _buildCalendarGrid(),
-                    ),
+                    child: Padding(padding: const EdgeInsets.all(16.0), child: _buildCalendarGrid()),
                   ),
                 ),
 
@@ -157,9 +145,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -177,49 +163,40 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
       children: [
         Text(
           value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).textTheme.bodySmall?.color,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
       ],
     );
   }
 
   Widget _buildMonthNavigation() {
     final monthNames = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
-    final monthNamesZh = [
-      '', '一月', '二月', '三月', '四月', '五月', '六月',
-      '七月', '八月', '九月', '十月', '十一月', '十二月'
-    ];
+    final monthNamesZh = ['', '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
 
     final isZh = Localizations.localeOf(context).languageCode == 'zh';
-    final monthName = isZh
-        ? monthNamesZh[_displayDate.month]
-        : monthNames[_displayDate.month];
-    final displayText = isZh
-        ? '${_displayDate.year}年 $monthName'
-        : '$monthName ${_displayDate.year}';
+    final monthName = isZh ? monthNamesZh[_displayDate.month] : monthNames[_displayDate.month];
+    final displayText = isZh ? '${_displayDate.year}年 $monthName' : '$monthName ${_displayDate.year}';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(12)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -232,11 +209,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
           ),
           Text(
             displayText,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
@@ -252,9 +225,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
 
   Widget _buildCalendarGrid() {
     // Calculate max count for color scaling
-    final maxCount = _characterCounts.values.isEmpty
-        ? 0
-        : _characterCounts.values.reduce((a, b) => a > b ? a : b);
+    final maxCount = _characterCounts.values.isEmpty ? 0 : _characterCounts.values.reduce((a, b) => a > b ? a : b);
 
     // Get first day of the month
     final firstDay = DateTime(_displayDate.year, _displayDate.month, 1);
@@ -301,7 +272,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
                     final lunar = Lunar.fromDate(date);
                     // If it's the first day of lunar month, show month name instead
                     if (lunar.getDay() == 1) {
-                      lunarDay = lunar.getMonthInChinese()+"月";
+                      lunarDay = lunar.getMonthInChinese() + "月";
                     } else {
                       lunarDay = lunar.getDayInChinese();
                     }
@@ -319,10 +290,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
                       decoration: BoxDecoration(
                         color: _getColorForCount(count, maxCount),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 0.5,
-                        ),
+                        border: Border.all(color: Colors.white.withOpacity(0.1), width: 0.5),
                       ),
                       child: Center(
                         child: Column(
@@ -403,10 +371,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            l10n.less,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(l10n.less, style: const TextStyle(fontSize: 12)),
           const SizedBox(width: 8),
           ...List.generate(5, (index) {
             Color color;
@@ -434,17 +399,11 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
               width: 16,
               height: 16,
               margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(2),
-              ),
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
             );
           }),
           const SizedBox(width: 8),
-          Text(
-            l10n.more,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(l10n.more, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );

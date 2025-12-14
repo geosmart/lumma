@@ -107,7 +107,7 @@ You are a warm, insightful diary assistant. Your task is to guide me through a s
 * 想对明天的自己说的话
 ''';
 
-  static const String defaultSummaryPrompt ='''
+  static const String defaultSummaryPrompt = '''
 Daily Journal Organization Requirements
 Please organize the conversation content according to the following format, output the list directly without adding any titles:
 Processing Principles

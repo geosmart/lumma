@@ -369,7 +369,8 @@ class WebdavUtil {
 
       final request = http.Request('PROPFIND', uri)
         ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': 'infinity'})
-        ..body = '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n    <D:getlastmodified/>\n  </D:prop>\n</D:propfind>''';
+        ..body =
+            '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n    <D:getlastmodified/>\n  </D:prop>\n</D:propfind>''';
 
       print('发送 PROPFIND 请求...');
       final response = await http.Client().send(request);
@@ -460,8 +461,7 @@ class WebdavUtil {
     try {
       final uri = Uri.parse('$webdavUrl$remotePath');
       final auth = base64Encode(utf8.encode('$username:$password'));
-      final response = http.Request('MKCOL', uri)
-        ..headers.addAll({'Authorization': 'Basic $auth'});
+      final response = http.Request('MKCOL', uri)..headers.addAll({'Authorization': 'Basic $auth'});
       final streamedResponse = await http.Client().send(response);
       // MKCOL: 201 Created 或 405 Method Not Allowed（已存在）视为成功
       if (streamedResponse.statusCode == 201 || streamedResponse.statusCode == 405) {
@@ -487,18 +487,26 @@ class WebdavUtil {
     final auth = base64Encode(utf8.encode('$username:$password'));
     final request = http.Request('PROPFIND', uri)
       ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
-      ..body = '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
+      ..body =
+          '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
     final response = await http.Client().send(request);
     if (response.statusCode != 207) return [];
     final responseBody = await response.stream.bytesToString();
     // 解析所有目录路径
-    final dirMatches = RegExp(r'<D:response>[\s\S]*?<D:resourcetype>[\s\S]*?<D:collection/>[\s\S]*?<D:href>(.*?)<\/D:href>').allMatches(responseBody);
-    final dirs = dirMatches.map((m) {
-      final href = m.group(1) ?? '';
-      // 去除域名和 remoteDir 前缀
-      final uri = Uri.parse(href);
-      return uri.path;
-    }).where((path) => path != '/' && path != remoteDir && path != (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/')).toList();
+    final dirMatches = RegExp(
+      r'<D:response>[\s\S]*?<D:resourcetype>[\s\S]*?<D:collection/>[\s\S]*?<D:href>(.*?)<\/D:href>',
+    ).allMatches(responseBody);
+    final dirs = dirMatches
+        .map((m) {
+          final href = m.group(1) ?? '';
+          // 去除域名和 remoteDir 前缀
+          final uri = Uri.parse(href);
+          return uri.path;
+        })
+        .where(
+          (path) => path != '/' && path != remoteDir && path != (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/'),
+        )
+        .toList();
     return dirs;
   }
 
@@ -553,12 +561,7 @@ class WebdavUtil {
             }
           }
         }
-        files.add({
-          'name': fileName,
-          'path': '/' + currentPath,
-          'isFile': !isCollection,
-          'lastModified': lastModified,
-        });
+        files.add({'name': fileName, 'path': '/' + currentPath, 'isFile': !isCollection, 'lastModified': lastModified});
       }
     } catch (e) {
       print('解析 WebDAV 响应异常: $e');

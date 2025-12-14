@@ -138,9 +138,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              Localizations.localeOf(context).languageCode == 'zh'
-                  ? '重置提示词失败: $e'
-                  : 'Failed to reset prompt: $e',
+              Localizations.localeOf(context).languageCode == 'zh' ? '重置提示词失败: $e' : 'Failed to reset prompt: $e',
             ),
             backgroundColor: Colors.red,
           ),
@@ -363,7 +361,9 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                             child: ListTile(
                               dense: true,
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                              onTap: prompt.isSystem ? () => _showPrompt(prompt, readOnly: true) : () => _showPrompt(prompt),
+                              onTap: prompt.isSystem
+                                  ? () => _showPrompt(prompt, readOnly: true)
+                                  : () => _showPrompt(prompt),
                               title: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -467,10 +467,7 @@ class _PromptConfigPageState extends State<PromptConfigPage> {
                                           padding: const EdgeInsets.only(left: 46, top: 2),
                                           child: Text(
                                             '${Localizations.localeOf(context).languageCode == 'zh' ? '创建时间: ' : 'Created: '}${_formatDateTime(prompt.created)}',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: context.secondaryTextColor,
-                                            ),
+                                            style: TextStyle(fontSize: 11, color: context.secondaryTextColor),
                                           ),
                                         ),
                                       ),

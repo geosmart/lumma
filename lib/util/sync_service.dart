@@ -87,7 +87,9 @@ class SyncService {
       }).toList();
       localDirsList.sort((a, b) => a.split('/').length.compareTo(b.split('/').length));
       for (final relativePath in localDirsList) {
-        final remotePath = (syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : '${syncConfig.webdavRemoteDir}/') + relativePath.replaceFirst('/', '');
+        final remotePath =
+            (syncConfig.webdavRemoteDir.endsWith('/') ? syncConfig.webdavRemoteDir : '${syncConfig.webdavRemoteDir}/') +
+            relativePath.replaceFirst('/', '');
         final decodedRemotePath = Uri.encodeFull(remotePath);
         await WebdavUtil.createDirectory(
           webdavUrl: syncConfig.webdavUrl,
@@ -229,9 +231,11 @@ class SyncService {
             '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
         logs.insert(0, '$timeStr $message');
       }
+
       void closeDialog() {
         closed = true;
       }
+
       if (!started) {
         started = true;
         addLog(l10n.startSyncTask);

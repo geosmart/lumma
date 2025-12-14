@@ -24,69 +24,32 @@ class AppPages {
   static const initial = AppRoutes.main;
 
   static final routes = [
-    GetPage(
-      name: AppRoutes.main,
-      page: () => const MainTabPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryChat,
-      page: () => const DiaryChatPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryTimeline,
-      page: () => const DiaryTimelinePage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryCalendar,
-      page: () => const DiaryCalendarPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryFileList,
-      page: () => const DiaryFileListPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryList,
-      page: () => const DiaryListPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryDetail,
-      page: () => const DiaryDetailPage(),
-    ),
+    GetPage(name: AppRoutes.main, page: () => const MainTabPage()),
+    GetPage(name: AppRoutes.diaryChat, page: () => const DiaryChatPage()),
+    GetPage(name: AppRoutes.diaryTimeline, page: () => const DiaryTimelinePage()),
+    GetPage(name: AppRoutes.diaryCalendar, page: () => const DiaryCalendarPage()),
+    GetPage(name: AppRoutes.diaryFileList, page: () => const DiaryFileListPage()),
+    GetPage(name: AppRoutes.diaryList, page: () => const DiaryListPage()),
+    GetPage(name: AppRoutes.diaryDetail, page: () => const DiaryDetailPage()),
     // DiaryEditPage 需要 fileName 参数，通过 Get.arguments['fileName'] 传递
     GetPage(
       name: AppRoutes.diaryEdit,
-      page: () => DiaryEditPage(
-        fileName: Get.arguments?['fileName'] ?? '',
-      ),
+      page: () => DiaryEditPage(fileName: Get.arguments?['fileName'] ?? ''),
     ),
     // DiaryContentPage 需要 fileName 参数，通过 Get.arguments['fileName'] 传递
     GetPage(
       name: AppRoutes.diaryContent,
-      page: () => DiaryContentPage(
-        fileName: Get.arguments?['fileName'] ?? '',
-      ),
+      page: () => DiaryContentPage(fileName: Get.arguments?['fileName'] ?? ''),
     ),
-    GetPage(
-      name: AppRoutes.settings,
-      page: () => const SettingsPage(),
-    ),
+    GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
     // LlmConfigPage 是 StatefulWidget，不能用 const
-    GetPage(
-      name: AppRoutes.llmConfig,
-      page: () => const LLMConfigPage(),
-    ),
+    GetPage(name: AppRoutes.llmConfig, page: () => const LLMConfigPage()),
     // LlmEditPage 可以接收可选参数
     GetPage(
       name: AppRoutes.llmEdit,
-      page: () => LLMEditPage(
-        config: Get.arguments?['config'],
-        readOnly: Get.arguments?['readOnly'] ?? false,
-      ),
+      page: () => LLMEditPage(config: Get.arguments?['config'], readOnly: Get.arguments?['readOnly'] ?? false),
     ),
-    GetPage(
-      name: AppRoutes.promptConfig,
-      page: () => const PromptConfigPage(),
-    ),
+    GetPage(name: AppRoutes.promptConfig, page: () => const PromptConfigPage()),
     // PromptEditPage 需要 activeCategory 参数（PromptCategory 枚举类型）
     GetPage(
       name: AppRoutes.promptEdit,
@@ -99,17 +62,8 @@ class AppPages {
         isSystem: Get.arguments?['isSystem'] ?? false,
       ),
     ),
-    GetPage(
-      name: AppRoutes.categoryConfig,
-      page: () => const CategoryConfigPage(),
-    ),
-    GetPage(
-      name: AppRoutes.diaryModeConfig,
-      page: () => const DiaryModeConfigPage(),
-    ),
-    GetPage(
-      name: AppRoutes.syncConfig,
-      page: () => const SyncConfigPage(),
-    ),
+    GetPage(name: AppRoutes.categoryConfig, page: () => const CategoryConfigPage()),
+    GetPage(name: AppRoutes.diaryModeConfig, page: () => const DiaryModeConfigPage()),
+    GetPage(name: AppRoutes.syncConfig, page: () => const SyncConfigPage()),
   ];
 }

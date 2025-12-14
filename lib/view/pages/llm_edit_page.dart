@@ -62,9 +62,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          Localizations.localeOf(context).languageCode == 'zh' ? '确认重置' : 'Confirm Reset',
-        ),
+        title: Text(Localizations.localeOf(context).languageCode == 'zh' ? '确认重置' : 'Confirm Reset'),
         content: Text(
           Localizations.localeOf(context).languageCode == 'zh'
               ? '确定要重置此模型配置到默认内容吗？'
@@ -73,15 +71,11 @@ class _LLMEditPageState extends State<LLMEditPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              Localizations.localeOf(context).languageCode == 'zh' ? '取消' : 'Cancel',
-            ),
+            child: Text(Localizations.localeOf(context).languageCode == 'zh' ? '取消' : 'Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              Localizations.localeOf(context).languageCode == 'zh' ? '重置' : 'Reset',
-            ),
+            child: Text(Localizations.localeOf(context).languageCode == 'zh' ? '重置' : 'Reset'),
           ),
         ],
       ),
@@ -209,9 +203,7 @@ class _LLMEditPageState extends State<LLMEditPage> {
                 child: ElevatedButton.icon(
                   onPressed: _resetConfig,
                   icon: const Icon(Icons.smart_toy), // 使用AI机器人图标
-                  label: Text(
-                    Localizations.localeOf(context).languageCode == 'zh' ? '重置到默认' : 'Reset to Default',
-                  ),
+                  label: Text(Localizations.localeOf(context).languageCode == 'zh' ? '重置到默认' : 'Reset to Default'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
                     backgroundColor: Colors.orange,

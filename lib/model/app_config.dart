@@ -12,9 +12,7 @@ class AppConfig {
   SyncConfig sync;
   List<String> categoryList;
 
-  static const List<String> defaultCategoryList = [
-    '想法', '观察', '工作', '生活', '育儿', '学习', '健康', '情感'
-  ];
+  static const List<String> defaultCategoryList = ['想法', '观察', '工作', '生活', '育儿', '学习', '健康', '情感'];
 
   AppConfig({
     this.diaryMode = DiaryMode.timeline,

@@ -121,7 +121,8 @@ class _PromptEditPageState extends State<PromptEditPage> {
       ),
     );
 
-    if (confirmed != true) return;    try {
+    if (confirmed != true) return;
+    try {
       // 获取默认内容
       String defaultContent;
 
@@ -192,9 +193,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              Localizations.localeOf(context).languageCode == 'zh'
-                  ? '重置提示词失败: $e'
-                  : 'Failed to reset prompt: $e',
+              Localizations.localeOf(context).languageCode == 'zh' ? '重置提示词失败: $e' : 'Failed to reset prompt: $e',
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
@@ -237,8 +236,8 @@ class _PromptEditPageState extends State<PromptEditPage> {
                   )
                   .toList(),
               onChanged: (v) {
-                      if (v != null) setState(() => _selectedCategory = v);
-                    },
+                if (v != null) setState(() => _selectedCategory = v);
+              },
               decoration: InputDecoration(labelText: AppLocalizations.of(context)!.promptEditCategory),
             ),
             const SizedBox(height: 8),
@@ -260,9 +259,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
               child: ElevatedButton.icon(
                 onPressed: _resetPrompt,
                 icon: const Icon(Icons.person_outline), // 使用人物角色图标
-                label: Text(
-                  Localizations.localeOf(context).languageCode == 'zh' ? '重置到默认' : 'Reset to Default',
-                ),
+                label: Text(Localizations.localeOf(context).languageCode == 'zh' ? '重置到默认' : 'Reset to Default'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   backgroundColor: Colors.orange,

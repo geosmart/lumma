@@ -48,12 +48,7 @@ class _MainTabPageState extends State<MainTabPage> {
               const SizedBox(height: 80),
 
               // LOGO区域
-              SvgPicture.asset(
-                'assets/icon/icon.svg',
-                width: 120,
-                height: 120,
-                fit: BoxFit.contain,
-              ),
+              SvgPicture.asset('assets/icon/icon.svg', width: 120, height: 120, fit: BoxFit.contain),
 
               const SizedBox(height: 32),
 
@@ -161,10 +156,7 @@ class _MainTabPageState extends State<MainTabPage> {
                     ),
                     const SizedBox(width: 12),
                     // 用 _SyncButton 替换原来的"数据同步"按钮
-                    SizedBox(
-                      width: 100,
-                      child: _SyncButton(),
-                    ),
+                    SizedBox(width: 100, child: _SyncButton()),
                     const SizedBox(width: 12),
                     SizedBox(
                       width: 100,
@@ -176,7 +168,7 @@ class _MainTabPageState extends State<MainTabPage> {
                           Get.toNamed(AppRoutes.settings);
                         },
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

@@ -77,23 +77,18 @@ class _MainTabPageState extends State<MainTabPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Logo
-                      SvgPicture.asset(
-                        'assets/icon/icon.svg',
-                        width: 120,
-                        height: 120,
-                        fit: BoxFit.contain,
-                      ),
+                      SvgPicture.asset('assets/icon/icon.svg', width: 120, height: 120, fit: BoxFit.contain),
                       const SizedBox(height: 12),
                       // App Name
                       Text(
                         'Lumma',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 42,
-                            color: context.primaryTextColor,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 2.0,
-                            shadows: const [Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black12)]
+                          fontSize: 42,
+                          color: context.primaryTextColor,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2.0,
+                          shadows: const [Shadow(offset: Offset(0, 2), blurRadius: 4, color: Colors.black12)],
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -153,7 +148,7 @@ class _MainTabPageState extends State<MainTabPage> {
                               color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
-                            )
+                            ),
                           ],
                         ),
                         child: Material(
@@ -211,11 +206,7 @@ class _MainTabPageState extends State<MainTabPage> {
   Widget _buildMemoryCard(BuildContext context) {
     if (_isLoading) {
       return _buildGlassCard(
-        child: Center(
-          child: CircularProgressIndicator(
-            color: context.primaryTextColor.withOpacity(0.5),
-          ),
-        ),
+        child: Center(child: CircularProgressIndicator(color: context.primaryTextColor.withOpacity(0.5))),
       );
     }
 
@@ -225,28 +216,17 @@ class _MainTabPageState extends State<MainTabPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.history_edu_outlined,
-                size: 48,
-                color: context.secondaryTextColor,
-              ),
+              Icon(Icons.history_edu_outlined, size: 48, color: context.secondaryTextColor),
               const SizedBox(height: 16),
               Text(
                 'No memories yet',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: context.secondaryTextColor,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 16, color: context.secondaryTextColor, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 8),
               Text(
                 'Start writing to create your first memory',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: context.secondaryTextColor.withOpacity(0.7),
-                ),
+                style: TextStyle(fontSize: 13, color: context.secondaryTextColor.withOpacity(0.7)),
               ),
             ],
           ),
@@ -323,11 +303,7 @@ class _MainTabPageState extends State<MainTabPage> {
                 onTap: _loadNextEntry,
                 child: Container(
                   padding: const EdgeInsets.all(8),
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: context.primaryTextColor.withOpacity(0.5),
-                  ),
+                  child: Icon(Icons.arrow_forward_ios, size: 14, color: context.primaryTextColor.withOpacity(0.5)),
                 ),
               ),
             ),
@@ -343,10 +319,7 @@ class _MainTabPageState extends State<MainTabPage> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.cardBackgroundColor.withOpacity(0.05),
-          width: 1,
-        )
+        border: Border.all(color: context.cardBackgroundColor.withOpacity(0.05), width: 1),
       ),
       child: child,
     );
@@ -364,20 +337,9 @@ class _MainTabPageState extends State<MainTabPage> {
       decoration: BoxDecoration(
         color: context.cardBackgroundColor, // 使用卡片背景色（通常是半透明或白色）
         // 仅顶部添加边框，模拟原生 TabBar 效果
-        border: Border(
-          top: BorderSide(
-            color: context.borderColor,
-            width: 1,
-          ),
-        ),
+        border: Border(top: BorderSide(color: context.borderColor, width: 1)),
         // 可选：添加一点顶部阴影增加层次感
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, -2),
-            blurRadius: 8,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), offset: const Offset(0, -2), blurRadius: 8)],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround, // 均匀分布
@@ -408,11 +370,7 @@ class _NavButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NavButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _NavButton({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -434,11 +392,7 @@ class _NavButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                color: context.secondaryTextColor,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 11, color: context.secondaryTextColor, fontWeight: FontWeight.w500),
             ),
           ],
         ),

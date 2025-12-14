@@ -173,11 +173,7 @@ class _AiResultPageState extends State<AiResultPage> {
                   color: context.cardBackgroundColor, // 修正：不加透明度，保证主题一致
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2)),
                   ],
                 ),
                 child: TextField(

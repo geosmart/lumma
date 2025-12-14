@@ -7,11 +7,7 @@ class EditDiaryEntryDialog extends StatefulWidget {
   final Map<String, String> initialEntry;
   final List<String> allCategories;
 
-  const EditDiaryEntryDialog({
-    required this.initialEntry,
-    required this.allCategories,
-    super.key,
-  });
+  const EditDiaryEntryDialog({required this.initialEntry, required this.allCategories, super.key});
 
   @override
   State<EditDiaryEntryDialog> createState() => _EditDiaryEntryDialogState();
@@ -110,9 +106,7 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: _categories.isNotEmpty && _category.isNotEmpty ? _category : null,
-                    items: _categories
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
+                    items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                     onChanged: (v) => setState(() => _category = v ?? ''),
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.category,

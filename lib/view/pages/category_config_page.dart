@@ -58,7 +58,9 @@ class _CategoryConfigPageState extends State<CategoryConfigPage> {
       final categories = _controllers.map((c) => c.text).where((e) => e.trim().isNotEmpty).toList();
       if (categories.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.categoryCannotBeEmpty)));
-        setState(() { _isLoading = false; });
+        setState(() {
+          _isLoading = false;
+        });
         return;
       }
       await AppConfigService.update((c) => c.categoryList = List<String>.from(categories));

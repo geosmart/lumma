@@ -6,13 +6,7 @@ import 'zh_cn.dart';
 class AppTranslations {
   static const fallbackLocale = Locale('en', 'US');
 
-  static final translations = [
-    EnUS(),
-    ZhCN(),
-  ];
+  static final translations = [EnUS(), ZhCN()];
 
-  static final supportedLocales = [
-    const Locale('en', 'US'),
-    const Locale('zh', 'CN'),
-  ];
+  static final supportedLocales = [const Locale('en', 'US'), const Locale('zh', 'CN')];
 }

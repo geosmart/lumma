@@ -96,9 +96,9 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
                         tooltip: l10n.copy,
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _editCtrl.text));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('已复制'), duration: const Duration(milliseconds: 800)),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('已复制'), duration: const Duration(milliseconds: 800)));
                         },
                       ),
                     ),

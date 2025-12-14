@@ -114,7 +114,11 @@ class DiaryChatService {
   }
 
   // Auto extract category and title and save conversation to diary file
-  static Future<void> extractCategoryAndSave(BuildContext context, List<Map<String, String>> history, {bool forceDefault = false}) async {
+  static Future<void> extractCategoryAndSave(
+    BuildContext context,
+    List<Map<String, String>> history, {
+    bool forceDefault = false,
+  }) async {
     if (history.isEmpty) return;
 
     try {
@@ -158,7 +162,9 @@ class DiaryChatService {
         final fileName = DiaryDao.getDiaryFileName();
         final diaryDir = await DiaryDao.getDiaryDir();
         final filePath = '$diaryDir/$fileName';
-        print('Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}');
+        print(
+          'Diary auto-appended to: $filePath, category:${history.last['category']}, title: ${history.last['title']}',
+        );
 
         // 验证文件是否真的被保存了
         final file = File(filePath);
@@ -169,7 +175,9 @@ class DiaryChatService {
           throw Exception('File was not created after save operation');
         }
       } else {
-        print('Skipping save: conversation incomplete. Q empty: ${lastHistory['q']?.isEmpty}, A empty: ${lastHistory['a']?.isEmpty}');
+        print(
+          'Skipping save: conversation incomplete. Q empty: ${lastHistory['q']?.isEmpty}, A empty: ${lastHistory['a']?.isEmpty}',
+        );
       }
 
       print('=== extractCategoryAndSave END ===');

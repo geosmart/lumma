@@ -534,9 +534,7 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                         context: context,
                         builder: (context) => EditDiaryEntryDialog(
                           initialEntry: entry,
-                          allCategories: const [
-                            '工作', '生活', '学习', '健康', '日总结', '其他'
-                          ],
+                          allCategories: const ['工作', '生活', '学习', '健康', '日总结', '其他'],
                         ),
                       );
                       if (result != null) {
@@ -545,9 +543,9 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                           _content = DiaryContentService.rebuildContentFromHistory(context, history);
                         });
                         await DiaryContentService.saveDiaryContent(_content!, widget.fileName);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)));
                       }
                     },
                   ),
@@ -579,9 +577,9 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                           _content = DiaryContentService.rebuildContentFromHistory(context, history);
                         });
                         await DiaryContentService.saveDiaryContent(_content!, widget.fileName);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(AppLocalizations.of(context)!.deleteSuccess)),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.deleteSuccess)));
                       }
                     },
                   ),

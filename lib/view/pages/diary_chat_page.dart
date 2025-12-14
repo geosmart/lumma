@@ -71,9 +71,10 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       if (await file.exists()) {
         final content = await file.readAsString();
         // 解析并过滤掉category为日总结的内容
-        final entries = DiaryDao.parseDiaryContent(context, content)
-            .where((e) => (e.category?.trim() != '日总结' && e.title.trim() != '日总结'))
-            .toList();
+        final entries = DiaryDao.parseDiaryContent(
+          context,
+          content,
+        ).where((e) => (e.category?.trim() != '日总结' && e.title.trim() != '日总结')).toList();
         // 按时间升序排序
         entries.sort((a, b) {
           final t1 = a.time ?? '';
@@ -118,11 +119,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('保存失败: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
+          SnackBar(content: Text('保存失败: $e'), backgroundColor: Colors.red, duration: const Duration(seconds: 3)),
         );
       }
     }
@@ -330,11 +327,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                           color: context.cardBackgroundColor,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
+                            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2)),
                           ],
                         ),
                         child: IconButton(
@@ -348,11 +341,7 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                       const SizedBox(width: 8),
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: context.primaryTextColor,
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.primaryTextColor),
                       ),
                       const Spacer(),
                     ],
@@ -420,422 +409,450 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                                         ),
                                       ),
                                     ),
-                                      ],
+                                  ],
+                                ),
+                              ),
+                            if (h['q'] != null && h['q']!.isNotEmpty)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: CircleAvatar(
+                                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                          ? const Color(0xFF2D5A2B)
+                                          : const Color(0xFFE8F5E9),
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? const Color(0xFF4CAF50)
+                                            : Colors.green,
+                                      ),
                                     ),
                                   ),
-                                if (h['q'] != null && h['q']!.isNotEmpty)
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 32,
-                                        height: 32,
-                                        child: CircleAvatar(
-                                          backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF2D5A2B)
-                                              : const Color(0xFFE8F5E9),
-                                          child: Icon(
-                                            Icons.person,
-                                            color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF4CAF50)
-                                                : Colors.green,
-                                          ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                          minWidth: 48,
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxWidth: MediaQuery.of(context).size.width * 0.8,
-                                              minWidth: 48,
-                                            ),
-                                            child: IntrinsicWidth(
-                                              child: Stack(
-                                                children: [
-                                                  Container(
-                                                    margin: const EdgeInsets.only(bottom: 4, right: 32),
-                                                    padding: const EdgeInsets.all(14),
-                                                    decoration: BoxDecoration(
-                                                      color: Theme.of(context).brightness == Brightness.dark
-                                                          ? const Color(0xFF2D5A2B)
-                                                          : Colors.green[50],
-                                                      borderRadius: BorderRadius.circular(16),
-                                                      border: Border.all(
-                                                        color: Theme.of(context).brightness == Brightness.dark
-                                                            ? const Color(0xFF4CAF50)
-                                                            : Colors.green[100]!,
-                                                      ),
-                                                    ),
-                                                    child: EnhancedMarkdown(data: h['q'] ?? ''),
+                                        child: IntrinsicWidth(
+                                          child: Stack(
+                                            children: [
+                                              Container(
+                                                margin: const EdgeInsets.only(bottom: 4, right: 32),
+                                                padding: const EdgeInsets.all(14),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context).brightness == Brightness.dark
+                                                      ? const Color(0xFF2D5A2B)
+                                                      : Colors.green[50],
+                                                  borderRadius: BorderRadius.circular(16),
+                                                  border: Border.all(
+                                                    color: Theme.of(context).brightness == Brightness.dark
+                                                        ? const Color(0xFF4CAF50)
+                                                        : Colors.green[100]!,
                                                   ),
-                                                  Positioned(
-                                                    right: 0, // 修复在Android端气泡和复制按钮重叠问题
-                                                    bottom: 8, // 调整为更贴近气泡底部
-                                                    child: Material(
-                                                      color: Colors.transparent,
-                                                      child: IconButton(
-                                                        icon: const Icon(Icons.copy, size: 16),
-                                                        tooltip: '复制',
-                                                        onPressed: () {
-                                                          Clipboard.setData(ClipboardData(text: h['q'] ?? ''));
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(content: Text('已复制'), duration: Duration(milliseconds: 800)),
-                                                          );
-                                                        },
-                                                        padding: EdgeInsets.zero,
-                                                        constraints: const BoxConstraints(),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                ),
+                                                child: EnhancedMarkdown(data: h['q'] ?? ''),
                                               ),
-                                            ),
+                                              Positioned(
+                                                right: 0, // 修复在Android端气泡和复制按钮重叠问题
+                                                bottom: 8, // 调整为更贴近气泡底部
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: IconButton(
+                                                    icon: const Icon(Icons.copy, size: 16),
+                                                    tooltip: '复制',
+                                                    onPressed: () {
+                                                      Clipboard.setData(ClipboardData(text: h['q'] ?? ''));
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text('已复制'),
+                                                          duration: Duration(milliseconds: 800),
+                                                        ),
+                                                      );
+                                                    },
+                                                    padding: EdgeInsets.zero,
+                                                    constraints: const BoxConstraints(),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 32),
-                                    ],
+                                    ),
                                   ),
-                                if (showAnswer)
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Flexible(
-                                        child: Align(
-                                          alignment: Alignment.centerRight,
-                                          child: ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxWidth: MediaQuery.of(context).size.width * 0.8,
-                                              minWidth: 48,
-                                            ),
-                                            child: IntrinsicWidth(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                  const SizedBox(width: 32),
+                                ],
+                              ),
+                            if (showAnswer)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Flexible(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                          minWidth: 48,
+                                        ),
+                                        child: IntrinsicWidth(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
+                                                _ReasoningCollapse(content: h['reasoning']!, initiallyExpanded: false),
+                                              // 删除a的气泡外复制按钮
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: [
-                                                  if (h['reasoning'] != null && h['reasoning']!.isNotEmpty)
-                                                    _ReasoningCollapse(
-                                                      content: h['reasoning']!,
-                                                      initiallyExpanded: false,
-                                                    ),
-                                                  // 删除a的气泡外复制按钮
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                                  Stack(
                                                     children: [
-                                                      Stack(
-                                                        children: [
-                                                          Container(
-                                                            margin: const EdgeInsets.only(bottom: 12),
-                                                            padding: const EdgeInsets.all(14),
-                                                            decoration: BoxDecoration(
-                                                              color: Theme.of(context).brightness == Brightness.dark
-                                                                  ? const Color(0xFF1E3A8A)
-                                                                  : Colors.blue[50],
-                                                              borderRadius: BorderRadius.circular(16),
-                                                              border: Border.all(
-                                                                color: Theme.of(context).brightness == Brightness.dark
-                                                                    ? const Color(0xFF3B82F6)
-                                                                    : Colors.blue[100]!,
-                                                              ),
-                                                            ),
-                                                            child: Text(h['a'] ?? '', style: TextStyle(fontSize: 14, color: context.primaryTextColor)),
+                                                      Container(
+                                                        margin: const EdgeInsets.only(bottom: 12),
+                                                        padding: const EdgeInsets.all(14),
+                                                        decoration: BoxDecoration(
+                                                          color: Theme.of(context).brightness == Brightness.dark
+                                                              ? const Color(0xFF1E3A8A)
+                                                              : Colors.blue[50],
+                                                          borderRadius: BorderRadius.circular(16),
+                                                          border: Border.all(
+                                                            color: Theme.of(context).brightness == Brightness.dark
+                                                                ? const Color(0xFF3B82F6)
+                                                                : Colors.blue[100]!,
                                                           ),
-                                                        ],
+                                                        ),
+                                                        child: Text(
+                                                          h['a'] ?? '',
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: context.primaryTextColor,
+                                                          ),
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
-                                                  // 新增：显示AI总结的title和category及已保存角标（同一行，右对齐）
-                                                  if ((h['title']?.isNotEmpty == true || h['category']?.isNotEmpty == true))
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 2, bottom: 4),
-                                                      child: Row(
-                                                        children: [
-                                                          if (h['title']?.isNotEmpty == true)
-                                                            Flexible(
-                                                              child: Text(
-                                                                h['title']!,
-                                                                style: TextStyle(
-                                                                  fontSize: 11,
-                                                                  color: Theme.of(context).brightness == Brightness.dark
-                                                                      ? Colors.grey[400]
-                                                                      : Colors.grey[500],
-                                                                ),
-                                                                overflow: TextOverflow.ellipsis,
-                                                              ),
-                                                            ),
-                                                          if (h['category']?.isNotEmpty == true)
-                                                            Container(
-                                                              margin: const EdgeInsets.only(left: 8),
-                                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                              decoration: BoxDecoration(
-                                                                color: DiaryContentService.getCategoryColors(h['category']!)['background'],
-                                                                borderRadius: BorderRadius.circular(8),
-                                                                border: Border.all(color: DiaryContentService.getCategoryColors(h['category']!)['border']!),
-                                                              ),
-                                                              child: Text(
-                                                                h['category']!,
-                                                                style: TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: DiaryContentService.getCategoryColors(h['category']!)['text'],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          // 右侧对齐显示已保存角标
-                                                          if (_lastSaved && isLast && !_extractingCategory)
-                                                            Expanded(
-                                                              child: Row(
-                                                                mainAxisAlignment: MainAxisAlignment.end,
-                                                                children: [
-                                                                  Icon(Icons.check_circle, size: 14, color: Colors.green[400]),
-                                                                  const SizedBox(width: 4),
-                                                                  Text('已保存', style: TextStyle(fontSize: 11, color: Colors.green[400], fontWeight: FontWeight.w500)),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  // 正在总结loading
-                                                  if (_extractingCategory && isLast)
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 2, bottom: 4),
-                                                      child: Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 14,
-                                                            height: 14,
-                                                            child: CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 6),
-                                                          Text(
-                                                            _extractingCategoryMsg ?? '',
+                                                ],
+                                              ),
+                                              // 新增：显示AI总结的title和category及已保存角标（同一行，右对齐）
+                                              if ((h['title']?.isNotEmpty == true || h['category']?.isNotEmpty == true))
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 2, bottom: 4),
+                                                  child: Row(
+                                                    children: [
+                                                      if (h['title']?.isNotEmpty == true)
+                                                        Flexible(
+                                                          child: Text(
+                                                            h['title']!,
                                                             style: TextStyle(
                                                               fontSize: 11,
                                                               color: Theme.of(context).brightness == Brightness.dark
                                                                   ? Colors.grey[400]
                                                                   : Colors.grey[500],
                                                             ),
+                                                            overflow: TextOverflow.ellipsis,
                                                           ),
-                                                        ],
+                                                        ),
+                                                      if (h['category']?.isNotEmpty == true)
+                                                        Container(
+                                                          margin: const EdgeInsets.only(left: 8),
+                                                          padding: const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 2,
+                                                          ),
+                                                          decoration: BoxDecoration(
+                                                            color: DiaryContentService.getCategoryColors(
+                                                              h['category']!,
+                                                            )['background'],
+                                                            borderRadius: BorderRadius.circular(8),
+                                                            border: Border.all(
+                                                              color: DiaryContentService.getCategoryColors(
+                                                                h['category']!,
+                                                              )['border']!,
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            h['category']!,
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              color: DiaryContentService.getCategoryColors(
+                                                                h['category']!,
+                                                              )['text'],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      // 右侧对齐显示已保存角标
+                                                      if (_lastSaved && isLast && !_extractingCategory)
+                                                        Expanded(
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.end,
+                                                            children: [
+                                                              Icon(
+                                                                Icons.check_circle,
+                                                                size: 14,
+                                                                color: Colors.green[400],
+                                                              ),
+                                                              const SizedBox(width: 4),
+                                                              Text(
+                                                                '已保存',
+                                                                style: TextStyle(
+                                                                  fontSize: 11,
+                                                                  color: Colors.green[400],
+                                                                  fontWeight: FontWeight.w500,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              // 正在总结loading
+                                              if (_extractingCategory && isLast)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left: 2, bottom: 4),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 14,
+                                                        height: 14,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                                            Theme.of(context).colorScheme.primary,
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        _extractingCategoryMsg ?? '',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          color: Theme.of(context).brightness == Brightness.dark
+                                                              ? Colors.grey[400]
+                                                              : Colors.grey[500],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
-                                      SizedBox(
-                                        width: 32,
-                                        height: 32,
-                                        child: GestureDetector(
-                                          onTapDown: (details) {
-                                            _showModelTooltip(context, details.globalPosition);
-                                          },
-                                          child: CircleAvatar(
-                                            backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF37474F)
-                                                : Colors.blueGrey[50],
-                                            child: Icon(
-                                              Icons.smart_toy,
-                                              color: Theme.of(context).brightness == Brightness.dark
-                                                  ? const Color(0xFF90A4AE)
-                                                  : Colors.blueGrey,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 32),
-                                    ],
-                                  ),
-                              ],
-                            );
-                          } else if (_asking && i == _history.length) {
-                            // AI thinking/streaming output
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                  onTapDown: (details) {
-                                    _showModelTooltip(context, details.globalPosition);
-                                  },
-                                  child: CircleAvatar(
-                                    backgroundColor: Theme.of(context).brightness == Brightness.dark
-                                        ? const Color(0xFF37474F)
-                                        : Colors.blueGrey[50],
-                                    child: Icon(
-                                      Icons.smart_toy,
-                                      color: Theme.of(context).brightness == Brightness.dark
-                                          ? const Color(0xFF90A4AE)
-                                          : Colors.blueGrey,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Show streaming reasoning, expanded by default
-                                      if (_askStreamingReasoning.isNotEmpty)
-                                        _ReasoningCollapse(
-                                          content: _askStreamingReasoning,
-                                          initiallyExpanded: true,
-                                          hasMainContent: _askStreaming.isNotEmpty,
-                                        ),
-                                      Container(
-                                        margin: const EdgeInsets.only(bottom: 4),
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: GestureDetector(
+                                      onTapDown: (details) {
+                                        _showModelTooltip(context, details.globalPosition);
+                                      },
+                                      child: CircleAvatar(
+                                        backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                            ? const Color(0xFF37474F)
+                                            : Colors.blueGrey[50],
+                                        child: Icon(
+                                          Icons.smart_toy,
                                           color: Theme.of(context).brightness == Brightness.dark
-                                              ? const Color(0xFF374151) // Dark mode deep grey
-                                              : Colors.grey[100], // Light mode light grey
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(
-                                            color: Theme.of(context).brightness == Brightness.dark
-                                                ? const Color(0xFF6B7280) // Dark mode grey border
-                                                : Colors.grey[200]!, // Light mode light grey border
-                                          ),
-                                        ),
-                                        child: Text(
-                                          _askStreaming.isEmpty
-                                              ? AppLocalizations.of(context)!.aiThinking
-                                              : _askStreaming,
-                                          style: TextStyle(fontSize: 14, color: context.primaryTextColor),
+                                              ? const Color(0xFF90A4AE)
+                                              : Colors.blueGrey,
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
+                                  const SizedBox(width: 32),
+                                ],
+                              ),
+                          ],
+                        );
+                      } else if (_asking && i == _history.length) {
+                        // AI thinking/streaming output
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTapDown: (details) {
+                                _showModelTooltip(context, details.globalPosition);
+                              },
+                              child: CircleAvatar(
+                                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF37474F)
+                                    : Colors.blueGrey[50],
+                                child: Icon(
+                                  Icons.smart_toy,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? const Color(0xFF90A4AE)
+                                      : Colors.blueGrey,
                                 ),
-                                const SizedBox(width: 32),
-                              ],
-                            );
-                          } else {
-                            return const SizedBox.shrink();
-                          }
-                        },
-                      ),
-                    ),
-                    // Button area: above input field, only showing debug and diary list buttons
-                    Container(
-                      color: context.cardBackgroundColor,
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                      child: Row(
-                        children: [
-                          // Debug button
-                          IconButton(
-                            icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
-                            tooltip: AppLocalizations.of(context)!.debugTooltip,
-                            onPressed: () {
-                              if (_lastRequestJson != null) {
-                                DebugRequestDialog.show(context, _lastRequestJson!);
-                              }
-                            },
-                          ),
-                          const SizedBox(width: 4),
-                          // Diary list button
-                          IconButton(
-                            icon: const Icon(Icons.menu_book, color: Colors.teal),
-                            tooltip: AppLocalizations.of(context)!.viewDiaryList,
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Bottom input bar, floating with rounded corners
-                    Container(
-                      color: context.cardBackgroundColor,
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).brightness == Brightness.dark
-                                    ? const Color(0xFF374151)
-                                    : Colors.grey[100],
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.08),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Show streaming reasoning, expanded by default
+                                  if (_askStreamingReasoning.isNotEmpty)
+                                    _ReasoningCollapse(
+                                      content: _askStreamingReasoning,
+                                      initiallyExpanded: true,
+                                      hasMainContent: _askStreaming.isNotEmpty,
+                                    ),
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 4),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? const Color(0xFF374151) // Dark mode deep grey
+                                          : Colors.grey[100], // Light mode light grey
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? const Color(0xFF6B7280) // Dark mode grey border
+                                            : Colors.grey[200]!, // Light mode light grey border
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _askStreaming.isEmpty ? AppLocalizations.of(context)!.aiThinking : _askStreaming,
+                                      style: TextStyle(fontSize: 14, color: context.primaryTextColor),
+                                    ),
                                   ),
                                 ],
                               ),
-                              child: TextField(
-                                controller: _ctrl,
-                                style: TextStyle(color: context.primaryTextColor),
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!.userInputPlaceholder,
-                                  hintStyle: TextStyle(color: context.secondaryTextColor),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                                ),
-                                minLines: 1,
-                                maxLines: 4,
-                                onSubmitted: (_) => _sendAnswer(),
-                                enabled: _summary == null,
-                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          SizedBox(
-                            height: 44,
-                            width: 56,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(24),
-                              onTap: (!_asking && _summary == null) ? _sendAnswer : null,
-                              child: Center(
-                                child: Icon(
-                                  Icons.send,
-                                  size: 30,
-                                  color: Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.white
-                                      : Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                            const SizedBox(width: 32),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  ),
                 ),
-                // Floating stop button, moved up to avoid toolbar
-                if (_asking)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 140, // Move up
-                    child: Center(
-                      child: SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: FloatingActionButton(
-                          heroTag: 'stop-btn',
-                          mini: true,
-                          backgroundColor: Colors.red[100],
-                          elevation: 1,
-                          onPressed: _interruptAsk,
-                          shape: const CircleBorder(),
-                          child: const Icon(Icons.stop, color: Colors.red, size: 22),
+                // Button area: above input field, only showing debug and diary list buttons
+                Container(
+                  color: context.cardBackgroundColor,
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: Row(
+                    children: [
+                      // Debug button
+                      IconButton(
+                        icon: const Icon(Icons.bug_report, color: Colors.deepOrange),
+                        tooltip: AppLocalizations.of(context)!.debugTooltip,
+                        onPressed: () {
+                          if (_lastRequestJson != null) {
+                            DebugRequestDialog.show(context, _lastRequestJson!);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                      // Diary list button
+                      IconButton(
+                        icon: const Icon(Icons.menu_book, color: Colors.teal),
+                        tooltip: AppLocalizations.of(context)!.viewDiaryList,
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                // Bottom input bar, floating with rounded corners
+                Container(
+                  color: context.cardBackgroundColor,
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF374151)
+                                : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _ctrl,
+                            style: TextStyle(color: context.primaryTextColor),
+                            decoration: InputDecoration(
+                              hintText: AppLocalizations.of(context)!.userInputPlaceholder,
+                              hintStyle: TextStyle(color: context.secondaryTextColor),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                            ),
+                            minLines: 1,
+                            maxLines: 4,
+                            onSubmitted: (_) => _sendAnswer(),
+                            enabled: _summary == null,
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        height: 44,
+                        width: 56,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: (!_asking && _summary == null) ? _sendAnswer : null,
+                          child: Center(
+                            child: Icon(
+                              Icons.send,
+                              size: 30,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
-          ),
-        );
+            // Floating stop button, moved up to avoid toolbar
+            if (_asking)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 140, // Move up
+                child: Center(
+                  child: SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: FloatingActionButton(
+                      heroTag: 'stop-btn',
+                      mini: true,
+                      backgroundColor: Colors.red[100],
+                      elevation: 1,
+                      onPressed: _interruptAsk,
+                      shape: const CircleBorder(),
+                      child: const Icon(Icons.stop, color: Colors.red, size: 22),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

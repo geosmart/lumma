@@ -59,9 +59,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建日记失败: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('创建日记失败: $e')));
       }
     }
   }
@@ -128,9 +126,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       _scrollToBottom();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: $e')));
       }
     } finally {
       setState(() {
@@ -221,10 +217,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
                                 ),
                                 child: Text(
                                   entry.q ?? '',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: context.primaryTextColor,
-                                  ),
+                                  style: TextStyle(fontSize: 15, color: context.primaryTextColor),
                                 ),
                               ),
                             ],
@@ -284,9 +277,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
                           icon: const Icon(Icons.menu_book, color: Colors.teal),
                           tooltip: AppLocalizations.of(context)!.viewDiaryList,
                           onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const DiaryFileListPage()),
-                            );
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DiaryFileListPage()));
                           },
                         ),
                       ],

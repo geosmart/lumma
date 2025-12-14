@@ -40,9 +40,7 @@ class RandomDiaryService {
       }
 
       // Get all .md files
-      final files = directory.listSync()
-          .where((f) => f.path.endsWith('.md'))
-          .toList();
+      final files = directory.listSync().where((f) => f.path.endsWith('.md')).toList();
 
       // Read each file and parse entries
       for (var file in files) {
@@ -55,10 +53,7 @@ class RandomDiaryService {
 
           // Add each entry with the file date
           for (var entry in entries) {
-            allEntries.add(DiaryEntryWithDate(
-              entry: entry,
-              dateStr: dateStr,
-            ));
+            allEntries.add(DiaryEntryWithDate(entry: entry, dateStr: dateStr));
           }
         } catch (e) {
           print('[RandomDiaryService] Error parsing file ${file.path}: $e');
@@ -68,13 +63,10 @@ class RandomDiaryService {
 
       // Filter out summary entries and entries without content
       return allEntries.where((e) {
-        final isSummary = e.entry.category?.trim() == '日总结' ||
-                         e.entry.title.trim() == '日总结';
-        final hasContent = (e.entry.q?.isNotEmpty ?? false) ||
-                          (e.entry.a?.isNotEmpty ?? false);
+        final isSummary = e.entry.category?.trim() == '日总结' || e.entry.title.trim() == '日总结';
+        final hasContent = (e.entry.q?.isNotEmpty ?? false) || (e.entry.a?.isNotEmpty ?? false);
         return !isSummary && hasContent;
       }).toList();
-
     } catch (e) {
       print('[RandomDiaryService] Error getting all diary entries: $e');
       return allEntries;
@@ -108,10 +100,7 @@ class RandomDiaryService {
   /// Format date as "Oct 12, 2024" or "2024年10月12日" based on locale
   static String _formatDate(DateTime date) {
     // For now, return English format. Can be enhanced with localization
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     final monthStr = months[date.month - 1];
     return '$monthStr ${date.day}, ${date.year}';
@@ -123,10 +112,7 @@ class DiaryEntryWithDate {
   final DiaryEntry entry;
   final String dateStr;
 
-  DiaryEntryWithDate({
-    required this.entry,
-    required this.dateStr,
-  });
+  DiaryEntryWithDate({required this.entry, required this.dateStr});
 
   /// Get display time (combines date and time)
   String getDisplayTime() {

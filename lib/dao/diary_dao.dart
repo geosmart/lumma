@@ -229,16 +229,16 @@ class DiaryDao {
     return parseDiaryMarkdownToChatHistory(context, content);
   }
 
-
   /// 提取所有非总结的日记条目，格式化为：时间，日记内容\n时间，日记内容\n...
- static String extractPlainDiaryEntries(BuildContext context, String content) {
+  static String extractPlainDiaryEntries(BuildContext context, String content) {
     final entries = DiaryDao.parseDiaryContent(context, content);
     // 只保留非总结（category/title都不是日总结）的条目
     final filtered = entries.where((e) => (e.category?.trim() != '日总结' && e.title.trim() != '日总结'));
     // 只保留有时间和内容的条目
-    final lines = filtered.where((e) => (e.time?.isNotEmpty == true && e.q?.isNotEmpty == true))
-                          .map((e) => '${e.time}, ${e.q!.replaceAll('\n', ' ').replaceAll('#', '')}')
-                          .toList();
+    final lines = filtered
+        .where((e) => (e.time?.isNotEmpty == true && e.q?.isNotEmpty == true))
+        .map((e) => '${e.time}, ${e.q!.replaceAll('\n', ' ').replaceAll('#', '')}')
+        .toList();
     return lines.join('\n');
   }
 
@@ -567,7 +567,6 @@ class DiaryDao {
     // Append to today's diary
     await appendToDailyDiary(formattedEntry);
   }
-
 
   /// 获取指定日期的日记文件名，不指定则为当天
   static String getDiaryFileName([DateTime? date]) {

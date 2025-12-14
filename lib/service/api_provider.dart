@@ -138,15 +138,8 @@ class AiApiService extends GetConnect {
       final active = configs.firstWhere((e) => e.active, orElse: () => configs.first);
 
       final url = '${active.baseUrl}/chat/completions';
-      final body = {
-        'model': active.model,
-        'messages': messages,
-        'stream': false,
-      };
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${active.apiKey}',
-      };
+      final body = {'model': active.model, 'messages': messages, 'stream': false};
+      final headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${active.apiKey}'};
 
       final response = await post(url, body, headers: headers);
       return response;

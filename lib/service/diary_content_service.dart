@@ -135,11 +135,7 @@ class DiaryContentService {
     // 互斥分配颜色
     final colorSet = _colorPalette[_colorIndex % _colorPalette.length];
     _colorIndex++;
-    final colorMap = {
-      'background': colorSet[0],
-      'border': colorSet[1],
-      'text': colorSet[2],
-    };
+    final colorMap = {'background': colorSet[0], 'border': colorSet[1], 'text': colorSet[2]};
     _categoryColorCache[key] = colorMap;
     return colorMap;
   }

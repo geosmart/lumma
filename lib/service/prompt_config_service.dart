@@ -168,9 +168,7 @@ class PromptConfigService {
     final config = await AppConfigService.load();
 
     // 找到对应的提示词
-    final index = config.prompt.indexWhere(
-      (p) => p.name == prompt.name && p.type == prompt.type
-    );
+    final index = config.prompt.indexWhere((p) => p.name == prompt.name && p.type == prompt.type);
 
     if (index == -1) {
       throw Exception('Prompt not found');

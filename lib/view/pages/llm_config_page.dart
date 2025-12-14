@@ -98,19 +98,14 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
       builder: (context) => Center(
         child: Container(
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: context.cardBackgroundColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(color: context.cardBackgroundColor, borderRadius: BorderRadius.circular(12)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(
-                Localizations.localeOf(context).languageCode == 'zh'
-                    ? '正在测试模型...'
-                    : 'Testing model...',
+                Localizations.localeOf(context).languageCode == 'zh' ? '正在测试模型...' : 'Testing model...',
                 style: TextStyle(color: context.primaryTextColor),
               ),
             ],
@@ -122,7 +117,10 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
     try {
       // 构建测试消息
       final messages = [
-        {'role': 'user', 'content': Localizations.localeOf(context).languageCode == 'zh' ? '你是什么大模型？' : 'What AI model are you?'},
+        {
+          'role': 'user',
+          'content': Localizations.localeOf(context).languageCode == 'zh' ? '你是什么大模型？' : 'What AI model are you?',
+        },
       ];
 
       // 临时切换到该配置进行测试
@@ -180,11 +178,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(
-              Localizations.localeOf(context).languageCode == 'zh'
-                  ? '测试结果'
-                  : 'Test Result',
-            ),
+            title: Text(Localizations.localeOf(context).languageCode == 'zh' ? '测试结果' : 'Test Result'),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,9 +192,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    Localizations.localeOf(context).languageCode == 'zh'
-                        ? '模型回答:'
-                        : 'Model response:',
+                    Localizations.localeOf(context).languageCode == 'zh' ? '模型回答:' : 'Model response:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
@@ -211,11 +203,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  Localizations.localeOf(context).languageCode == 'zh'
-                      ? '关闭'
-                      : 'Close',
-                ),
+                child: Text(Localizations.localeOf(context).languageCode == 'zh' ? '关闭' : 'Close'),
               ),
             ],
           ),
@@ -229,11 +217,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              Localizations.localeOf(context).languageCode == 'zh'
-                  ? '测试失败: $e'
-                  : 'Test failed: $e',
-            ),
+            content: Text(Localizations.localeOf(context).languageCode == 'zh' ? '测试失败: $e' : 'Test failed: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -266,9 +250,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          Localizations.localeOf(context).languageCode == 'zh' ? '确认重置' : 'Confirm Reset',
-        ),
+        title: Text(Localizations.localeOf(context).languageCode == 'zh' ? '确认重置' : 'Confirm Reset'),
         content: Text(
           Localizations.localeOf(context).languageCode == 'zh'
               ? '确定要重置此模型配置到默认内容吗？'
@@ -277,15 +259,11 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              Localizations.localeOf(context).languageCode == 'zh' ? '取消' : 'Cancel',
-            ),
+            child: Text(Localizations.localeOf(context).languageCode == 'zh' ? '取消' : 'Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              Localizations.localeOf(context).languageCode == 'zh' ? '重置' : 'Reset',
-            ),
+            child: Text(Localizations.localeOf(context).languageCode == 'zh' ? '重置' : 'Reset'),
           ),
         ],
       ),

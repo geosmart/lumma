@@ -96,10 +96,9 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.syncDialogProgress(
-                  widget.current > widget.total ? widget.total : widget.current,
-                  widget.total,
-                )),
+                Text(
+                  l10n.syncDialogProgress(widget.current > widget.total ? widget.total : widget.current, widget.total),
+                ),
                 if (widget.currentStage.isNotEmpty)
                   Text(widget.currentStage, style: const TextStyle(fontWeight: FontWeight.w600)),
               ],
@@ -111,16 +110,14 @@ class _SyncProgressDialogState extends State<SyncProgressDialog> with SingleTick
                   child: Text(
                     widget.currentFile,
                     style: TextStyle(
-                      fontWeight: widget.currentFile.contains('[无变化]')
-                          ? FontWeight.normal
-                          : FontWeight.bold,
+                      fontWeight: widget.currentFile.contains('[无变化]') ? FontWeight.normal : FontWeight.bold,
                       color: widget.currentFile.contains('[无变化]')
                           ? Colors.grey
                           : (widget.currentFile.contains('[新文件]')
-                              ? Colors.blue
-                              : (widget.currentFile.contains('[已变更]')
-                                  ? Colors.orange
-                                  : const Color.fromARGB(255, 95, 91, 96))),
+                                ? Colors.blue
+                                : (widget.currentFile.contains('[已变更]')
+                                      ? Colors.orange
+                                      : const Color.fromARGB(255, 95, 91, 96))),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

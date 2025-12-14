@@ -6,19 +6,13 @@ import 'package:lumma/dao/diary_dao.dart';
 class DiaryStatisticsService {
   /// Get character count for each day in the specified date range
   /// Returns a Map<DateTime, int> where DateTime is normalized to midnight
-  static Future<Map<DateTime, int>> getCharacterCountByDate({
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
+  static Future<Map<DateTime, int>> getCharacterCountByDate({DateTime? startDate, DateTime? endDate}) async {
     final result = <DateTime, int>{};
 
     try {
       // Get all diary files
       final diaryDir = await DiaryDao.getDiaryDir();
-      final files = Directory(diaryDir)
-          .listSync()
-          .where((f) => f.path.endsWith('.md'))
-          .toList();
+      final files = Directory(diaryDir).listSync().where((f) => f.path.endsWith('.md')).toList();
 
       for (var file in files) {
         if (file is! File) continue;
@@ -47,9 +41,7 @@ class DiaryStatisticsService {
         contentWithoutFrontmatter = content.replaceFirst(frontmatterRegex, '');
 
         // Count characters (excluding whitespace)
-        final charCount = contentWithoutFrontmatter
-            .replaceAll(RegExp(r'\s+'), '')
-            .length;
+        final charCount = contentWithoutFrontmatter.replaceAll(RegExp(r'\s+'), '').length;
 
         result[date] = charCount;
       }
@@ -85,10 +77,7 @@ class DiaryStatisticsService {
   static Future<DateTimeRange?> getDateRange() async {
     try {
       final diaryDir = await DiaryDao.getDiaryDir();
-      final files = Directory(diaryDir)
-          .listSync()
-          .where((f) => f.path.endsWith('.md'))
-          .toList();
+      final files = Directory(diaryDir).listSync().where((f) => f.path.endsWith('.md')).toList();
 
       if (files.isEmpty) return null;
 
