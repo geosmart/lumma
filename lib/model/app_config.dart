@@ -10,7 +10,6 @@ class AppConfig {
   List<LLMConfig> model;
   List<PromptConfig> prompt;
   SyncConfig sync;
-  List<String> qaQuestions;
   List<String> categoryList;
 
   static const List<String> defaultCategoryList = [
@@ -18,17 +17,15 @@ class AppConfig {
   ];
 
   AppConfig({
-    this.diaryMode = DiaryMode.qa,
+    this.diaryMode = DiaryMode.timeline,
     this.model = const [],
     List<PromptConfig>? prompt,
     this.theme = ThemeModeType.dark,
     this.language = LanguageType.zh,
     SyncConfig? sync,
-    List<String>? qaQuestions,
     List<String>? categoryList,
   }) : prompt = prompt ?? const [],
        sync = sync ?? SyncConfig.defaultConfig(),
-       qaQuestions = qaQuestions ?? const [],
        categoryList = categoryList ?? const [];
 
   /// 创建默认配置
@@ -43,13 +40,12 @@ class AppConfig {
     final defaultSync = SyncConfig.defaultConfig();
 
     return AppConfig(
-      diaryMode: DiaryMode.qa,
+      diaryMode: DiaryMode.timeline,
       theme: ThemeModeType.dark,
       language: LanguageType.zh,
       model: defaultModels,
       prompt: defaultPrompts,
       sync: defaultSync,
-      qaQuestions: const [],
       categoryList: const [],
     );
   }
@@ -59,13 +55,12 @@ class AppConfig {
   }
 
   factory AppConfig.fromMap(Map map) => AppConfig(
-    diaryMode: diaryModeFromString(map['diary_mode'] ?? 'qa'),
+    diaryMode: diaryModeFromString(map['diary_mode'] ?? 'timeline'),
     model: (map['model'] as List? ?? []).map((e) => LLMConfig.fromMap(e)).toList(),
     prompt: (map['prompt'] as List? ?? []).map((e) => PromptConfig.fromMap(e)).toList(),
     theme: themeModeTypeFromString(map['theme'] ?? 'light'),
     language: languageTypeFromString(map['language'] ?? 'zh'),
     sync: map['sync'] != null ? SyncConfig.fromMap(map['sync']) : SyncConfig.defaultConfig(),
-    qaQuestions: (map['qa_questions'] as List? ?? []).map((e) => e.toString()).toList(),
     categoryList: (map['category_list'] as List? ?? []).map((e) => e.toString()).toList(),
   );
   Map<String, dynamic> toMap() => {
@@ -75,7 +70,6 @@ class AppConfig {
     'theme': themeModeTypeToString(theme),
     'language': languageTypeToString(language),
     'sync': sync.toMap(),
-    'qa_questions': qaQuestions,
     'category_list': categoryList,
   };
 }

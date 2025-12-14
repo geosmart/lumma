@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/service/chat_history_service.dart';
-import 'package:lumma/service/diary_qa_title_service.dart';
 import 'package:lumma/service/diary_chat_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
@@ -310,120 +309,117 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: getDiaryQaTitle(context),
-      builder: (context, snapshot) {
-        final title = snapshot.data ?? AppLocalizations.of(context)!.chatDiaryTitle;
-        return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          body: SafeArea(
-            child: Stack(
+    final title = AppLocalizations.of(context)!.aiChat;
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
               children: [
-                Column(
-                  children: [
-                    // Top toolbar area (only back and title)
-                    Container(
-                      height: 52,
-                      color: context.cardBackgroundColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      child: Row(
-                        children: [
-                          // Return button
-                          Container(
-                            decoration: BoxDecoration(
-                              color: context.cardBackgroundColor,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                // Top toolbar area (only back and title)
+                Container(
+                  height: 52,
+                  color: context.cardBackgroundColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Row(
+                    children: [
+                      // Return button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: context.cardBackgroundColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
-                            child: IconButton(
-                              icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.primaryTextColor),
-                              onPressed: () => Navigator.of(context).maybePop(),
-                              tooltip: AppLocalizations.of(context)!.back,
-                              padding: const EdgeInsets.all(8),
-                              constraints: const BoxConstraints(),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: context.primaryTextColor,
-                            ),
-                          ),
-                          const Spacer(),
-                        ],
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.primaryTextColor),
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          tooltip: AppLocalizations.of(context)!.back,
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
+                        ),
                       ),
-                    ),
-                    // Immersive full-screen chat main UI, no AppBar
-                    Expanded(
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                        itemCount: _history.length + (_asking ? 1 : 0),
-                        itemBuilder: (ctx, i) {
-                          if (_summary != null && i == 0) {
-                            return SizedBox.shrink();
-                          }
-                          if (i < _history.length) {
-                            final h = _history[i];
-                            final isLast = i == _history.length - 1;
-                            final showAnswer = h['a'] != null && h['a']!.isNotEmpty && (!(_asking && isLast));
-                            // 新增：对话时间分割条
-                            String? timeLabel;
-                            final curTime = h['time'];
-                            if (curTime != null && curTime.isNotEmpty) {
-                              // 仅在首条或与上一条时间不同（分钟粒度）时显示
-                              bool showTime = true;
-                              if (i > 0) {
-                                final prevTime = _history[i - 1]['time'];
-                                if (prevTime != null && prevTime.isNotEmpty) {
-                                  // 只比较到分钟
-                                  final curMinute = curTime.length >= 16 ? curTime.substring(0, 16) : curTime;
-                                  final prevMinute = prevTime.length >= 16 ? prevTime.substring(0, 16) : prevTime;
-                                  if (curMinute == prevMinute) showTime = false;
-                                }
-                              }
-                              if (showTime) {
-                                // 只显示HH:mm
-                                String displayTime = curTime.length >= 16 ? curTime.substring(11, 16) : curTime;
-                                timeLabel = displayTime;
-                              }
+                      const SizedBox(width: 8),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: context.primaryTextColor,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+                // Immersive full-screen chat main UI, no AppBar
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    itemCount: _history.length + (_asking ? 1 : 0),
+                    itemBuilder: (ctx, i) {
+                      if (_summary != null && i == 0) {
+                        return SizedBox.shrink();
+                      }
+                      if (i < _history.length) {
+                        final h = _history[i];
+                        final isLast = i == _history.length - 1;
+                        final showAnswer = h['a'] != null && h['a']!.isNotEmpty && (!(_asking && isLast));
+                        // 新增：对话时间分割条
+                        String? timeLabel;
+                        final curTime = h['time'];
+                        if (curTime != null && curTime.isNotEmpty) {
+                          // 仅在首条或与上一条时间不同（分钟粒度）时显示
+                          bool showTime = true;
+                          if (i > 0) {
+                            final prevTime = _history[i - 1]['time'];
+                            if (prevTime != null && prevTime.isNotEmpty) {
+                              // 只比较到分钟
+                              final curMinute = curTime.length >= 16 ? curTime.substring(0, 16) : curTime;
+                              final prevMinute = prevTime.length >= 16 ? prevTime.substring(0, 16) : prevTime;
+                              if (curMinute == prevMinute) showTime = false;
                             }
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (timeLabel != null)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context).brightness == Brightness.dark
-                                                ? Colors.grey[800]
-                                                : Colors.grey[200],
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            timeLabel,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Theme.of(context).brightness == Brightness.dark
-                                                  ? Colors.grey[300]
-                                                  : Colors.grey[600],
-                                            ),
-                                          ),
+                          }
+                          if (showTime) {
+                            // 只显示HH:mm
+                            String displayTime = curTime.length >= 16 ? curTime.substring(11, 16) : curTime;
+                            timeLabel = displayTime;
+                          }
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (timeLabel != null)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.grey[800]
+                                            : Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        timeLabel,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Theme.of(context).brightness == Brightness.dark
+                                              ? Colors.grey[300]
+                                              : Colors.grey[600],
                                         ),
+                                      ),
+                                    ),
                                       ],
                                     ),
                                   ),
@@ -840,8 +836,6 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
             ),
           ),
         );
-      },
-    );
   }
 }
 

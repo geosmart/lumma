@@ -13,7 +13,7 @@ class DiaryModeConfigPage extends StatefulWidget {
 }
 
 class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
-  model_enums.DiaryMode _mode = model_enums.DiaryMode.qa;
+  model_enums.DiaryMode _mode = model_enums.DiaryMode.timeline;
   bool _loading = true;
 
   @override
@@ -106,37 +106,6 @@ class _DiaryModeConfigPageState extends State<DiaryModeConfigPage> {
                 style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.subtitleFontSize),
               ),
               onTap: () => _setMode(model_enums.DiaryMode.chat),
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: context.cardBackgroundColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: context.borderColor, width: 1),
-            ),
-            child: ListTile(
-              leading: Icon(
-                _mode == model_enums.DiaryMode.qa ? Icons.check_circle : Icons.circle_outlined,
-                color: _mode == model_enums.DiaryMode.qa ? Colors.green : context.secondaryTextColor,
-                size: 22,
-              ),
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.fixedQA,
-                    style: TextStyle(fontSize: SettingsUiConfig.titleFontSize, color: context.primaryTextColor),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ],
-              ),
-              subtitle: Text(
-                AppLocalizations.of(context)!.fixedQADescription,
-                style: TextStyle(color: context.secondaryTextColor, fontSize: SettingsUiConfig.subtitleFontSize),
-              ),
-              onTap: () => _setMode(model_enums.DiaryMode.qa),
             ),
           ),
           Container(
