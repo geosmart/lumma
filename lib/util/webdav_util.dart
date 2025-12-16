@@ -99,10 +99,14 @@ class WebdavUtil {
   static String buildWebdavFileUrl(String webdavUrl, String remotePath) {
     // 去掉 remotePath 开头所有 / 和 dav/
     String path = remotePath;
-    while (path.startsWith('/')) path = path.substring(1);
-    while (path.startsWith('dav/')) path = path.substring(4);
+    while (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+    while (path.startsWith('dav/')) {
+      path = path.substring(4);
+    }
     // 保证 webdavUrl 结尾只有一个斜杠
-    String base = webdavUrl.endsWith('/') ? webdavUrl : webdavUrl + '/';
+    String base = webdavUrl.endsWith('/') ? webdavUrl : '$webdavUrl/';
     return base + path;
   }
 
@@ -561,7 +565,7 @@ class WebdavUtil {
             }
           }
         }
-        files.add({'name': fileName, 'path': '/' + currentPath, 'isFile': !isCollection, 'lastModified': lastModified});
+        files.add({'name': fileName, 'path': '/$currentPath', 'isFile': !isCollection, 'lastModified': lastModified});
       }
     } catch (e) {
       print('解析 WebDAV 响应异常: $e');

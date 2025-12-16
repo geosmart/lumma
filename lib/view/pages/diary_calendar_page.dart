@@ -272,7 +272,7 @@ class _DiaryCalendarPageState extends State<DiaryCalendarPage> {
                     final lunar = Lunar.fromDate(date);
                     // If it's the first day of lunar month, show month name instead
                     if (lunar.getDay() == 1) {
-                      lunarDay = lunar.getMonthInChinese() + "月";
+                      lunarDay = "${lunar.getMonthInChinese()}月";
                     } else {
                       lunarDay = lunar.getDayInChinese();
                     }

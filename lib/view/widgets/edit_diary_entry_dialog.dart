@@ -105,7 +105,7 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _categories.isNotEmpty && _category.isNotEmpty ? _category : null,
+                    initialValue: _categories.isNotEmpty && _category.isNotEmpty ? _category : null,
                     items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                     onChanged: (v) => setState(() => _category = v ?? ''),
                     decoration: InputDecoration(

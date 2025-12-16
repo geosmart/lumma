@@ -226,7 +226,7 @@ class _PromptEditPageState extends State<PromptEditPage> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<PromptCategory>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               items: PromptCategory.values
                   .map(
                     (category) => DropdownMenuItem<PromptCategory>(

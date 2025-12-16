@@ -130,8 +130,8 @@ class SyncService {
       final localDiaryDir = path.join(workDir ?? '', 'data/diary');
       // remoteDir 强制拼接
       final remoteDiaryDir = syncConfig.webdavRemoteDir.endsWith('/')
-          ? syncConfig.webdavRemoteDir + 'data/diary'
-          : syncConfig.webdavRemoteDir + '/data/diary';
+          ? '${syncConfig.webdavRemoteDir}data/diary'
+          : '${syncConfig.webdavRemoteDir}/data/diary';
       final downloadSuccess = await WebdavUtil.downloadDirectory(
         webdavUrl: syncConfig.webdavUrl,
         username: syncConfig.webdavUsername,
