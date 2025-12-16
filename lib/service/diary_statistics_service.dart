@@ -40,8 +40,12 @@ class DiaryStatisticsService {
         final frontmatterRegex = RegExp(r'^---[\s\S]*?---\n', multiLine: true);
         contentWithoutFrontmatter = content.replaceFirst(frontmatterRegex, '');
 
+        // Remove markdown headers (lines starting with #)
+        final headerRegex = RegExp(r'^#{1,6}\s+.*$', multiLine: true);
+        final contentWithoutHeaders = contentWithoutFrontmatter.replaceAll(headerRegex, '');
+
         // Count characters (excluding whitespace)
-        final charCount = contentWithoutFrontmatter.replaceAll(RegExp(r'\s+'), '').length;
+        final charCount = contentWithoutHeaders.replaceAll(RegExp(r'\s+'), '').length;
 
         result[date] = charCount;
       }

@@ -1,21 +1,33 @@
+<div align="center">
 <p align="center">
-  <img src="assets/icon/icon.svg" width="120" height="120" alt="Lumma Logo">
+  <img src="assets/icon/icon.svg" style="width: 50%; height: auto;">
 </p>
 
-<h1 align="center">Lumma</h1>
+<!-- Keep these links. Translations will automatically update with the README. -->
+[English](https://www.readme-i18n.com/geosmart/lumma?lang=en) |
+[Español](https://www.readme-i18n.com/geosmart/lumma?lang=es) |
+[Deutsch](https://www.readme-i18n.com/geosmart/lumma?lang=de) |
+[français](https://www.readme-i18n.com/geosmart/lumma?lang=fr) |
+[Português](https://www.readme-i18n.com/geosmart/lumma?lang=pt) |
+[Русский](https://www.readme-i18n.com/geosmart/lumma?lang=ru) |
+[日本語](https://www.readme-i18n.com/geosmart/lumma?lang=ja) |
+[한국어](https://www.readme-i18n.com/geosmart/lumma?lang=ko)
 
-<p align="center">An AI-native diary app for your inner reflections</p>
-
-<div align="center">
-  <strong>Journal freely. Reflect deeply. Powered by AI.</strong>
 </div>
 
-<br>
+---
 
-> As a heavy Obsidian user, I love journaling. But Obsidian’s mobile experience is lacking, especially for AI-based plugins.
-> That’s why I built Lumma with Flutter—to create a seamless, mobile-first journaling experience.
+# Lumma: AI原生的问答式日记应用
 
-## Screenshots
+<div align="center">
+  <strong>日有所记，问有所思；心有所感，自得其解。</strong>
+</div>
+
+> 我热爱记录生活,知识库用的是Obsidian,但android的Obsidian的体验不佳,AI 插件都太重,于是我开发了Lumma这款日记App用来记录.
+> android端记是以markdown形式存储在本地,可通过webdav/obsidian插件同步到服务器,然后pc端再同步.
+
+## 功能截图
+
 <div align="center">
   <img src="docs/screenshots/v1.0.0/home.jpg" width="200">
   <img src="docs/screenshots/v1.0.0/chat.jpg" width="200">
@@ -35,27 +47,29 @@
   <img src="docs/screenshots/v1.0.0/theme.jpg" width="200">
 </div>
 
-## ✨ Key Features
+## 使用方式
+我目前的使用方式如下：
+1. 手机端在`Lumma`通过`微信语音输入`记录日记内容；
+2. 基于`Webdav`插件或`Obsidian客户端`同步到云端；
+3. 在`Obsidian电脑端`同步Lumma的日记内容；
+4. 周总结按标签汇总统计日记内容
 
-### 📝 Smart Journaling Modes
+## 核心功能
 
-- **Q&A Mode**: Answer guided prompts that help you reflect on your day—your observations, emotions, challenges, and insights
-- **Chat Mode**: Talk freely with the AI, just like having a supportive conversation with a friend
+### 日记模式
 
-### 🤖 Built-in AI Capabilities
+- **时间线叙事（Q&A）**：不依赖AI,随时记录
+- **AI聊天（Chat）**：像朋友一样对话，与 AI 自由交流内心感受
 
-- Support for multiple LLM backends
-- Auto-generated journal entries and summaries
-- Smart title and tag extraction
-- Fully customizable prompts and conversation styles
+### AI能力
 
-### 💾 Secure and Syncable
+- 支持多种主流大语言模型（LLM）接入
+- 自动生成问答式日记与摘要
+- 智能提取标题与分类标签
+- 支持自定义提示词和对话风格
 
-- All journals are saved locally in Markdown format
-- Supports WebDAV for cloud backup and sync
-- Compatible with Obsidian sync via Advanced URI
+### 数据同步
+- 所有日记本地持久化为 Markdown 格式
+- 支持 WebDAV 云端同步
+- 支持通过 Advanced URI 触发 Obsidian 自动同步
 
-## 🛠 How It Works
-
-Use voice input (e.g. via WeChat keyboard) to capture your thoughts.
-Lumma uses AI to structure the content into clean Markdown files, ready to sync with your Obsidian vault.
