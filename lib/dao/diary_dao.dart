@@ -594,20 +594,9 @@ class DiaryDao {
     final currentCount = await getTodayDiaryEntryCount(context);
     final entryNumber = currentCount + 1;
 
+    // 直接使用用户输入的内容，不进行自动纠错
+    // 纠错只在用户点击纠错按钮时通过UI流程执行
     String contentToSave = userContent;
-
-    // Check if correction is needed
-    final needsCorrection = shouldCorrect ?? await isCorrectionEnabled();
-
-    if (needsCorrection) {
-      // Apply text correction
-      try {
-        contentToSave = await processTextWithCorrection(userContent);
-      } catch (e) {
-        print('[DiaryDao] 纠错处理失败，使用原始内容: $e');
-        contentToSave = userContent;
-      }
-    }
 
     // Format as timeline entry
     final formattedEntry = formatTimelineDiaryContent(
