@@ -123,6 +123,8 @@ class DiaryDao {
     bool useEnglish = false,
   }) {
     final buffer = StringBuffer();
+    // Add leading newline to ensure proper separation when appending
+    buffer.writeln();
     // 1. Title
     buffer.writeln('## $title');
     buffer.writeln();
@@ -162,6 +164,8 @@ class DiaryDao {
     String? time,
   }) {
     final buffer = StringBuffer();
+    // Add leading newline to ensure proper separation when appending
+    buffer.writeln();
     // 1. Title with entry number
     buffer.writeln('## 日记$entryNumber');
     buffer.writeln();

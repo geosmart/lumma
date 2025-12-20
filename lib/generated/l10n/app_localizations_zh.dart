@@ -39,7 +39,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cannotStartSync => '无法启动同步';
 
   @override
-  String get cannotStartSyncMessage => '未检测到同步配置或 Obsidian 未安装。请在设置中检查同步 URI 并确保 Obsidian 已安装。';
+  String get cannotStartSyncMessage =>
+      '未检测到同步配置或 Obsidian 未安装。请在设置中检查同步 URI 并确保 Obsidian 已安装。';
 
   @override
   String get ok => '确定';
@@ -132,7 +133,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterSyncAddress => '设置同步地址';
 
   @override
-  String get syncAddressPlaceholder => '请输入同步地址：vault为仓库名称，commandid可在Obsidian的调试模式通过输入app.commands.commands查找';
+  String get syncAddressPlaceholder =>
+      '请输入同步地址：vault为仓库名称，commandid可在Obsidian的调试模式通过输入app.commands.commands查找';
 
   @override
   String get syncAddressSetSuccess => '同步地址设置成功';
@@ -711,13 +713,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get llmConfigurationError => '大模型配置错误';
 
   @override
-  String get llmConfigurationErrorMessage => '大模型服务返回错误 (405)，这通常表示当前激活的模型存在配置问题。请检查大模型配置。';
+  String get llmConfigurationErrorMessage =>
+      '大模型服务返回错误 (405)，这通常表示当前激活的模型存在配置问题。请检查大模型配置。';
 
   @override
   String get llmRateLimitError => '大模型限流错误';
 
   @override
-  String get llmRateLimitErrorMessage => '大模型服务因请求过于频繁而暂时不可用 (429)。请稍等片刻后重试，或检查您的API使用限制。';
+  String get llmRateLimitErrorMessage =>
+      '大模型服务因请求过于频繁而暂时不可用 (429)。请稍等片刻后重试，或检查您的API使用限制。';
 
   @override
   String get goToLlmConfig => '前往大模型配置';
