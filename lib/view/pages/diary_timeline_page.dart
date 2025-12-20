@@ -77,7 +77,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
         if (mounted && entries.isNotEmpty) {
           setState(() {
             _entries.clear();
-            _entries.addAll(entries.reversed); // Reverse to show chronological order
+            _entries.addAll(entries); // Load in ascending time order (oldest first)
           });
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _scrollToBottom();
