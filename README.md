@@ -5,6 +5,7 @@
 
 <!-- Keep these links. Translations will automatically update with the README. -->
 [English](https://www.readme-i18n.com/geosmart/lumma?lang=en) |
+[中文](https://www.readme-i18n.com/geosmart/lumma?lang=zh) |
 [Español](https://www.readme-i18n.com/geosmart/lumma?lang=es) |
 [Deutsch](https://www.readme-i18n.com/geosmart/lumma?lang=de) |
 [français](https://www.readme-i18n.com/geosmart/lumma?lang=fr) |
