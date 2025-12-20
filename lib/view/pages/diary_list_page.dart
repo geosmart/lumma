@@ -272,7 +272,7 @@ class _DiaryListPageState extends State<DiaryListPage> {
                                         children: [
                                           if (entry.time != null && entry.time!.isNotEmpty)
                                             Text(
-                                              entry.time!,
+                                              entry.displayTime!,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: context.secondaryTextColor,

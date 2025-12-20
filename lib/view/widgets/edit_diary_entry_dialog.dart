@@ -19,6 +19,7 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
   late TextEditingController _summaryController;
   late String _category;
   late TimeOfDay _time;
+  late DateTime? _originalDateTime; // Store original date for preserving it
   List<String> _categories = [];
 
   @override
@@ -30,12 +31,49 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
     _summaryController = TextEditingController(text: widget.initialEntry['a'] ?? '');
     final initCat = widget.initialEntry['category'];
     _category = initCat ?? '';
+
+    // Parse time from full format (yyyy-MM-dd HH:mm:ss) or legacy format (HH:mm)
     final timeStr = widget.initialEntry['time'] ?? '';
-    final timeParts = timeStr.split(':');
-    if (timeParts.length == 2) {
-      _time = TimeOfDay(hour: int.tryParse(timeParts[0]) ?? 8, minute: int.tryParse(timeParts[1]) ?? 0);
+    DateTime? parsedDateTime;
+
+    if (timeStr.contains(' ')) {
+      // Full format: yyyy-MM-dd HH:mm:ss
+      try {
+        final parts = timeStr.split(' ');
+        if (parts.length == 2) {
+          final dateParts = parts[0].split('-');
+          final timeParts = parts[1].split(':');
+          if (dateParts.length == 3 && timeParts.length >= 2) {
+            parsedDateTime = DateTime(
+              int.parse(dateParts[0]),
+              int.parse(dateParts[1]),
+              int.parse(dateParts[2]),
+              int.parse(timeParts[0]),
+              int.parse(timeParts[1]),
+              timeParts.length >= 3 ? int.parse(timeParts[2]) : 0,
+            );
+            _time = TimeOfDay(hour: parsedDateTime.hour, minute: parsedDateTime.minute);
+          }
+        }
+      } catch (e) {
+        print('Failed to parse full time format: $e');
+      }
     } else {
+      // Legacy format: HH:mm or HH:mm:ss
+      final timeParts = timeStr.split(':');
+      if (timeParts.length >= 2) {
+        _time = TimeOfDay(hour: int.tryParse(timeParts[0]) ?? 8, minute: int.tryParse(timeParts[1]) ?? 0);
+        // Use today's date as fallback
+        parsedDateTime = DateTime.now();
+      }
+    }
+
+    _originalDateTime = parsedDateTime;
+
+    // Fallback to current time if parsing failed
+    if (_originalDateTime == null) {
       _time = const TimeOfDay(hour: 8, minute: 0);
+      _originalDateTime = DateTime.now();
     }
   }
 
@@ -182,9 +220,21 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
                     label: Text(AppLocalizations.of(context)!.save),
                     style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
                     onPressed: () {
+                      // Build full time format: yyyy-MM-dd HH:mm:ss
+                      final baseDate = _originalDateTime ?? DateTime.now();
+                      final updatedDateTime = DateTime(
+                        baseDate.year,
+                        baseDate.month,
+                        baseDate.day,
+                        _time.hour,
+                        _time.minute,
+                        baseDate.second,
+                      );
+                      final fullTimeStr = '${updatedDateTime.year}-${updatedDateTime.month.toString().padLeft(2, '0')}-${updatedDateTime.day.toString().padLeft(2, '0')} ${updatedDateTime.hour.toString().padLeft(2, '0')}:${updatedDateTime.minute.toString().padLeft(2, '0')}:${updatedDateTime.second.toString().padLeft(2, '0')}';
+
                       Navigator.of(context).pop({
                         'title': _titleController.text.trim(),
-                        'time': _time.format(context),
+                        'time': fullTimeStr,
                         'category': _category,
                         'q': _contentController.text.trim(),
                         'a': _summaryController.text.trim(),

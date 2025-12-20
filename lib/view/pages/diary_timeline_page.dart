@@ -199,7 +199,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                entry.time ?? '',
+                                entry.displayTime ?? '',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: context.secondaryTextColor,

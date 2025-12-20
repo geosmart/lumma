@@ -370,15 +370,23 @@ class _DiaryChatPageState extends State<DiaryChatPage> {
                           if (i > 0) {
                             final prevTime = _history[i - 1]['time'];
                             if (prevTime != null && prevTime.isNotEmpty) {
-                              // 只比较到分钟
+                              // 比较到分钟粒度
                               final curMinute = curTime.length >= 16 ? curTime.substring(0, 16) : curTime;
                               final prevMinute = prevTime.length >= 16 ? prevTime.substring(0, 16) : prevTime;
                               if (curMinute == prevMinute) showTime = false;
                             }
                           }
                           if (showTime) {
-                            // 只显示HH:mm
-                            String displayTime = curTime.length >= 16 ? curTime.substring(11, 16) : curTime;
+                            // 提取并显示时分秒 HH:mm:ss
+                            String displayTime;
+                            if (curTime.contains(' ') && curTime.length > 11) {
+                              // Full format: yyyy-MM-dd HH:mm:ss, extract time part
+                              final parts = curTime.split(' ');
+                              displayTime = parts.length == 2 ? parts[1] : curTime;
+                            } else {
+                              // Legacy format or already time only
+                              displayTime = curTime;
+                            }
                             timeLabel = displayTime;
                           }
                         }

@@ -40,20 +40,68 @@ class DiaryEntry {
   }
 
   /// Parse time string to DateTime for sorting
+  /// Supports both full format (yyyy-MM-dd HH:mm:ss) and legacy format (HH:mm)
   DateTime? get parsedTime {
     if (time == null) return null;
     try {
-      final now = DateTime.now();
-      final timeParts = time!.split(':');
-      if (timeParts.length == 2) {
+      final trimmedTime = time!.trim();
+
+      // Try to parse full format: yyyy-MM-dd HH:mm:ss
+      if (trimmedTime.contains(' ')) {
+        final parts = trimmedTime.split(' ');
+        if (parts.length == 2) {
+          final dateParts = parts[0].split('-');
+          final timeParts = parts[1].split(':');
+
+          if (dateParts.length == 3 && (timeParts.length == 2 || timeParts.length == 3)) {
+            final year = int.parse(dateParts[0]);
+            final month = int.parse(dateParts[1]);
+            final day = int.parse(dateParts[2]);
+            final hour = int.parse(timeParts[0]);
+            final minute = int.parse(timeParts[1]);
+            final second = timeParts.length == 3 ? int.parse(timeParts[2]) : 0;
+
+            return DateTime(year, month, day, hour, minute, second);
+          }
+        }
+      }
+
+      // Fallback: try legacy format HH:mm (for backward compatibility)
+      final timeParts = trimmedTime.split(':');
+      if (timeParts.length >= 2) {
+        final now = DateTime.now();
         final hour = int.parse(timeParts[0]);
         final minute = int.parse(timeParts[1]);
-        return DateTime(now.year, now.month, now.day, hour, minute);
+        final second = timeParts.length >= 3 ? int.parse(timeParts[2]) : 0;
+        return DateTime(now.year, now.month, now.day, hour, minute, second);
       }
     } catch (e) {
       // If parsing fails, return null
     }
     return null;
+  }
+
+  /// Get display time string (HH:mm:ss only) from full time format
+  /// Supports both full format (yyyy-MM-dd HH:mm:ss) and legacy format (HH:mm)
+  String? get displayTime {
+    if (time == null) return null;
+    try {
+      final trimmedTime = time!.trim();
+
+      // If it's full format (yyyy-MM-dd HH:mm:ss), extract time part
+      if (trimmedTime.contains(' ')) {
+        final parts = trimmedTime.split(' ');
+        if (parts.length == 2) {
+          // Return the time part (HH:mm:ss)
+          return parts[1];
+        }
+      }
+
+      // Otherwise return as is (legacy format HH:mm or already HH:mm:ss)
+      return trimmedTime;
+    } catch (e) {
+      return time;
+    }
   }
 }
 
@@ -80,7 +128,7 @@ class DiaryDao {
     buffer.writeln();
     // 2. Time
     final now = DateTime.now();
-    final timeStr = time ?? '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final timeStr = time ?? '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
     buffer.writeln('### ${AppLocalizations.of(context)!.time}'); // i18n for '时间'
     buffer.writeln(timeStr);
     buffer.writeln();
@@ -119,7 +167,7 @@ class DiaryDao {
     buffer.writeln();
     // 2. Time
     final now = DateTime.now();
-    final timeStr = time ?? '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final timeStr = time ?? '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
     buffer.writeln('### ${AppLocalizations.of(context)!.time}');
     buffer.writeln(timeStr);
     buffer.writeln();
@@ -135,7 +183,7 @@ class DiaryDao {
 
   /// Parse markdown to chat history, returns List<DiaryEntry>
   /// Each entry contains: title, time, category, q, a
-  /// Results are sorted by time in descending order (newest first)
+  /// Results are sorted by time in ascending order (oldest first)
   static List<DiaryEntry> parseDiaryMarkdownToChatHistory(BuildContext context, String content) {
     final lines = content.split('\n');
     final List<Map<String, String>> rawEntries = [];
@@ -200,15 +248,15 @@ class DiaryDao {
       rawEntries.add(currentItem);
     }
 
-    // Convert to DiaryEntry objects and sort by time descending
+    // Convert to DiaryEntry objects and sort by time ascending (oldest first)
     final entries = rawEntries.map((map) => DiaryEntry.fromMap(map)).toList();
     entries.sort((a, b) {
       final timeA = a.parsedTime;
       final timeB = b.parsedTime;
 
-      // If both have time, compare them (newest first)
+      // If both have time, compare them (oldest first)
       if (timeA != null && timeB != null) {
-        return timeB.compareTo(timeA);
+        return timeA.compareTo(timeB);
       }
       // If only one has time, prioritize the one with time
       if (timeA != null) return -1;
@@ -217,14 +265,14 @@ class DiaryDao {
       return 0;
     });
 
-    print('DEBUG: Parsed ${entries.length} diary entries, sorted by time desc');
+    print('DEBUG: Parsed ${entries.length} diary entries, sorted by time asc');
     return entries;
   }
 
-  /// Parse diary markdown content to List<DiaryEntry>, sorted by time descending
+  /// Parse diary markdown content to List<DiaryEntry>, sorted by time ascending
   /// This is a more intuitive alias for parseDiaryMarkdownToChatHistory
   /// [content] Diary markdown content to parse
-  /// Returns List<DiaryEntry> sorted by time in descending order (newest first)
+  /// Returns List<DiaryEntry> sorted by time in ascending order (oldest first)
   static List<DiaryEntry> parseDiaryContent(BuildContext context, String content) {
     return parseDiaryMarkdownToChatHistory(context, content);
   }
