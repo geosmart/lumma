@@ -10,7 +10,7 @@ class WebdavUtil {
     required String remoteDir,
   }) async {
     try {
-      final uri = Uri.parse(webdavUrl + (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/'));
+      final uri = Uri.parse(buildWebdavFileUrl(webdavUrl, remoteDir));
       final auth = base64Encode(utf8.encode('$username:$password'));
       print('=== WebDAV 连接测试 ===');
       print('请求方法: PROPFIND');
@@ -18,7 +18,12 @@ class WebdavUtil {
       final request = http.Request('PROPFIND', uri)
         ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '0'})
         ..body =
-            '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n  </D:prop>\n</D:propfind>''';
+            '''<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:displayname/>
+  </D:prop>
+</D:propfind>''';
       final response = await http.Client().send(request);
       print('响应状态码: ${response.statusCode}');
       return response.statusCode == 207 || response.statusCode == 200;
@@ -38,7 +43,7 @@ class WebdavUtil {
   }) async {
     // ...直接复制SyncService._downloadWebdavDirectory内容，去掉SyncService依赖...
     try {
-      final uri = Uri.parse(webdavUrl + (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/'));
+      final uri = Uri.parse(buildWebdavFileUrl(webdavUrl, remoteDir));
       final auth = base64Encode(utf8.encode('$username:$password'));
       print('=== WebDAV PROPFIND 请求调试信息 ===');
       print('请求方法: PROPFIND');
@@ -48,7 +53,15 @@ class WebdavUtil {
       final request = http.Request('PROPFIND', uri)
         ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
         ..body =
-            '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
+            '''<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:displayname/>
+    <D:getcontentlength/>
+    <D:getcontenttype/>
+    <D:resourcetype/>
+  </D:prop>
+</D:propfind>''';
       final response = await http.Client().send(request);
       print('响应状态码: ${response.statusCode}');
       if (response.statusCode != 207) {
@@ -95,19 +108,20 @@ class WebdavUtil {
     }
   }
 
-  // 公共方法：拼接 WebDAV 文件 URL，自动去重斜杠和 /dav 前缀
+  // 公共方法：拼接 WebDAV 文件 URL，自动处理斜杠
   static String buildWebdavFileUrl(String webdavUrl, String remotePath) {
-    // 去掉 remotePath 开头所有 / 和 dav/
-    String path = remotePath;
-    while (path.startsWith('/')) {
-      path = path.substring(1);
-    }
-    while (path.startsWith('dav/')) {
-      path = path.substring(4);
-    }
-    // 保证 webdavUrl 结尾只有一个斜杠
-    String base = webdavUrl.endsWith('/') ? webdavUrl : '$webdavUrl/';
-    return base + path;
+  // 去掉 remotePath 开头所有 /
+  String path = remotePath;
+  while (path.startsWith('/')) {
+    path = path.substring(1);
+  }
+  // 去掉 remotePath 结尾所有 /
+  while (path.endsWith('/')) {
+    path = path.substring(0, path.length - 1);
+  }
+  // 保证 webdavUrl 结尾有且只有一个斜杠
+  String base = webdavUrl.endsWith('/') ? webdavUrl : '$webdavUrl/';
+  return base + path;
   }
 
   static Future<bool> downloadFile({
@@ -200,7 +214,9 @@ class WebdavUtil {
     required File file,
   }) async {
     try {
-      final uri = Uri.parse('$webdavUrl$remotePath');
+      // 使用公共方法拼接 URL
+      final url = buildWebdavFileUrl(webdavUrl, remotePath);
+      final uri = Uri.parse(url);
       final auth = base64Encode(utf8.encode('$username:$password'));
       final bytes = await file.readAsBytes();
       print('上传文件: ${file.path} -> $remotePath');
@@ -226,7 +242,9 @@ class WebdavUtil {
     required String remotePath,
   }) async {
     try {
-      final uri = Uri.parse('$webdavUrl$remotePath');
+      // 使用公共方法拼接 URL
+      final url = buildWebdavFileUrl(webdavUrl, remotePath);
+      final uri = Uri.parse(url);
       final auth = base64Encode(utf8.encode('$username:$password'));
 
       final request = http.Request('PROPFIND', uri)
@@ -366,7 +384,8 @@ class WebdavUtil {
       print('请求方法: PROPFIND');
       print('远程目录: $remoteDir');
       print('本地目录: $localDir');
-      final uriStr = webdavUrl + (remoteDir.endsWith('/') ? remoteDir : '$remoteDir/');
+      // 使用公共方法拼接 URL
+      final uriStr = buildWebdavFileUrl(webdavUrl, remoteDir);
       print('实际请求 URL: $uriStr');
       final uri = Uri.parse(uriStr);
       final auth = base64Encode(utf8.encode('$username:$password'));
@@ -374,7 +393,16 @@ class WebdavUtil {
       final request = http.Request('PROPFIND', uri)
         ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': 'infinity'})
         ..body =
-            '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:displayname/>\n    <D:getcontentlength/>\n    <D:getcontenttype/>\n    <D:resourcetype/>\n    <D:getlastmodified/>\n  </D:prop>\n</D:propfind>''';
+            '''<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:displayname/>
+    <D:getcontentlength/>
+    <D:getcontenttype/>
+    <D:resourcetype/>
+    <D:getlastmodified/>
+  </D:prop>
+</D:propfind>''';
 
       print('发送 PROPFIND 请求...');
       final response = await http.Client().send(request);
@@ -463,7 +491,9 @@ class WebdavUtil {
     required String remotePath,
   }) async {
     try {
-      final uri = Uri.parse('$webdavUrl$remotePath');
+      // 使用公共方法拼接 URL
+      final url = buildWebdavFileUrl(webdavUrl, remotePath);
+      final uri = Uri.parse(url);
       final auth = base64Encode(utf8.encode('$username:$password'));
       final response = http.Request('MKCOL', uri)..headers.addAll({'Authorization': 'Basic $auth'});
       final streamedResponse = await http.Client().send(response);
@@ -492,7 +522,12 @@ class WebdavUtil {
     final request = http.Request('PROPFIND', uri)
       ..headers.addAll({'Authorization': 'Basic $auth', 'Content-Type': 'application/xml', 'Depth': '1'})
       ..body =
-          '''<?xml version="1.0" encoding="utf-8" ?>\n<D:propfind xmlns:D="DAV:">\n  <D:prop>\n    <D:resourcetype/>\n  </D:prop>\n</D:propfind>''';
+          '''<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:resourcetype/>
+  </D:prop>
+</D:propfind>''';
     final response = await http.Client().send(request);
     if (response.statusCode != 207) return [];
     final responseBody = await response.stream.bytesToString();
@@ -521,7 +556,9 @@ class WebdavUtil {
     required String password,
     required String remotePath,
   }) async {
-    final uri = Uri.parse(webdavUrl + remotePath);
+    // 使用公共方法拼接 URL
+    final url = buildWebdavFileUrl(webdavUrl, remotePath);
+    final uri = Uri.parse(url);
     final auth = base64Encode(utf8.encode('$username:$password'));
     final response = await http.delete(uri, headers: {'Authorization': 'Basic $auth'});
     return response.statusCode == 204 || response.statusCode == 200 || response.statusCode == 404;
