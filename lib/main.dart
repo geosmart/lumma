@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'config/llm_config_init.dart';
 import 'service/theme_service.dart';
 import 'generated/l10n/app_localizations.dart';
 import 'view/routes/app_pages.dart';
@@ -10,9 +9,6 @@ import 'view/translations/app_translations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 初始化默认配置
-  await ensureConfig();
 
   print('[lumma] App init...');
   print('[lumma] runApp...');

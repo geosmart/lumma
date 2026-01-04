@@ -3,11 +3,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:lumma/dao/diary_dao.dart';
 import 'package:lumma/service/theme_service.dart';
-import 'package:lumma/service/ai_service.dart';
-import 'package:lumma/view/widgets/ai_result_page.dart';
-import 'package:lumma/view/widgets/text_correction_stream_dialog.dart';
-import 'package:lumma/view/widgets/text_correction_confirm_dialog.dart';
-import 'package:lumma/util/json_stream_parser.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
 

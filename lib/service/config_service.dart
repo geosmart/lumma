@@ -2,11 +2,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:lumma/model/app_config.dart';
-import 'package:lumma/model/llm_config.dart';
 import 'package:lumma/model/enums.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/service/language_service.dart';
-import 'package:lumma/service/prompt_config_service.dart';
 import 'package:lumma/util/storage_service.dart';
 
 const String kLummaConfigFileName = 'lumma_config.json';

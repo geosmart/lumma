@@ -4,9 +4,6 @@ import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/util/frontmatter_service.dart';
 import 'package:lumma/util/storage_service.dart';
 import 'package:lumma/service/config_service.dart';
-import 'package:lumma/service/ai_service.dart';
-import 'package:lumma/util/prompt_util.dart';
-import 'package:lumma/model/enums.dart';
 
 /// Diary entry model for better readability
 class DiaryEntry {
@@ -281,48 +278,6 @@ class DiaryDao {
     return parseDiaryMarkdownToChatHistory(context, content);
   }
 
-  /// 提取所有非总结的日记条目，格式化为：时间，日记内容\n时间，日记内容\n...
-  static String extractPlainDiaryEntries(BuildContext context, String content) {
-    final entries = DiaryDao.parseDiaryContent(context, content);
-    // 只保留非总结（category/title都不是日总结）的条目
-    final filtered = entries.where((e) => (e.category?.trim() != '日总结' && e.title.trim() != '日总结'));
-    // 只保留有时间和内容的条目
-    final lines = filtered
-        .where((e) => (e.time?.isNotEmpty == true && e.q?.isNotEmpty == true))
-        .map((e) => '${e.time}, ${e.q!.replaceAll('\n', ' ').replaceAll('#', '')}')
-        .toList();
-    return lines.join('\n');
-  }
-
-  /// Remove daily summary section from diary content
-  /// This is useful when we want to process diary content without existing summaries
-  /// Uses parseDiaryContent to parse entries and filters out summary entries by category
-  static String removeDailySummarySection(BuildContext context, String content) {
-    if (content.isEmpty) return content;
-
-    try {
-      // Parse content to diary entries
-      final entries = parseDiaryContent(context, content);
-
-      // Filter out entries with category '日总结' or title '日总结'
-      final filteredEntries = entries.where((entry) {
-        final category = entry.category?.trim().toLowerCase() ?? '';
-        final title = entry.title.trim().toLowerCase();
-        return category != '日总结' && title != '日总结';
-      }).toList();
-
-      // Convert back to markdown
-      return diaryContentToMarkdown(context, filteredEntries);
-    } catch (e) {
-      print('Failed to parse diary content, falling back to regex approach: $e');
-      // Fall back to regex-based approach if parsing fails
-      final summaryRegex = RegExp(r'## 日总结\n(?:(?!## [^#]).)*?---\n?', multiLine: true, dotAll: true);
-      String processedContent = content.replaceAll(summaryRegex, '').trim();
-      processedContent = processedContent.replaceAll(RegExp(r'^---\s*\n+', multiLine: true), '').trim();
-      processedContent = processedContent.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-      return processedContent;
-    }
-  }
 
   /// Convert List<DiaryEntry> back to markdown format
   /// [entries] List of diary entries to convert
@@ -484,81 +439,6 @@ class DiaryDao {
     }
   }
 
-  /// 追加内容到今日日记，带时间戳和纠错处理
-  /// [userContent] 用户原始输入内容
-  /// [context] BuildContext 用于获取本地化和调用纠错服务
-  /// [shouldCorrect] 是否应该纠错，如果为null则自动检查纠错配置
-  static Future<void> appendDailyDiaryWithCorrection({
-    required BuildContext context,
-    required String userContent,
-    bool? shouldCorrect,
-  }) async {
-    final now = DateTime.now();
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    final dateStr = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-
-    String contentToSave = userContent;
-
-    // 检查是否需要纠错
-    final needsCorrection = shouldCorrect ?? await isCorrectionEnabled();
-
-    if (needsCorrection) {
-      // 调用纠错服务处理内容
-      try {
-        contentToSave = await processTextWithCorrection(userContent);
-      } catch (e) {
-        print('[DiaryDao] 纠错处理失败，使用原始内容: $e');
-        // 如果纠错失败，使用原始内容
-        contentToSave = userContent;
-      }
-    }
-
-    // 格式化为 markdown 条目
-    final formattedEntry = '* $dateStr $timeStr $contentToSave\n';
-
-    // 追加到当天日记
-    await appendToDailyDiary(formattedEntry);
-  }
-
-  /// 使用纠错服务处理文本
-  static Future<String> processTextWithCorrection(String text) async {
-    final prompt = await getActivePromptContent(PromptCategory.correction);
-    if (prompt == null || prompt.isEmpty) {
-      return text;
-    }
-
-    final messages = [
-      {'role': 'system', 'content': prompt},
-      {'role': 'user', 'content': text},
-    ];
-
-    String correctedText = text;
-    bool completed = false;
-
-    await AiService.askStream(
-      messages: messages,
-      onDelta: (data) {
-        // 实时更新纠错后的文本
-        correctedText = data['content'] ?? text;
-      },
-      onDone: (data) {
-        correctedText = data['content']?.trim() ?? text;
-        completed = true;
-      },
-      onError: (error) {
-        print('[DiaryDao] 纠错服务调用失败: $error');
-        correctedText = text;
-        completed = true;
-      },
-    );
-
-    // 等待完成
-    while (!completed) {
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
-
-    return correctedText.isEmpty ? text : correctedText;
-  }
 
   /// Get the count of diary entries in today's diary file
   /// Used for generating sequential entry numbers in timeline mode

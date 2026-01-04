@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:lumma/view/pages/main_page.dart';
-import 'package:lumma/view/pages/diary_chat_page.dart';
 import 'package:lumma/view/pages/diary_timeline_page.dart';
 import 'package:lumma/view/pages/diary_calendar_page.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
@@ -9,14 +8,8 @@ import 'package:lumma/view/pages/diary_detail_page.dart';
 import 'package:lumma/view/pages/diary_edit_page.dart';
 import 'package:lumma/view/pages/diary_content_page.dart';
 import 'package:lumma/view/pages/settings_page.dart';
-import 'package:lumma/view/pages/llm_config_page.dart';
-import 'package:lumma/view/pages/llm_edit_page.dart';
-import 'package:lumma/view/pages/prompt_config_page.dart';
-import 'package:lumma/view/pages/prompt_edit_page.dart';
-import 'package:lumma/view/pages/category_config_page.dart';
 import 'package:lumma/view/pages/diary_mode_config_page.dart';
 import 'package:lumma/view/pages/sync_config_page.dart';
-import 'package:lumma/model/enums.dart';
 import 'app_routes.dart';
 
 /// GetX 页面路由配置
@@ -25,7 +18,6 @@ class AppPages {
 
   static final routes = [
     GetPage(name: AppRoutes.main, page: () => const MainTabPage()),
-    GetPage(name: AppRoutes.diaryChat, page: () => const DiaryChatPage()),
     GetPage(name: AppRoutes.diaryTimeline, page: () => const DiaryTimelinePage()),
     GetPage(name: AppRoutes.diaryCalendar, page: () => const DiaryCalendarPage()),
     GetPage(name: AppRoutes.diaryFileList, page: () => const DiaryFileListPage()),
@@ -42,27 +34,6 @@ class AppPages {
       page: () => DiaryContentPage(fileName: Get.arguments?['fileName'] ?? ''),
     ),
     GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
-    // LlmConfigPage 是 StatefulWidget，不能用 const
-    GetPage(name: AppRoutes.llmConfig, page: () => const LLMConfigPage()),
-    // LlmEditPage 可以接收可选参数
-    GetPage(
-      name: AppRoutes.llmEdit,
-      page: () => LLMEditPage(config: Get.arguments?['config'], readOnly: Get.arguments?['readOnly'] ?? false),
-    ),
-    GetPage(name: AppRoutes.promptConfig, page: () => const PromptConfigPage()),
-    // PromptEditPage 需要 activeCategory 参数（PromptCategory 枚举类型）
-    GetPage(
-      name: AppRoutes.promptEdit,
-      page: () => PromptEditPage(
-        activeCategory: Get.arguments?['activeCategory'] ?? PromptCategory.chat,
-        file: Get.arguments?['file'],
-        readOnly: Get.arguments?['readOnly'] ?? false,
-        initialContent: Get.arguments?['initialContent'],
-        initialName: Get.arguments?['initialName'],
-        isSystem: Get.arguments?['isSystem'] ?? false,
-      ),
-    ),
-    GetPage(name: AppRoutes.categoryConfig, page: () => const CategoryConfigPage()),
     GetPage(name: AppRoutes.diaryModeConfig, page: () => const DiaryModeConfigPage()),
     GetPage(name: AppRoutes.syncConfig, page: () => const SyncConfigPage()),
   ];

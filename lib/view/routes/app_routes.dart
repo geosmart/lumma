@@ -4,7 +4,6 @@ abstract class AppRoutes {
   static const main = '/';
 
   // 日记相关
-  static const diaryChat = '/diary/chat';
   static const diaryTimeline = '/diary/timeline';
   static const diaryCalendar = '/diary/calendar';
   static const diaryFileList = '/diary/file-list';
@@ -15,11 +14,6 @@ abstract class AppRoutes {
 
   // 配置相关
   static const settings = '/settings';
-  static const llmConfig = '/settings/llm-config';
-  static const llmEdit = '/settings/llm-edit';
-  static const promptConfig = '/settings/prompt-config';
-  static const promptEdit = '/settings/prompt-edit';
-  static const categoryConfig = '/settings/category-config';
   static const diaryModeConfig = '/settings/diary-mode-config';
   static const syncConfig = '/settings/sync-config';
 }

@@ -23,48 +23,6 @@ DiaryMode diaryModeFromString(String value) {
   }
 }
 
-// 提示词分类枚举
-enum PromptCategory { chat, summary, correction }
-
-// 获取提示词分类显示名称（国际化）
-String promptCategoryToDisplayName(PromptCategory category, BuildContext context) {
-  final l10n = AppLocalizations.of(context)!;
-  switch (category) {
-    case PromptCategory.chat:
-      return l10n.promptCategoryChat;
-    case PromptCategory.summary:
-      return l10n.promptCategorySummary;
-    case PromptCategory.correction:
-      return l10n.promptCategoryCorrection;
-  }
-}
-
-// 将提示词分类枚举转换为字符串
-String promptCategoryToString(PromptCategory category) {
-  switch (category) {
-    case PromptCategory.chat:
-      return 'chat';
-    case PromptCategory.summary:
-      return 'summary';
-    case PromptCategory.correction:
-      return 'correction';
-  }
-}
-
-// 根据字符串获取提示词分类枚举
-PromptCategory promptCategoryFromString(String value) {
-  switch (value) {
-    case 'chat':
-      return PromptCategory.chat;
-    case 'summary':
-      return PromptCategory.summary;
-    case 'correction':
-      return PromptCategory.correction;
-    default:
-      return PromptCategory.chat;
-  }
-}
-
 enum ThemeModeType { light, dark }
 
 String themeModeTypeToString(ThemeModeType mode) {
