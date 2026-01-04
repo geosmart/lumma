@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
-import 'package:lumma/service/config_service.dart';
 
-/// 通用编辑日记条目的对话框，支持普通条目和内容分析（summary）编辑与清空
+/// 通用编辑日记条目的对话框
 class EditDiaryEntryDialog extends StatefulWidget {
   final Map<String, String> initialEntry;
   final List<String> allCategories;
@@ -16,7 +15,6 @@ class EditDiaryEntryDialog extends StatefulWidget {
 class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
-  late TextEditingController _summaryController;
   late String _category;
   late TimeOfDay _time;
   late DateTime? _originalDateTime; // Store original date for preserving it
@@ -28,7 +26,6 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
     _initCategories();
     _titleController = TextEditingController(text: widget.initialEntry['title'] ?? '');
     _contentController = TextEditingController(text: widget.initialEntry['q'] ?? '');
-    _summaryController = TextEditingController(text: widget.initialEntry['a'] ?? '');
     final initCat = widget.initialEntry['category'];
     _category = initCat ?? '';
 
@@ -78,18 +75,12 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
   }
 
   Future<void> _initCategories() async {
-    final config = await AppConfigService.load();
-    final list = config.getCategoryList();
     setState(() {
-      _categories = List<String>.from(list);
+      _categories = [];
       // 如果当前category不在列表中，插入到第一位
       if (_category.isNotEmpty && !_categories.contains(_category)) {
         _categories.insert(0, _category);
       }
-      // 不再自动选第一个，保持为空
-      // if (_category.isEmpty && _categories.isNotEmpty) {
-      //   _category = _categories.first;
-      // }
     });
   }
 
@@ -97,7 +88,6 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-    _summaryController.dispose();
     super.dispose();
   }
 
@@ -189,18 +179,6 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
                 isDense: true,
               ),
             ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _summaryController,
-              maxLines: 3,
-              minLines: 1,
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.aiSummaryResult,
-                border: const OutlineInputBorder(),
-                alignLabelWithHint: true,
-                isDense: true,
-              ),
-            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -237,7 +215,6 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
                         'time': fullTimeStr,
                         'category': _category,
                         'q': _contentController.text.trim(),
-                        'a': _summaryController.text.trim(),
                       });
                     },
                   ),

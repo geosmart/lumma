@@ -16,8 +16,5 @@ class InitialBinding extends Bindings {
 
     // 注入 API 提供者（永久存在）
     Get.put(ApiProvider(), permanent: true);
-
-    // 注入 AI API 服务（永久存在）
-    Get.put(AiApiService(), permanent: true);
   }
 }

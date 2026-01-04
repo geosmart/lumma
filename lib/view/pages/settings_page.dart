@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/controller/language_controller.dart';
 import 'package:lumma/controller/theme_controller.dart';
-import 'package:lumma/view/pages/diary_mode_config_page.dart';
 import 'package:lumma/view/pages/sync_config_page.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/config/settings_ui_config.dart';
@@ -17,7 +16,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       initialIndex: initialTabIndex,
       child: Scaffold(
         appBar: AppBar(
@@ -28,7 +27,6 @@ class SettingsPage extends StatelessWidget {
           bottom: const TabBar(
             labelPadding: EdgeInsets.symmetric(horizontal: 4),
             tabs: [
-              Tab(icon: Icon(Icons.auto_stories, size: 20)),
               Tab(icon: Icon(Icons.sync, size: 20)),
               Tab(icon: Icon(Icons.palette, size: 20)),
             ],
@@ -36,7 +34,6 @@ class SettingsPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            DiaryModeConfigPage(),
             SyncConfigPage(),
             _AppearanceSettingsPage(),
           ],

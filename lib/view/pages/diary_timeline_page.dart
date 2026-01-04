@@ -117,7 +117,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       await DiaryDao.appendTimelineDiaryEntry(
         context: context,
         userContent: userContent,
-        shouldCorrect: null, // Use default correction setting
+        shouldCorrect: null,
       );
 
       // Reload entries to reflect the new entry with proper numbering
@@ -132,132 +132,6 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       setState(() {
         _isSaving = false;
       });
-    }
-  }
-
-  /// 纠错功能
-  Future<void> _onCorrection() async {
-    if (_ctrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先输入文本内容')),
-      );
-      return;
-    }
-
-    final originalText = _ctrl.text.trim();
-    await _performCorrection(originalText);
-  }
-
-  /// 执行纠错流程（支持重试）
-  Future<void> _performCorrection(String originalText) async {
-    try {
-      // 创建流控制器
-      final streamController = StreamController<String>();
-      final parser = JsonStreamParser();
-      List<CorrectionSegment>? finalSegments;
-      String? errorMessage;
-
-      // 显示流式纠错对话框
-      final streamDialogFuture = showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => TextCorrectionStreamDialog(
-          originalText: originalText,
-          correctionStream: streamController.stream,
-        ),
-      );
-
-      // 调用AI服务进行纠错
-      await AiService.processTextStream(
-        content: originalText,
-        promptType: 'correction',
-        onDelta: (chunk) {
-          streamController.add(chunk);
-          // 实时解析JSON片段
-          try {
-            parser.addChunk(chunk);
-          } catch (e) {
-            // 解析异常，忽略
-          }
-        },
-        onDone: (fullText) async {
-          try {
-            // 确保所有数据都被解析
-            parser.addChunk(''); // 触发最后的解析
-            finalSegments = parser.segments;
-          } catch (e) {
-            errorMessage = '解析纠错结果失败';
-          }
-
-          await streamController.close();
-
-          // 关闭流式对话框
-          if (mounted) {
-            Navigator.of(context, rootNavigator: false).pop();
-          }
-
-          // 如果解析失败或没有片段，使用原文
-          if (errorMessage != null || finalSegments == null || finalSegments!.isEmpty) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(errorMessage ?? '纠错失败，请重试')),
-              );
-            }
-            return;
-          }
-
-          // 构建纠错后的完整文本
-          final correctedText = finalSegments!.map((s) => s.after).join();
-
-          // 显示确认对话框
-          if (mounted) {
-            final action = await showDialog<CorrectionAction>(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => TextCorrectionConfirmDialog(
-                originalText: originalText,
-                correctedText: correctedText,
-                segments: finalSegments,
-              ),
-            );
-
-            // 处理用户选择
-            if (action == CorrectionAction.accept) {
-              // 接受纠错，替换文本
-              setState(() {
-                _ctrl.text = correctedText;
-              });
-            } else if (action == CorrectionAction.retry) {
-              // 重试纠错
-              await _performCorrection(originalText);
-            }
-            // 取消时不做任何操作，也不显示提示
-          }
-        },
-        onError: (error) async {
-          await streamController.close();
-
-          // 关闭流式对话框
-          if (mounted) {
-            Navigator.of(context, rootNavigator: false).pop();
-          }
-
-          // 显示错误提示，并提示重试
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('纠错失败: ${error.toString()}，请重试')),
-            );
-          }
-        },
-      );
-
-      await streamDialogFuture;
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('纠错异常: $e')),
-        );
-      }
     }
   }
 
@@ -370,41 +244,6 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.smart_toy, color: Colors.deepOrange),
-                          tooltip: AppLocalizations.of(context)!.aiSummary,
-                          onPressed: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AiResultPage(
-                                  title: AppLocalizations.of(context)!.aiSummaryResult,
-                                  fileName: _diaryFileName,
-                                  onBack: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  getContent: () async {
-                                    if (!_diaryCreated || _diaryFileName == null) return null;
-                                    final diaryDir = await DiaryDao.getDiaryDir();
-                                    final file = File('$diaryDir/$_diaryFileName');
-                                    return await file.readAsString();
-                                  },
-                                ),
-                              ),
-                            );
-
-                            if (result == true) {
-                              setState(() {});
-                            }
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                        IconButton(
-                          icon: const Icon(Icons.auto_fix_high, color: Colors.purple),
-                          tooltip: '纠错',
-                          onPressed: _isSaving ? null : _onCorrection,
-                        ),
-                        const SizedBox(width: 4),
                         IconButton(
                           icon: const Icon(Icons.menu_book, color: Colors.teal),
                           tooltip: AppLocalizations.of(context)!.viewDiaryList,

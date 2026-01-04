@@ -185,19 +185,6 @@ class StorageService {
     }
   }
 
-  /// 获取 prompt 目录路径（workDir 直接拼接子目录，getWorkDir 已内置默认目录逻辑）
-  static Future<String> getPromptDirPath() async {
-    final promptSubDir = 'config/prompt';
-    final workDir = await getWorkDir();
-    final promptPath = path.join(workDir ?? '', promptSubDir);
-    // 确保目录存在
-    final promptDir = Directory(promptPath);
-    if (!await promptDir.exists()) {
-      await promptDir.create(recursive: true);
-    }
-    return promptPath;
-  }
-
   /// 获取日记目录路径（workDir 直接拼接子目录，getWorkDir 已内置默认目录逻辑）
   static Future<String> getDiaryDirPath() async {
     final diarySubDir = 'data/diary';

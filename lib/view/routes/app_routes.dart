@@ -14,6 +14,5 @@ abstract class AppRoutes {
 
   // 配置相关
   static const settings = '/settings';
-  static const diaryModeConfig = '/settings/diary-mode-config';
   static const syncConfig = '/settings/sync-config';
 }

@@ -8,7 +8,6 @@ import 'package:lumma/view/pages/diary_detail_page.dart';
 import 'package:lumma/view/pages/diary_edit_page.dart';
 import 'package:lumma/view/pages/diary_content_page.dart';
 import 'package:lumma/view/pages/settings_page.dart';
-import 'package:lumma/view/pages/diary_mode_config_page.dart';
 import 'package:lumma/view/pages/sync_config_page.dart';
 import 'app_routes.dart';
 
@@ -34,7 +33,6 @@ class AppPages {
       page: () => DiaryContentPage(fileName: Get.arguments?['fileName'] ?? ''),
     ),
     GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
-    GetPage(name: AppRoutes.diaryModeConfig, page: () => const DiaryModeConfigPage()),
     GetPage(name: AppRoutes.syncConfig, page: () => const SyncConfigPage()),
   ];
 }

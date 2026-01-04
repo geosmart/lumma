@@ -3,10 +3,8 @@ import 'dart:developer' as developer;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'generated/l10n/app_localizations.dart';
-import 'package:lumma/service/config_service.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/util/sync_service.dart';
-import 'model/enums.dart';
 import 'package:lumma/view/routes/app_routes.dart';
 
 class MainTabPage extends StatefulWidget {
@@ -91,16 +89,8 @@ class _MainTabPageState extends State<MainTabPage> {
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(999),
-                  onTap: () async {
-                    final mode = await AppConfigService.loadDiaryMode();
-                    if (mode == DiaryMode.chat) {
-                      // 使用 GetX 路由导航
-                      Get.toNamed(AppRoutes.diaryChat);
-                    } else if (mode == DiaryMode.timeline) {
-                      Get.toNamed(AppRoutes.diaryTimeline);
-                    } else {
-                      Get.toNamed(AppRoutes.diaryChat);
-                    }
+                  onTap: () {
+                    Get.toNamed(AppRoutes.diaryTimeline);
                   },
                   child: Center(
                     child: Row(

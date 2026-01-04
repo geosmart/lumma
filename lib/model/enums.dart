@@ -1,26 +1,11 @@
-import 'package:flutter/widgets.dart';
-import '../generated/l10n/app_localizations.dart';
-
-enum DiaryMode { chat, timeline }
+enum DiaryMode { timeline }
 
 String diaryModeToString(DiaryMode mode) {
-  switch (mode) {
-    case DiaryMode.chat:
-      return 'chat';
-    case DiaryMode.timeline:
-      return 'timeline';
-  }
+  return 'timeline';
 }
 
 DiaryMode diaryModeFromString(String value) {
-  switch (value) {
-    case 'chat':
-      return DiaryMode.chat;
-    case 'timeline':
-      return DiaryMode.timeline;
-    default:
-      return DiaryMode.timeline;
-  }
+  return DiaryMode.timeline;
 }
 
 enum ThemeModeType { light, dark }
