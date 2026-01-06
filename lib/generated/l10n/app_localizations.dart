@@ -1615,6 +1615,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sun'**
   String get sunday;
+
+  /// MCP configuration page title
+  ///
+  /// In en, this message translates to:
+  /// **'Lumma MCP Configuration'**
+  String get mcpConfig;
+
+  /// MCP server configuration title
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Server Configuration'**
+  String get mcpServerConfig;
+
+  /// MCP server URL label
+  ///
+  /// In en, this message translates to:
+  /// **'Private Deployment URL'**
+  String get mcpUrl;
+
+  /// MCP server URL placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'https://mcp-web-url/mcp/v1/message'**
+  String get mcpUrlPlaceholder;
+
+  /// MCP API key label
+  ///
+  /// In en, this message translates to:
+  /// **'API Key'**
+  String get mcpApiKey;
+
+  /// MCP API key placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'lk_smdRi1gpCJLV7lgAjxD9L16sLeCfPlme7KrnlWUyytfeoHW2'**
+  String get mcpApiKeyPlaceholder;
+
+  /// MCP configuration save success message
+  ///
+  /// In en, this message translates to:
+  /// **'MCP configuration saved successfully'**
+  String get mcpConfigSaved;
+
+  /// MCP configuration incomplete message
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete the MCP configuration'**
+  String get pleaseCompleteMcpConfig;
+
+  /// MCP connection success message
+  ///
+  /// In en, this message translates to:
+  /// **'MCP connection successful!'**
+  String get mcpConnectionSuccess;
+
+  /// MCP authentication failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed, please check your API key'**
+  String get mcpAuthenticationFailed;
+
+  /// MCP connection failed message
+  ///
+  /// In en, this message translates to:
+  /// **'MCP connection failed, status code: {statusCode}'**
+  String mcpConnectionFailed(Object statusCode);
+
+  /// MCP connection error message
+  ///
+  /// In en, this message translates to:
+  /// **'MCP connection error: {error}'**
+  String mcpConnectionError(Object error);
+
+  /// MCP configuration info title
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions'**
+  String get mcpConfigInfo;
+
+  /// MCP configuration description
+  ///
+  /// In en, this message translates to:
+  /// **'1. Private Deployment URL: Enter your MCP server address, e.g. https://mcp-web-url/mcp/v1/message\n2. API Key: Enter your API key for authentication\n3. Click the \"Test Connection\" button to verify the configuration'**
+  String get mcpConfigDescription;
 }
 
 class _AppLocalizationsDelegate

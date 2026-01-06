@@ -42,7 +42,11 @@ class EnhancedMarkdown extends StatelessWidget {
               child: SizedBox(height: 180, child: MermaidWidget(mermaidSource: b['content']!)),
             );
           } else {
-            return MarkdownBody(data: b['content']!, styleSheet: styleSheet ?? defaultStyleSheet);
+            return MarkdownBody(
+              data: b['content']!,
+              styleSheet: styleSheet ?? defaultStyleSheet,
+              selectable: true,
+            );
           }
         }).toList(),
       ),

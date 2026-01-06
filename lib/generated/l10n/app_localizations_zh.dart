@@ -800,4 +800,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sunday => '日';
+
+  @override
+  String get mcpConfig => 'Lumma MCP 配置';
+
+  @override
+  String get mcpServerConfig => 'MCP 服务器配置';
+
+  @override
+  String get mcpUrl => '私有化部署地址';
+
+  @override
+  String get mcpUrlPlaceholder => 'https://mcp-web-url/mcp/v1/message';
+
+  @override
+  String get mcpApiKey => 'API 密钥';
+
+  @override
+  String get mcpApiKeyPlaceholder =>
+      'lk_smdRi1gpCJLV7lgAjxD9L16sLeCfPlme7KrnlWUyytfeoHW2';
+
+  @override
+  String get mcpConfigSaved => 'MCP 配置已保存';
+
+  @override
+  String get pleaseCompleteMcpConfig => '请填写完整的 MCP 配置信息';
+
+  @override
+  String get mcpConnectionSuccess => 'MCP 连接成功！';
+
+  @override
+  String get mcpAuthenticationFailed => '认证失败，请检查 API 密钥';
+
+  @override
+  String mcpConnectionFailed(Object statusCode) {
+    return 'MCP 连接失败，状态码: $statusCode';
+  }
+
+  @override
+  String mcpConnectionError(Object error) {
+    return 'MCP 连接异常: $error';
+  }
+
+  @override
+  String get mcpConfigInfo => '使用说明';
+
+  @override
+  String get mcpConfigDescription =>
+      '1. 私有化部署地址：填入您的 MCP 服务器地址，例如 https://mcp-web-url/mcp/v1/message\n2. API 密钥：填入您的 API 密钥用于认证\n3. 点击\"测试连接\"按钮验证配置是否正确';
 }

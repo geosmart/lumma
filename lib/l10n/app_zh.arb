@@ -310,5 +310,61 @@
   "sunday": "日",
   "@sunday": {
     "description": "星期日缩写"
+  },
+  "mcpConfig": "Lumma MCP 配置",
+  "@mcpConfig": {
+    "description": "MCP配置页面标题"
+  },
+  "mcpServerConfig": "MCP 服务器配置",
+  "@mcpServerConfig": {
+    "description": "MCP服务器配置标题"
+  },
+  "mcpUrl": "私有化部署地址",
+  "@mcpUrl": {
+    "description": "MCP服务器地址标签"
+  },
+  "mcpUrlPlaceholder": "https://mcp-web-url/mcp/v1/message",
+  "@mcpUrlPlaceholder": {
+    "description": "MCP服务器地址占位符"
+  },
+  "mcpApiKey": "API 密钥",
+  "@mcpApiKey": {
+    "description": "MCP API密钥标签"
+  },
+  "mcpApiKeyPlaceholder": "lk_smdRi1gpCJLV7lgAjxD9L16sLeCfPlme7KrnlWUyytfeoHW2",
+  "@mcpApiKeyPlaceholder": {
+    "description": "MCP API密钥占位符"
+  },
+  "mcpConfigSaved": "MCP 配置已保存",
+  "@mcpConfigSaved": {
+    "description": "MCP配置保存成功提示"
+  },
+  "pleaseCompleteMcpConfig": "请填写完整的 MCP 配置信息",
+  "@pleaseCompleteMcpConfig": {
+    "description": "MCP配置不完整提示"
+  },
+  "mcpConnectionSuccess": "MCP 连接成功！",
+  "@mcpConnectionSuccess": {
+    "description": "MCP连接成功提示"
+  },
+  "mcpAuthenticationFailed": "认证失败，请检查 API 密钥",
+  "@mcpAuthenticationFailed": {
+    "description": "MCP认证失败提示"
+  },
+  "mcpConnectionFailed": "MCP 连接失败，状态码: {statusCode}",
+  "@mcpConnectionFailed": {
+    "description": "MCP连接失败提示"
+  },
+  "mcpConnectionError": "MCP 连接异常: {error}",
+  "@mcpConnectionError": {
+    "description": "MCP连接错误提示"
+  },
+  "mcpConfigInfo": "使用说明",
+  "@mcpConfigInfo": {
+    "description": "MCP配置说明标题"
+  },
+  "mcpConfigDescription": "1. 私有化部署地址：填入您的 MCP 服务器地址，例如 https://mcp-web-url/mcp/v1/message\n2. API 密钥：填入您的 API 密钥用于认证\n3. 点击\"测试连接\"按钮验证配置是否正确",
+  "@mcpConfigDescription": {
+    "description": "MCP配置说明内容"
   }
 }

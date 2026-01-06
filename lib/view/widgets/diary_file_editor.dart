@@ -74,6 +74,9 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
               children: [
                 TextField(
                   controller: _nameCtrl,
+                  enableInteractiveSelection: true,
+                  enableSuggestions: true,
+                  autocorrect: true,
                   decoration: InputDecoration(labelText: l10n.fileName),
                 ),
                 const SizedBox(height: 12),
@@ -82,6 +85,9 @@ class _DiaryFileEditorState extends State<DiaryFileEditor> {
                     TextField(
                       controller: _editCtrl,
                       maxLines: 12,
+                      enableInteractiveSelection: true,
+                      enableSuggestions: true,
+                      autocorrect: true,
                       decoration: InputDecoration(
                         labelText: widget.fileName,
                         border: const OutlineInputBorder(),

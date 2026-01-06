@@ -122,6 +122,9 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
             const SizedBox(height: 18),
             TextField(
               controller: _titleController,
+              enableInteractiveSelection: true,
+              enableSuggestions: true,
+              autocorrect: true,
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.title,
                 border: const OutlineInputBorder(),
@@ -172,6 +175,9 @@ class _EditDiaryEntryDialogState extends State<EditDiaryEntryDialog> {
               controller: _contentController,
               maxLines: 5,
               minLines: 3,
+              enableInteractiveSelection: true,
+              enableSuggestions: true,
+              autocorrect: true,
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.editDiary,
                 border: const OutlineInputBorder(),

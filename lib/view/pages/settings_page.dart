@@ -5,8 +5,11 @@ import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/controller/language_controller.dart';
 import 'package:lumma/controller/theme_controller.dart';
 import 'package:lumma/view/pages/sync_config_page.dart';
+import 'package:lumma/view/pages/mcp_config_page.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/config/settings_ui_config.dart';
+import 'package:lumma/service/config_service.dart' show AppConfigService;
+import 'package:lumma/service/mcp_service.dart';
 
 class SettingsPage extends StatelessWidget {
   final int initialTabIndex;
@@ -16,7 +19,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       initialIndex: initialTabIndex,
       child: Scaffold(
         appBar: AppBar(
@@ -28,6 +31,7 @@ class SettingsPage extends StatelessWidget {
             labelPadding: EdgeInsets.symmetric(horizontal: 4),
             tabs: [
               Tab(icon: Icon(Icons.sync, size: 20)),
+              Tab(icon: Icon(Icons.cloud_upload, size: 20)),
               Tab(icon: Icon(Icons.palette, size: 20)),
             ],
           ),
@@ -35,6 +39,7 @@ class SettingsPage extends StatelessWidget {
         body: TabBarView(
           children: [
             SyncConfigPage(),
+            _McpConfigPage(),
             _AppearanceSettingsPage(),
           ],
         ),
@@ -394,6 +399,317 @@ class _AppearanceSettingsPage extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// MCP configuration page
+class _McpConfigPage extends StatefulWidget {
+  const _McpConfigPage();
+
+  @override
+  State<_McpConfigPage> createState() => _McpConfigPageState();
+}
+
+class _McpConfigPageState extends State<_McpConfigPage> {
+  final _urlController = TextEditingController();
+  final _tokenController = TextEditingController();
+  final _entityIdController = TextEditingController();
+  bool _enabled = false;
+  bool _isLoading = false;
+  bool _isTesting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    _tokenController.dispose();
+    _entityIdController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadConfig() async {
+    setState(() => _isLoading = true);
+    try {
+      final config = await AppConfigService.load();
+      final mcpConfig = config.mcp;
+      setState(() {
+        _enabled = mcpConfig.enabled;
+        _urlController.text = mcpConfig.url;
+        _tokenController.text = mcpConfig.token;
+        _entityIdController.text = mcpConfig.entityId ?? '';
+      });
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveConfig() async {
+    setState(() => _isLoading = true);
+    try {
+      await AppConfigService.update((config) {
+        config.mcp.enabled = _enabled;
+        config.mcp.url = _urlController.text.trim();
+        config.mcp.token = _tokenController.text.trim();
+        config.mcp.entityId = _entityIdController.text.trim();
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.saveSuccess)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存失败: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _testConnection() async {
+    if (_urlController.text.trim().isEmpty ||
+        _tokenController.text.trim().isEmpty ||
+        _entityIdController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请填写完整的配置信息')),
+      );
+      return;
+    }
+
+    setState(() => _isTesting = true);
+    try {
+      final result = await McpService.testConnection(
+        url: _urlController.text.trim(),
+        token: _tokenController.text.trim(),
+        entityId: _entityIdController.text.trim(),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: result['success'] ? Colors.green : Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isTesting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.backgroundGradient,
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Page title
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+            child: Row(
+              children: [
+                Icon(Icons.cloud_upload, color: context.primaryTextColor, size: 24),
+                const SizedBox(width: 12),
+                Text(
+                  'MCP配置',
+                  style: TextStyle(
+                    fontSize: SettingsUiConfig.titleFontSize,
+                    fontWeight: SettingsUiConfig.titleFontWeight,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Enable switch
+          Container(
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: context.borderColor, width: 1),
+            ),
+            child: SwitchListTile(
+              title: Text(
+                '启用MCP同步',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: context.primaryTextColor,
+                ),
+              ),
+              subtitle: Text(
+                '实时保存日记到MCP服务器',
+                style: TextStyle(color: context.secondaryTextColor),
+              ),
+              value: _enabled,
+              onChanged: (value) {
+                setState(() => _enabled = value);
+              },
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Configuration form
+          Container(
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: context.borderColor, width: 1),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '服务器配置',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: context.primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // URL
+                TextField(
+                  controller: _urlController,
+                  decoration: InputDecoration(
+                    labelText: 'MCP服务器地址',
+                    hintText: 'https://mcp-web-url/mcp/v1/message',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Token
+                TextField(
+                  controller: _tokenController,
+                  decoration: InputDecoration(
+                    labelText: 'Token',
+                    hintText: 'lk_...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 16),
+
+                // Entity ID
+                TextField(
+                  controller: _entityIdController,
+                  decoration: InputDecoration(
+                    labelText: '用户ID',
+                    hintText: '例如: 麦冬',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _isTesting ? null : _testConnection,
+                        icon: _isTesting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.network_check),
+                        label: Text(_isTesting ? '测试中...' : '测试连接'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _saveConfig,
+                        icon: const Icon(Icons.save),
+                        label: const Text('保存'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Help text
+          Container(
+            decoration: BoxDecoration(
+              color: context.cardBackgroundColor.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.borderColor.withOpacity(0.5), width: 1),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: context.secondaryTextColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      '说明',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.primaryTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '启用后，每次发送日记时会自动同步到MCP服务器。\n'
+                  '本地保存不受影响，MCP同步失败不会影响正常使用。',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.secondaryTextColor,
                   ),
                 ),
               ],

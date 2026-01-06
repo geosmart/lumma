@@ -799,5 +799,61 @@
   "sunday": "Sun",
   "@sunday": {
     "description": "Sunday abbreviation"
+  },
+  "mcpConfig": "Lumma MCP Configuration",
+  "@mcpConfig": {
+    "description": "MCP configuration page title"
+  },
+  "mcpServerConfig": "MCP Server Configuration",
+  "@mcpServerConfig": {
+    "description": "MCP server configuration title"
+  },
+  "mcpUrl": "Private Deployment URL",
+  "@mcpUrl": {
+    "description": "MCP server URL label"
+  },
+  "mcpUrlPlaceholder": "https://mcp-web-url/mcp/v1/message",
+  "@mcpUrlPlaceholder": {
+    "description": "MCP server URL placeholder"
+  },
+  "mcpApiKey": "API Key",
+  "@mcpApiKey": {
+    "description": "MCP API key label"
+  },
+  "mcpApiKeyPlaceholder": "lk_smdRi1gpCJLV7lgAjxD9L16sLeCfPlme7KrnlWUyytfeoHW2",
+  "@mcpApiKeyPlaceholder": {
+    "description": "MCP API key placeholder"
+  },
+  "mcpConfigSaved": "MCP configuration saved successfully",
+  "@mcpConfigSaved": {
+    "description": "MCP configuration save success message"
+  },
+  "pleaseCompleteMcpConfig": "Please complete the MCP configuration",
+  "@pleaseCompleteMcpConfig": {
+    "description": "MCP configuration incomplete message"
+  },
+  "mcpConnectionSuccess": "MCP connection successful!",
+  "@mcpConnectionSuccess": {
+    "description": "MCP connection success message"
+  },
+  "mcpAuthenticationFailed": "Authentication failed, please check your API key",
+  "@mcpAuthenticationFailed": {
+    "description": "MCP authentication failed message"
+  },
+  "mcpConnectionFailed": "MCP connection failed, status code: {statusCode}",
+  "@mcpConnectionFailed": {
+    "description": "MCP connection failed message"
+  },
+  "mcpConnectionError": "MCP connection error: {error}",
+  "@mcpConnectionError": {
+    "description": "MCP connection error message"
+  },
+  "mcpConfigInfo": "Instructions",
+  "@mcpConfigInfo": {
+    "description": "MCP configuration info title"
+  },
+  "mcpConfigDescription": "1. Private Deployment URL: Enter your MCP server address, e.g. https://mcp-web-url/mcp/v1/message\n2. API Key: Enter your API key for authentication\n3. Click the \"Test Connection\" button to verify the configuration",
+  "@mcpConfigDescription": {
+    "description": "MCP configuration description"
   }
 }

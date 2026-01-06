@@ -18,6 +18,10 @@ class SyncConfig extends Timestamped {
   // 新增同步类型字段
   SyncType syncType;
 
+  // Lumma MCP 配置字段
+  String mcpUrl;
+  String mcpApiKey;
+
   SyncConfig({
     this.workDir = '',
     this.syncUri = '',
@@ -26,6 +30,8 @@ class SyncConfig extends Timestamped {
     this.webdavPassword = '',
     this.webdavRemoteDir = '',
     this.syncType = SyncType.obsidian,
+    this.mcpUrl = '',
+    this.mcpApiKey = '',
     super.created,
     super.updated,
   });
@@ -39,6 +45,8 @@ class SyncConfig extends Timestamped {
     webdavPassword: '',
     webdavRemoteDir: '',
     syncType: SyncType.obsidian,
+    mcpUrl: '',
+    mcpApiKey: '',
   );
 
   factory SyncConfig.fromMap(Map map) => SyncConfig(
@@ -49,6 +57,8 @@ class SyncConfig extends Timestamped {
     webdavPassword: map['webdav_password'] ?? '',
     webdavRemoteDir: map['webdav_remote_dir'] ?? '',
     syncType: (map['sync_type'] == 'webdav') ? SyncType.webdav : SyncType.obsidian,
+    mcpUrl: map['mcp_url'] ?? '',
+    mcpApiKey: map['mcp_api_key'] ?? '',
     created: DateTime.tryParse(map['created'] ?? '') ?? DateTime.now(),
     updated: DateTime.tryParse(map['updated'] ?? '') ?? DateTime.now(),
   );
@@ -61,6 +71,8 @@ class SyncConfig extends Timestamped {
     'webdav_password': webdavPassword,
     'webdav_remote_dir': webdavRemoteDir,
     'sync_type': syncType == SyncType.webdav ? 'webdav' : 'obsidian',
+    'mcp_url': mcpUrl,
+    'mcp_api_key': mcpApiKey,
     'created': created.toIso8601String(),
     'updated': updated.toIso8601String(),
   };

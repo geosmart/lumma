@@ -5,6 +5,8 @@ import 'package:lumma/dao/diary_dao.dart';
 import 'package:lumma/service/theme_service.dart';
 import 'package:lumma/generated/l10n/app_localizations.dart';
 import 'package:lumma/view/pages/diary_file_list_page.dart';
+import 'package:lumma/service/mcp_service.dart';
+import 'package:lumma/service/config_service.dart' show AppConfigService;
 
 class DiaryTimelinePage extends StatefulWidget {
   const DiaryTimelinePage({super.key});
@@ -106,6 +108,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
     if (_isSaving) return;
 
     final userContent = _ctrl.text.trim();
+    final createTime = DateTime.now().millisecondsSinceEpoch;
 
     setState(() {
       _ctrl.clear();
@@ -124,6 +127,9 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       await _loadTodayTimeline();
 
       _scrollToBottom();
+
+      // 保存到MCP服务器（异步，不阻塞UI）
+      _saveDiaryToMcp(userContent, createTime);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: $e')));
@@ -132,6 +138,34 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       setState(() {
         _isSaving = false;
       });
+    }
+  }
+
+  /// 保存日记到MCP服务器
+  Future<void> _saveDiaryToMcp(String content, int createTime) async {
+    print('[MCP] 开始保存日记到MCP...');
+    try {
+      final config = await AppConfigService.load();
+      final mcpConfig = config.mcp;
+
+      print('[MCP] MCP配置: enabled=${mcpConfig.enabled}, url=${mcpConfig.url}, entityId=${mcpConfig.entityId}');
+
+      if (!mcpConfig.isConfigured) {
+        print('[MCP] MCP配置未完成，跳过同步');
+        return;
+      }
+
+      print('[MCP] 调用McpService.persistDiary...');
+      final result = await McpService.persistDiary(
+        entityId: mcpConfig.entityId!,
+        content: content,
+        createTime: createTime,
+      );
+
+      print('[MCP] 保存结果: $result');
+    } catch (e, stackTrace) {
+      print('[MCP] 保存日记到MCP失败: $e');
+      print('[MCP] Stack trace: $stackTrace');
     }
   }
 

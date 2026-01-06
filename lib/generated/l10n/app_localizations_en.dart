@@ -823,4 +823,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sunday => 'Sun';
+
+  @override
+  String get mcpConfig => 'Lumma MCP Configuration';
+
+  @override
+  String get mcpServerConfig => 'MCP Server Configuration';
+
+  @override
+  String get mcpUrl => 'Private Deployment URL';
+
+  @override
+  String get mcpUrlPlaceholder => 'https://mcp-web-url/mcp/v1/message';
+
+  @override
+  String get mcpApiKey => 'API Key';
+
+  @override
+  String get mcpApiKeyPlaceholder =>
+      'lk_smdRi1gpCJLV7lgAjxD9L16sLeCfPlme7KrnlWUyytfeoHW2';
+
+  @override
+  String get mcpConfigSaved => 'MCP configuration saved successfully';
+
+  @override
+  String get pleaseCompleteMcpConfig => 'Please complete the MCP configuration';
+
+  @override
+  String get mcpConnectionSuccess => 'MCP connection successful!';
+
+  @override
+  String get mcpAuthenticationFailed =>
+      'Authentication failed, please check your API key';
+
+  @override
+  String mcpConnectionFailed(Object statusCode) {
+    return 'MCP connection failed, status code: $statusCode';
+  }
+
+  @override
+  String mcpConnectionError(Object error) {
+    return 'MCP connection error: $error';
+  }
+
+  @override
+  String get mcpConfigInfo => 'Instructions';
+
+  @override
+  String get mcpConfigDescription =>
+      '1. Private Deployment URL: Enter your MCP server address, e.g. https://mcp-web-url/mcp/v1/message\n2. API Key: Enter your API key for authentication\n3. Click the \"Test Connection\" button to verify the configuration';
 }

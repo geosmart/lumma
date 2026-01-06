@@ -82,6 +82,9 @@ class _DiaryContentPageState extends State<DiaryContentPage> {
                       maxLines: null,
                       expands: true,
                       textAlignVertical: TextAlignVertical.top,
+                      enableInteractiveSelection: true,
+                      enableSuggestions: true,
+                      autocorrect: true,
                       decoration: InputDecoration(
                         border: const OutlineInputBorder(),
                         labelText: AppLocalizations.of(context)!.editDiary,
