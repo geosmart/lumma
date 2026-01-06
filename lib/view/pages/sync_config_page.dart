@@ -42,6 +42,8 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
   bool _isLoading = true;
   SyncType _syncType = SyncType.obsidian;
   bool _obscureWebdavUrl = true;
+  bool _obscureWebdavUsername = true;
+  bool _obscureWebdavPassword = true;
 
   @override
   void initState() {
@@ -561,15 +563,36 @@ class _SyncConfigPageState extends State<SyncConfigPage> {
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.username),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.username,
+              suffixIcon: IconButton(
+                icon: Icon(_obscureWebdavUsername ? Icons.visibility_off : Icons.visibility),
+                onPressed: () {
+                  setState(() {
+                    _obscureWebdavUsername = !_obscureWebdavUsername;
+                  });
+                },
+              ),
+            ),
             controller: TextEditingController(text: _webdavUsername ?? '')
               ..selection = TextSelection.collapsed(offset: (_webdavUsername ?? '').length),
             onChanged: (v) => _webdavUsername = v,
+            obscureText: _obscureWebdavUsername,
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: InputDecoration(labelText: AppLocalizations.of(context)!.password),
-            obscureText: true,
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.password,
+              suffixIcon: IconButton(
+                icon: Icon(_obscureWebdavPassword ? Icons.visibility_off : Icons.visibility),
+                onPressed: () {
+                  setState(() {
+                    _obscureWebdavPassword = !_obscureWebdavPassword;
+                  });
+                },
+              ),
+            ),
+            obscureText: _obscureWebdavPassword,
             controller: TextEditingController(text: _webdavPassword ?? '')
               ..selection = TextSelection.collapsed(offset: (_webdavPassword ?? '').length),
             onChanged: (v) => _webdavPassword = v,
