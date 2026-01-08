@@ -421,7 +421,7 @@ class _McpConfigPage extends StatefulWidget {
 class _McpConfigPageState extends State<_McpConfigPage> {
   final _urlController = TextEditingController();
   final _tokenController = TextEditingController();
-  final _entityIdController = TextEditingController();
+  final _entityNameController = TextEditingController();
   bool _enabled = false;
   bool _isLoading = false;
   bool _isTesting = false;
@@ -436,7 +436,7 @@ class _McpConfigPageState extends State<_McpConfigPage> {
   void dispose() {
     _urlController.dispose();
     _tokenController.dispose();
-    _entityIdController.dispose();
+    _entityNameController.dispose();
     super.dispose();
   }
 
@@ -449,7 +449,7 @@ class _McpConfigPageState extends State<_McpConfigPage> {
         _enabled = mcpConfig.enabled;
         _urlController.text = mcpConfig.url;
         _tokenController.text = mcpConfig.token;
-        _entityIdController.text = mcpConfig.entityId ?? '';
+        _entityNameController.text = mcpConfig.entityName ?? '';
       });
     } finally {
       setState(() => _isLoading = false);
@@ -463,7 +463,7 @@ class _McpConfigPageState extends State<_McpConfigPage> {
         config.mcp.enabled = _enabled;
         config.mcp.url = _urlController.text.trim();
         config.mcp.token = _tokenController.text.trim();
-        config.mcp.entityId = _entityIdController.text.trim();
+        config.mcp.entityName = _entityNameController.text.trim();
       });
 
       if (mounted) {
@@ -485,7 +485,7 @@ class _McpConfigPageState extends State<_McpConfigPage> {
   Future<void> _testConnection() async {
     if (_urlController.text.trim().isEmpty ||
         _tokenController.text.trim().isEmpty ||
-        _entityIdController.text.trim().isEmpty) {
+        _entityNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请填写完整的配置信息')),
       );
@@ -497,7 +497,7 @@ class _McpConfigPageState extends State<_McpConfigPage> {
       final result = await McpService.testConnection(
         url: _urlController.text.trim(),
         token: _tokenController.text.trim(),
-        entityId: _entityIdController.text.trim(),
+        entityName: _entityNameController.text.trim(),
       );
 
       if (mounted) {
@@ -629,9 +629,9 @@ class _McpConfigPageState extends State<_McpConfigPage> {
 
                 // Entity ID
                 TextField(
-                  controller: _entityIdController,
+                  controller: _entityNameController,
                   decoration: InputDecoration(
-                    labelText: '用户ID',
+                    labelText: '用户名',
                     hintText: '例如: 麦冬',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),

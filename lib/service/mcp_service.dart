@@ -8,12 +8,12 @@ class McpService {
 
   /// 持久化日记到MCP服务器
   static Future<bool> persistDiary({
-    required String entityId,
+    required String entityName,
     required String content,
     required int createTime,
   }) async {
     print('[MCP Service] persistDiary被调用');
-    print('[MCP Service] entityId: $entityId');
+    print('[MCP Service] entityName: $entityName');
     print('[MCP Service] content长度: ${content.length}');
     print('[MCP Service] createTime: $createTime');
 
@@ -34,7 +34,7 @@ class McpService {
         'params': {
           'name': 'persist_diary',
           'arguments': {
-            'entityId': entityId,
+            'entityName': entityName,
             'content': content,
             'createTime': createTime.toString(),
           },
@@ -63,7 +63,7 @@ class McpService {
 
       // 检查响应
       if (response.statusCode == 200) {
-        print('[MCP Service] 日记保存成功: $entityId');
+        print('[MCP Service] 日记保存成功: $entityName');
         return true;
       } else {
         print('[MCP Service] 日记保存失败: ${response.statusCode}');
@@ -86,7 +86,7 @@ class McpService {
   static Future<Map<String, dynamic>> testConnection({
     required String url,
     required String token,
-    required String entityId,
+    required String entityName,
   }) async {
     try {
       final requestBody = {
@@ -94,8 +94,8 @@ class McpService {
         'params': {
           'name': 'persist_diary',
           'arguments': {
-            'entityId': entityId,
-            'content': '测试连接',
+            'entityName': entityName,
+            'content': '测试MCP连接 - from Lumma App',
             'createTime': DateTime.now().millisecondsSinceEpoch.toString(),
           },
         },

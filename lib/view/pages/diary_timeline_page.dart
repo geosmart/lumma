@@ -148,7 +148,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
       final config = await AppConfigService.load();
       final mcpConfig = config.mcp;
 
-      print('[MCP] MCP配置: enabled=${mcpConfig.enabled}, url=${mcpConfig.url}, entityId=${mcpConfig.entityId}');
+      print('[MCP] MCP配置: enabled=${mcpConfig.enabled}, url=${mcpConfig.url}, entityName=${mcpConfig.entityName}');
 
       if (!mcpConfig.isConfigured) {
         print('[MCP] MCP配置未完成，跳过同步');
@@ -157,7 +157,7 @@ class _DiaryTimelinePageState extends State<DiaryTimelinePage> {
 
       print('[MCP] 调用McpService.persistDiary...');
       final result = await McpService.persistDiary(
-        entityId: mcpConfig.entityId!,
+        entityName: mcpConfig.entityName!,
         content: content,
         createTime: createTime,
       );

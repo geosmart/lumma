@@ -2,13 +2,13 @@ class McpConfig {
   bool enabled;
   String url;
   String token;
-  String? entityId;
+  String? entityName;
 
   McpConfig({
     this.enabled = false,
     this.url = '',
     this.token = '',
-    this.entityId,
+    this.entityName,
   });
 
   factory McpConfig.defaultConfig() {
@@ -16,7 +16,7 @@ class McpConfig {
       enabled: false,
       url: 'https://mcp-web-url/mcp/v1/message',
       token: '',
-      entityId: '',
+      entityName: '',
     );
   }
 
@@ -24,15 +24,15 @@ class McpConfig {
     enabled: map['enabled'] ?? false,
     url: map['url'] ?? 'https://mcp-web-url/mcp/v1/message',
     token: map['token'] ?? '',
-    entityId: map['entity_id'],
+    entityName: map['entityName'],
   );
 
   Map<String, dynamic> toMap() => {
     'enabled': enabled,
     'url': url,
     'token': token,
-    'entity_id': entityId,
+    'entityName': entityName,
   };
 
-  bool get isConfigured => enabled && url.isNotEmpty && token.isNotEmpty && (entityId?.isNotEmpty ?? false);
+  bool get isConfigured => enabled && url.isNotEmpty && token.isNotEmpty && (entityName?.isNotEmpty ?? false);
 }
